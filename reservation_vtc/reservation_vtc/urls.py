@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import include,path
 
 urlpatterns = [
-    path('', include('reservation_test.urls')),
+    path('', include('main.urls')),
+    path('reservation/', include('reservation.urls')),
     path("admin/", admin.site.urls),
 ]
