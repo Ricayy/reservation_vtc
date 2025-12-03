@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="reservation",
-            name="address_stop",
+            name="address_end",
             field=models.CharField(null=True),
         ),
         migrations.AddField(

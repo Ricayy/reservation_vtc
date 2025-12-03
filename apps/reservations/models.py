@@ -1,9 +1,10 @@
 from django.db import models
 
+
 # Create your models here.
 class Reservation(models.Model):
     address_start = models.CharField(null=True)
-    address_stop = models.CharField(null=True)
+    address_end = models.CharField(null=True)
     date_start = models.DateField(null=True)
     time_start = models.TimeField(null=True)
     car_type = models.CharField(null=True)
