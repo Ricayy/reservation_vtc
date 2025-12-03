@@ -12,6 +12,7 @@ A faire :
 - Interface de suivi des réservations
 - Pages informations, avis, services, ...
 - Header et footer
+- Stripe
 
 # Commandes Django
 Création d'un projet Django

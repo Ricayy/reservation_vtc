@@ -1,0 +1,28 @@
+{% extends "website/master.html" %}
+
+{% block title %}
+    confirmation.html
+{% endblock %}
+
+
+{% block content %}
+    <input type
+    <h1>Récapitulatif réservation</h1>
+
+    <p><strong>Départ :</strong> {{ reservation.address_start }}</p>
+    <p><strong>Arrivée :</strong> {{ reservation.address_stop }}</p>
+    <p><strong>Date :</strong> {{ reservation.date_start }}</p>
+    <p><strong>Heure :</strong> {{ reservation.time_start }}</p>
+    <p><strong>Véhicule :</strong> {{ reservation.car_type }}</p>
+    <p><strong>Passagers :</strong> {{ reservation.nb_passengers }}</p>
+    <p><strong>Bagages :</strong> {{ reservation.nb_luggages }}</p>
+    <p><strong>Type de trajet :</strong> {{ reservation.trip_type }}</p>
+
+    <h3>Coordonnées</h3>
+    <p><strong>Nom :</strong> {{ reservation.last_name }}</p>
+    <p><strong>Prénom :</strong> {{ reservation.first_name }}</p>
+    <p><strong>Téléphone :</strong> {{ reservation.phone }}</p>
+    <p><strong>Email :</strong> {{ reservation.email }}</p>
+
+    <p><strong>Message :</strong> {{ reservation.note }}</p>
+{% endblock %}
