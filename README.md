@@ -1,6 +1,6 @@
 # reservation_vtc
 A faire :
-- Enregister saisie dans formulaire sur la bdd
+- Suppression dans formulaire sur la bdd
 - Map
 - Auto complétion sur saisie adresse
 - Liste déroulante pour véhicule
@@ -9,10 +9,10 @@ A faire :
 - Multilangues
 - Style
 - Notification des courses par mail, sms ou autres
-- Interface de suivi des réservations
 - Pages informations, avis, services, ...
 - Header et footer
 - Stripe
+- Modèles Odoo Vehicule, Trajet, Contact
 
 # Commandes Django
 Création d'un projet Django

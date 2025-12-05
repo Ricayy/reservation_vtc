@@ -6,25 +6,35 @@
 
 
 {% block content %}
-    <input type="button">
+    <a href="/reservation/" class="btn btn-primary">Revenir au formulaire</a>
     <h1>Récapitulatif réservation</h1>
 
-    <p><strong>Départ :</strong> {{ reservation.x_studio_address_start }}</p>
-    <p><strong>Arrivée :</strong> {{ reservation.x_studio_address_end }}</p>
-    <p><strong>Date :</strong> {{ reservation.x_studio_datetime_start }}</p>
+    <p><strong>Départ :</strong> {{ reservation.address_start }}</p>
+    <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
+    <p><strong>Date et heure :</strong> {{ reservation.datetime_start|date:"d/m/Y H:i" }}</p>
 <!--    <p><strong>Véhicule :</strong> {{ reservation.car_type }}</p>-->
-    <p><strong>Passagers :</strong> {{ reservation.x_studio_nb_passengers }}</p>
-    <p><strong>Bagages :</strong> {{ reservation.x_studio_nb_luggages }}</p>
+    <p><strong>Passagers :</strong> {{ reservation.nb_passengers }}</p>
+    <p><strong>Bagages :</strong> {{ reservation.nb_luggages }}</p>
 <!--    <p><strong>Type de trajet :</strong> {{ reservation.trip_type }}</p>-->
-    <p><strong>Prix :</strong> {{ reservation.x_studio_price }}</p>
-    <p><strong>Distance :</strong> {{ reservation.x_studio_distance }}</p>
-    <p><strong>Durée :</strong> {{ reservation.x_studio_duration }}</p>
+    <p><strong>Prix :</strong> {{ reservation.price }}</p>
+    <p><strong>Distance :</strong> {{ reservation.distance }} km</p>
+    <p><strong>Durée :</strong> {{ reservation.duration }} min</p>
 
     <h3>Coordonnées</h3>
-    <p><strong>Nom :</strong> {{ reservation.x_studio_last_name }}</p>
-    <p><strong>Prénom :</strong> {{ reservation.x_studio_first_name }}</p>
-    <p><strong>Téléphone :</strong> {{ reservation.x_studio_phone }}</p>
-    <p><strong>Email :</strong> {{ reservation.x_studio_email }}</p>
+    <p><strong>Nom :</strong> {{ reservation.last_name }}</p>
+    <p><strong>Prénom :</strong> {{ reservation.first_name }}</p>
+    <p><strong>Téléphone :</strong> {{ reservation.phone }}</p>
+    <p><strong>Email :</strong> {{ reservation.email }}</p>
 
-    <p><strong>Message :</strong> {{ reservation.x_studio_note }}</p>
+    <p><strong>Message :</strong> {{ reservation.note }}</p>
+
+    <form action="/reservation/validation/" method="post">
+    {% csrf_token %}
+
+    {% for key, value in reservation.items %}
+        <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endfor %}
+
+    <input type="submit" value="Valider la réservation">
+</form>
 {% endblock %}

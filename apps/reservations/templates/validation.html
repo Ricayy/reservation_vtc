@@ -1,0 +1,18 @@
+{% extends "website/master.html" %}
+
+{% block title %}
+    validation.html
+{% endblock %}
+
+
+{% block content %}
+<h1>Réservation validée</h1>
+
+<p>Votre réservation a été envoyée à Odoo.</p>
+
+<p><strong>Départ :</strong> {{ reservation.x_studio_address_start }}</p>
+<p><strong>Arrivée :</strong> {{ reservation.x_studio_address_end }}</p>
+<p><strong>Date et heure :</strong> {{ reservation.x_studio_datetime_start|date:"d/m/Y H:i" }}</p>
+
+<a href="/">Revenir au formulaire</a>
+{% endblock %}
