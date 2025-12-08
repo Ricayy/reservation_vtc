@@ -47,7 +47,7 @@ class OdooTestCase(TestCase):
     url = os.getenv("ODOO_URL")
     url_json = os.getenv("ODOO_URL_JSON")
     db = os.getenv("ODOO_DB")
-    app = os.getenv("ODOO_APP_NAME")
+    app = os.getenv("ODOO_APP_RESERVATION")
     login = os.getenv("ODOO_USERNAME")
     password = os.getenv("ODOO_PASSWORD")
     fields_dict = {

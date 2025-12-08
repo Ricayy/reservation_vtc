@@ -3,6 +3,8 @@ from datetime import datetime
 from django.shortcuts import render
 from dateutil import parser
 import pytz
+
+from apps.core.models import OdooReservationModel
 from apps.core.odoo_client import OdooClient
 LOCAL_TZ = pytz.timezone("Europe/Paris")
 
@@ -47,21 +49,22 @@ def validation(request):
     if request.method == "POST":
         datetime_start = parser.parse(request.POST.get("datetime_start"))
         new_reservation = {
-            "x_studio_address_start": request.POST.get("address_start"),
-            "x_studio_address_end": request.POST.get("address_end"),
-            "x_studio_datetime_start": datetime_start,
-            "x_studio_nb_passengers": request.POST.get("nb_passengers"),
-            "x_studio_nb_luggages": request.POST.get("nb_luggages"),
-            "x_studio_last_name": request.POST.get("last_name"),
-            "x_studio_first_name": request.POST.get("first_name"),
-            "x_studio_phone": request.POST.get("phone"),
-            "x_studio_email": request.POST.get("email"),
-            "x_studio_note": request.POST.get("note"),
-            "x_studio_price": request.POST.get("price"),
-            "x_studio_duration": request.POST.get("duration"),
-            "x_studio_distance": request.POST.get("distance"),
-            # "x_studio_car_type": request.POST.get("car_type"),
-            # "x_studio_trip_type": request.POST.get("trip_type"),
+            OdooReservationModel().name: "reservation" + datetime.strftime(datetime.today(), "%d/%m/%Y %H:%M:%S"),
+            OdooReservationModel().address_start: request.POST.get("address_start"),
+            OdooReservationModel().address_end: request.POST.get("address_end"),
+            OdooReservationModel().datetime_start: datetime_start,
+            OdooReservationModel().nb_passengers: request.POST.get("nb_passengers"),
+            OdooReservationModel().nb_luggages: request.POST.get("nb_luggages"),
+            # OdooReservationModel().last_name: request.POST.get("last_name"),
+            # OdooReservationModel().first_name: request.POST.get("first_name"),
+            # OdooReservationModel().phone: request.POST.get("phone"),
+            # OdooReservationModel().email: request.POST.get("email"),
+            OdooReservationModel().note: request.POST.get("note"),
+            OdooReservationModel().price: request.POST.get("price"),
+            OdooReservationModel().duration: request.POST.get("duration"),
+            OdooReservationModel().distance: request.POST.get("distance"),
+            # OdooReservationModel().car_type: request.POST.get("car_type"),
+            # OdooReservationModel().trip_type: request.POST.get("trip_type"),
         }
 
         result = OdooClient().create_reservation(new_reservation)
