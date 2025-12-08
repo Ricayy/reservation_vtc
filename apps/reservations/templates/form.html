@@ -4,6 +4,29 @@
     form.html
 {% endblock %}
 
+{% block extra_css %}
+<style>
+.suggestions {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 9999;
+}
+
+.suggestions div {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.suggestions div:hover {
+    background: #eee;
+}
+</style>
+{% endblock %}
 
 {% block content %}
     <h1>Page de réservation</h1>
@@ -12,13 +35,26 @@
 
     <form action="/reservation/" method="post">
         {% csrf_token %}
-        <label for="address_start">Adresse de départ</label>
-        <input type="text" id="address_start" name="address_start" placeholder="Indiquez le lieu de départ" required>
+
+        <div style="position: relative;">
+            <label for="address_start">Adresse de départ</label>
+            <input type="text" id="address_start" name="address_start" placeholder="Indiquez le lieu de départ" required>
+            <div id="suggestions_start" class="suggestions" style="display:none;"></div>
+        </div>
         <br><br>
 
-        <label for="address_end">Adresse d'arrivée</label>
-        <input type="text" id="address_end" name="address_end" placeholder="Indiquez le lieu d'arrivée">
+        <div style="position: relative;">
+            <label for="address_end">Adresse d'arrivée</label>
+            <input type="text" id="address_end" name="address_end" placeholder="Indiquez le lieu d'arrivée">
+            <div id="suggestions_end" class="suggestions" style="display:none;"></div>
+        </div>
         <br><br>
+
+
+        <input type="hidden" id="distance" name="distance">
+        <input type="hidden" id="duration" name="duration">
+        <div id="route-info" style="margin: 10px 0; font-weight: bold;"></div>
+        <div id="map" data-mapbox-token="{{ mapbox_token }}" style="width: 100%; height: 400px; margin: 20px 0;"></div>
 
 
         <label for="date_start">Date de départ</label>
@@ -76,4 +112,199 @@
 
         <input type="submit" value="Commander">
     </form>
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
+
+<script>
+const token = document.getElementById("map").dataset.mapboxToken;
+mapboxgl.accessToken = token;
+
+// Charger la carte
+let map = new mapboxgl.Map({
+    container: "map",
+    style: "mapbox://styles/mapbox/streets-v12",
+    center: [2.3522, 48.8566],
+    zoom: 11
+});
+
+let startCoords = null;
+let endCoords = null;
+let startMarker = null;
+let endMarker = null;
+let mapLoaded = false;
+
+// Attendre que la carte soit chargée
+map.on("load", () => {
+    mapLoaded = true;
+
+    map.addSource("route", {
+        type: "geojson",
+        data: {
+            type: "FeatureCollection",
+            features: []
+        }
+    });
+
+    map.addLayer({
+        id: "route",
+        type: "line",
+        source: "route",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: { "line-width": 6, "line-color": "#0077ff" }
+    });
+});
+
+// Autocomplétion Mapbox
+async function geocodeAddress(inputId, suggestionsId, callback) {
+    const input = document.getElementById(inputId);
+    const suggestions = document.getElementById(suggestionsId);
+
+    input.addEventListener("input", async () => {
+        const value = input.value.trim();
+        if (value.length < 3) {
+            suggestions.style.display = "none";
+            return;
+        }
+
+        let url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(value)}.json?autocomplete=true&limit=5&language=fr&country=fr&access_token=${mapboxgl.accessToken}`;
+        let response = await fetch(url);
+        let data = await response.json();
+
+        if (!data.features.length) {
+            suggestions.style.display = "none";
+            return;
+        }
+
+        suggestions.innerHTML = "";
+        suggestions.style.display = "block";
+
+        data.features.forEach(feature => {
+            let item = document.createElement("div");
+            item.textContent = feature.place_name;
+
+            item.addEventListener("click", () => {
+                input.value = feature.place_name;
+                suggestions.style.display = "none";
+                callback(feature.geometry.coordinates);
+            });
+
+            suggestions.appendChild(item);
+        });
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!suggestions.contains(e.target) && e.target !== input) {
+            suggestions.style.display = "none";
+        }
+    });
+}
+
+// Ajouter les marqueurs
+geocodeAddress("address_start", "suggestions_start", coords => {
+    startCoords = coords;
+    if (startMarker) startMarker.remove();
+    startMarker = new mapboxgl.Marker({ color: "green" }).setLngLat(startCoords).addTo(map);
+    updateRoute();
+});
+
+geocodeAddress("address_end", "suggestions_end", coords => {
+    endCoords = coords;
+    if (endMarker) endMarker.remove();
+    endMarker = new mapboxgl.Marker({ color: "red" }).setLngLat(endCoords).addTo(map);
+    updateRoute();
+});
+
+document.getElementById("address_start").addEventListener("change", updateRoute);
+document.getElementById("address_end").addEventListener("change", updateRoute);
+
+// Coloration par congestion
+function colorByCongestion(level) {
+    switch(level) {
+        case "low": return "#2ECC71";
+        case "moderate": return "#F1C40F";
+        case "heavy": return "#E67E22";
+        case "severe": return "#E74C3C";
+        default: return "#0077ff";
+    }
+}
+
+// Fonction pour afficher le trajet avec congestion
+async function updateRoute() {
+    if (!mapLoaded || !startCoords || !endCoords) return;
+
+    // Récupérer la date/heure choisie
+    let dateInput = document.getElementById("date_start").value;
+    let timeInput = document.getElementById("time_start").value;
+    if (!dateInput || !timeInput) return;
+
+    let departAt = `${dateInput}T${timeInput}`; // Format YYYY-MM-DDThh:mm
+
+    // URL Directions API avec trafic
+    let url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${startCoords[0]},${startCoords[1]};${endCoords[0]},${endCoords[1]}?geometries=geojson&overview=full&annotations=duration,congestion&depart_at=${departAt}&access_token=${mapboxgl.accessToken}`;
+
+    try {
+        let response = await fetch(url);
+        let json = await response.json();
+
+        if (!json.routes || !json.routes.length) {
+            document.getElementById("route-info").innerHTML = "Aucun itinéraire trouvé.";
+            return;
+        }
+
+        let route = json.routes[0];
+        let coords = route.geometry.coordinates;
+        let congestions = route.legs[0].annotation.congestion;
+
+        // Construire GeoJSON segmenté pour la couleur
+        let features = [];
+        for (let i = 0; i < coords.length - 1; i++) {
+            features.push({
+                type: "Feature",
+                geometry: { type: "LineString", coordinates: [coords[i], coords[i+1]] },
+                properties: { color: colorByCongestion(congestions[i]) }
+            });
+        }
+
+        let geojson = { type: "FeatureCollection", features: features };
+
+        // Supprimer l'ancienne source/couche
+        if (map.getLayer("route")) map.removeLayer("route");
+        if (map.getSource("route")) map.removeSource("route");
+
+        // Ajouter la nouvelle source et couche
+        map.addSource("route", { type: "geojson", data: geojson });
+        map.addLayer({
+            id: "route",
+            type: "line",
+            source: "route",
+            layout: { "line-join": "round", "line-cap": "round" },
+            paint: {
+                "line-width": 6,
+                "line-color": ["get", "color"]
+            }
+        });
+
+        // Adapter la vue
+        map.fitBounds([startCoords, endCoords], { padding: 50 });
+
+        // Distance et durée avec trafic
+        let distanceKm = (route.distance / 1000).toFixed(2);
+        let durationTrafficMin = Math.round(route.duration / 60); // durée avec trafic
+
+        document.getElementById("distance").value = distanceKm;
+        document.getElementById("duration").value = durationTrafficMin;
+        document.getElementById("route-info").innerHTML =
+            `Distance : ${distanceKm} km — Durée estimée : ${durationTrafficMin} min (avec trafic)`;
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById("route-info").innerHTML = "Erreur lors du calcul de l'itinéraire.";
+    }
+    document.getElementById("date_start").addEventListener("change", updateRoute);
+    document.getElementById("time_start").addEventListener("change", updateRoute);
+}
+</script>
+
+
 {% endblock %}

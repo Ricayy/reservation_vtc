@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from django.shortcuts import render
@@ -6,12 +7,12 @@ import pytz
 
 from apps.core.models import OdooReservationModel
 from apps.core.odoo_client import OdooClient
+from config import settings
+
 LOCAL_TZ = pytz.timezone("Europe/Paris")
 
 def reservation(request):
     if request.method == "POST":
-
-
         reservation_data = {
             "address_start": request.POST.get("address_start"),
             "address_end": request.POST.get("address_end"),
@@ -24,9 +25,9 @@ def reservation(request):
             "phone": request.POST.get("phone"),
             "email": request.POST.get("email"),
             "note": request.POST.get("note"),
-            "price": 30.00,
-            "duration": 30,
-            "distance": 15.2,
+            # "price": 30.00,
+            "duration": request.POST.get("duration"),
+            "distance": request.POST.get("distance"),
         }
 
         combined_str = f"{str(request.POST.get("date_start"))} {request.POST.get("time_start")}"
@@ -67,8 +68,7 @@ def validation(request):
             # OdooReservationModel().trip_type: request.POST.get("trip_type"),
         }
 
-        result = OdooClient().create_reservation(new_reservation)
-        print(result)
+        OdooClient().create_reservation(new_reservation)
         return render(request, "validation.html", {"reservation": new_reservation})
     return render(request, "error.html")
 

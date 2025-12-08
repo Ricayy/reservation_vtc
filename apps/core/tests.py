@@ -105,7 +105,6 @@ class OdooTestCase(TestCase):
                 }
             }
         ).json()
-        print(auth_response)
         uid = auth_response["result"]["uid"]
         assert uid, "Échec authentification"
         return uid
