@@ -2,5 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.main, name='form'),
+    # path('', views.main, name='form'),
+    path('', views.ReservationCreateView.as_view(), name='reservation_add'),
 ]

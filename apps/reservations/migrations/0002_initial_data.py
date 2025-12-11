@@ -1,0 +1,39 @@
+from django.db import migrations
+
+def create_initial_data(apps, schema_editor):
+    VehiculeType = apps.get_model("reservations", "VehiculeType")
+    TripType = apps.get_model("reservations", "TripType")
+
+    # Insert VehiculeType values
+    VehiculeType.objects.create(
+        vehicule_type_name="Voiture",
+        vehicule_max_seats=4,
+        vehicule_price_distance=1.80
+    )
+    VehiculeType.objects.create(
+        vehicule_type_name="Van",
+        vehicule_max_seats=7,
+        vehicule_price_distance=2.50
+    )
+
+    # Insert TripType values
+    TripType.objects.create(trip_type_name="Aller simple")
+    TripType.objects.create(trip_type_name="Aller / Retour")
+
+
+def delete_initial_data(apps, schema_editor):
+    VehiculeType = apps.get_model("reservations", "VehiculeType")
+    TripType = apps.get_model("reservations", "TripType")
+
+    VehiculeType.objects.all().delete()
+    TripType.objects.all().delete()
+
+
+class Migration(migrations.Migration):
+    dependencies = [
+        ("reservations", "0001_initial"),
+    ]
+
+    operations = [
+        migrations.RunPython(create_initial_data, delete_initial_data),
+    ]
