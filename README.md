@@ -1,10 +1,9 @@
 # reservation_vtc
 A faire :
+- Django form
 - Suppression depuis formulaire sur la bdd
 - Liste déroulante pour véhicule
 - Saisie par défaut
-- Map
-- Auto complétion sur saisie adresse
 - Authentification
 - Multilangues
 - Style
@@ -13,7 +12,7 @@ A faire :
 - Header et footer
 - Stripe
 - Modèles Odoo Vehicule, Trajet, Contact
-- Association Contact avec téléphone
+- Association Contact avec email
 
 # Commandes Django
 Création d'un projet Django : 

@@ -4,6 +4,8 @@ from datetime import datetime
 import django
 import requests
 
+from apps.core.models import OdooContactModel, OdooReservationModel
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
@@ -33,32 +35,32 @@ class OdooTestCase(TestCase):
         URL d'appel de l'API Odoo
     db : str
         Nom de la base de données Odoo
-    app : str
+    app_reservation : str
         Nom de l'application Odoo
     login : str
         Nom de l'utilisateur Odoo
     password : str
         Mot de passe de l'utilisateur Odoo
-    fields_dict : dict
+    reservation_field_dict : dict
         Dictionnaire des noms de champs Odoo
-    fields_list : list
+    reservation_field_list : list
         Liste des noms de champs Odoo
     """
     url = os.getenv("ODOO_URL")
     url_json = os.getenv("ODOO_URL_JSON")
     db = os.getenv("ODOO_DB")
-    app = os.getenv("ODOO_APP_RESERVATION")
+    app_reservation = os.getenv("ODOO_APP_RESERVATION")
+    app_contact = os.getenv("ODOO_APP_CONTACT")
     login = os.getenv("ODOO_USERNAME")
     password = os.getenv("ODOO_PASSWORD")
-    fields_dict = {
+
+    reservation_field_dict = {
+        "x_name": "x_name",
         "x_studio_address_start": "x_studio_address_start",
         "x_studio_address_end": "x_studio_address_end",
         "x_studio_datetime_start": "x_studio_datetime_start",
         "x_studio_nb_passengers": "x_studio_nb_passengers",
         "x_studio_nb_luggages": "x_studio_nb_luggages",
-        "x_studio_last_name": "x_studio_last_name",
-        "x_studio_first_name": "x_studio_first_name",
-        "x_studio_phone": "x_studio_phone",
         "x_studio_email": "x_studio_email",
         "x_studio_note": "x_studio_note",
         "x_studio_price": "x_studio_price",
@@ -67,15 +69,13 @@ class OdooTestCase(TestCase):
         # "x_studio_car_type": "x_studio_car_type",
         # "x_studio_trip_type": "x_studio_trip_type",
     }
-    fields_list = [
+    reservation_field_list = [
+        "x_name",
         "x_studio_address_start",
         "x_studio_address_end",
         "x_studio_datetime_start",
         "x_studio_nb_passengers",
         "x_studio_nb_luggages",
-        "x_studio_last_name",
-        "x_studio_first_name",
-        "x_studio_phone",
         "x_studio_email",
         "x_studio_note",
         "x_studio_price",
@@ -84,14 +84,24 @@ class OdooTestCase(TestCase):
         # "x_studio_car_type",
         # "x_studio_trip_type",
     ]
-
+    contact_field_dict = {
+        "x_name": "x_name",
+        "x_studio_last_name": "x_studio_last_name",
+        "x_studio_first_name": "x_studio_first_name",
+        "x_studio_phone": "x_studio_phone",
+    }
+    contact_field_list = [
+        "x_name",
+        "x_studio_last_name",
+        "x_studio_first_name",
+        "x_studio_phone",
+    ]
 
     def test_odoo_auth(self):
         """
         Test d'authentification à Odoo
 
-        :return: int
-            ID user Odoo
+        :return: ID user Odoo
         """
 
         auth_response = requests.post(
@@ -109,13 +119,18 @@ class OdooTestCase(TestCase):
         assert uid, "Échec authentification"
         return uid
 
-    def test_odoo_search_read(self):
+    def test_query_search_read(self, uid, app, id_odoo, fields_list):
         """
-        Test de lecture d'une ligne par ID
-        """
-        uid = self.test_odoo_auth()
+        Test de requête search_read sur Odoo
 
-        payload_search_read = {
+        :param uid: ID user Odoo
+        :param app: Nom de l'application Odoo sur lequel effectué la requête
+        :param id_odoo: ID de la ligne Odoo
+        :param fields_list: Liste des champs Odoo à retourner
+        :return: Réponse d'Odoo
+        """
+        # Json de requête vers Odoo
+        json_search_read = {
             "jsonrpc": "2.0",
             "method": "call",
             "id": 1,
@@ -126,17 +141,34 @@ class OdooTestCase(TestCase):
                     self.db,
                     uid,
                     self.password,
-                    self.app,
+                    app,
                     "search_read",
-                    [[["id", "in", [2, 3]]]],
-                    {"fields": self.fields_list},
+                    [[["id", "in", [id_odoo]]]],
+                    {"fields": fields_list},
                 ],
             },
         }
+        response = requests.post(self.url_json, json=json_search_read).json()
+        print("Response query search read", response["result"])
+        return response
 
-        response = requests.post(self.url_json, json=payload_search_read).json()
-        print(response)
-        self.assertTrue("result" in response)
+    def test_odoo_search_read_reservation(self):
+        """
+        Test de lecture d'une réservation par ID en récupérant les informations du client
+        """
+        # Authentification à Odoo
+        uid = self.test_odoo_auth()
+        # Récupération de la réservation par ID
+        id_reservation = 1
+        reservation = self.test_query_search_read(uid, self.app_reservation, id_reservation, self.reservation_field_list)
+        # Récupération de l'ID du client
+        id_odoo = reservation["result"][0][OdooReservationModel.email][0]
+        user_data = self.test_query_search_read(uid, self.app_contact, id_odoo, self.contact_field_list)
+        # Remplacement des données du client dans la réservation
+        reservation["result"][0][OdooReservationModel.email] = user_data["result"][0]
+
+        print("Response query search read", reservation["result"][0])
+        self.assertTrue("result" in reservation)
 
     def test_odoo_create(self):
         """
@@ -145,21 +177,21 @@ class OdooTestCase(TestCase):
         uid = self.test_odoo_auth()
 
         reservation_data = {
-            self.fields_dict["x_studio_address_start"]: "Gare de Lyon",
-            self.fields_dict["x_studio_address_end"]: "10 Rue de Paris, Paris",
-            self.fields_dict["x_studio_datetime_start"]: datetime.today().strftime("%Y-%m-%d %H:%M:%S"),
-            self.fields_dict["x_studio_nb_passengers"]: 3,
-            self.fields_dict["x_studio_nb_luggages"]: 3,
-            self.fields_dict["x_studio_last_name"]: "Dupont",
-            self.fields_dict["x_studio_first_name"]: "Jean",
-            self.fields_dict["x_studio_phone"]: "0781546425",
-            self.fields_dict["x_studio_email"]: "jean.dupont@gmail.com",
-            self.fields_dict["x_studio_note"]: "En bas d'un immeuble bleu",
-            self.fields_dict["x_studio_price"]: 35.78,
-            self.fields_dict["x_studio_duration"]: 20,
-            self.fields_dict["x_studio_distance"]: 12.7,
-            # self.fields_dict["x_studio_car_type"]: "x_studio_car_type",
-            # self.fields_dict["x_studio_trip_type"]: "x_studio_trip_type",
+            self.reservation_field_dict["x_studio_address_start"]: "Gare de Lyon",
+            self.reservation_field_dict["x_studio_address_end"]: "10 Rue de Paris, Paris",
+            self.reservation_field_dict["x_studio_datetime_start"]: datetime.today().strftime("%d-%m-%Y %H:%M:%S"),
+            self.reservation_field_dict["x_studio_nb_passengers"]: 3,
+            self.reservation_field_dict["x_studio_nb_luggages"]: 3,
+            self.reservation_field_dict["x_studio_last_name"]: "Dupont",
+            self.reservation_field_dict["x_studio_first_name"]: "Jean",
+            self.reservation_field_dict["x_studio_phone"]: "0781546425",
+            self.reservation_field_dict["x_studio_email"]: "jean.dupont@gmail.com",
+            self.reservation_field_dict["x_studio_note"]: "En bas d'un immeuble bleu",
+            self.reservation_field_dict["x_studio_price"]: 35.78,
+            self.reservation_field_dict["x_studio_duration"]: 20,
+            self.reservation_field_dict["x_studio_distance"]: 12.7,
+            # self.reservation_field_dict["x_studio_car_type"]: "x_studio_car_type",
+            # self.reservation_field_dict["x_studio_trip_type"]: "x_studio_trip_type",
         }
 
         payload_create = {
@@ -173,7 +205,7 @@ class OdooTestCase(TestCase):
                     self.db,
                     uid,
                     self.password,
-                    self.app,
+                    self.app_reservation,
                     "create",
                     [reservation_data],
                 ],
@@ -197,10 +229,10 @@ class OdooTestCase(TestCase):
                     self.db,
                     uid,
                     self.password,
-                    self.app,
+                    self.app_reservation,
                     "search_read",
                     [[["id", "=", new_reservation_id]]],
-                    {"fields": self.fields_list},
+                    {"fields": self.reservation_field_list},
                 ],
             },
         }
@@ -238,21 +270,21 @@ class OdooTestCase(TestCase):
         """
 
         reservation_data = {
-            self.fields_dict["x_studio_address_start"]: "Gare de Lyon",
-            self.fields_dict["x_studio_address_end"]: "10 Rue de Paris, Paris",
-            self.fields_dict["x_studio_datetime_start"]: datetime.today().strftime("%Y-%m-%d %H:%M:%S"),
-            self.fields_dict["x_studio_nb_passengers"]: 3,
-            self.fields_dict["x_studio_nb_luggages"]: 3,
-            self.fields_dict["x_studio_last_name"]: "Dupont",
-            self.fields_dict["x_studio_first_name"]: "Jean",
-            self.fields_dict["x_studio_phone"]: "0781546425",
-            self.fields_dict["x_studio_email"]: "jean.dupont@gmail.com",
-            self.fields_dict["x_studio_note"]: "En bas d'un immeuble bleu",
-            self.fields_dict["x_studio_price"]: 35.78,
-            self.fields_dict["x_studio_duration"]: 20,
-            self.fields_dict["x_studio_distance"]: 12.7,
-            # self.fields_dict["x_studio_car_type"]: "x_studio_car_type",
-            # self.fields_dict["x_studio_trip_type"]: "x_studio_trip_type",
+            self.reservation_field_dict["x_studio_address_start"]: "Gare de Lyon",
+            self.reservation_field_dict["x_studio_address_end"]: "10 Rue de Paris, Paris",
+            self.reservation_field_dict["x_studio_datetime_start"]: datetime.today().strftime("%Y-%m-%d %H:%M:%S"),
+            self.reservation_field_dict["x_studio_nb_passengers"]: 3,
+            self.reservation_field_dict["x_studio_nb_luggages"]: 3,
+            self.reservation_field_dict["x_studio_last_name"]: "Dupont",
+            self.reservation_field_dict["x_studio_first_name"]: "Jean",
+            self.reservation_field_dict["x_studio_phone"]: "0781546425",
+            self.reservation_field_dict["x_studio_email"]: "jean.dupont@gmail.com",
+            self.reservation_field_dict["x_studio_note"]: "En bas d'un immeuble bleu",
+            self.reservation_field_dict["x_studio_price"]: 35.78,
+            self.reservation_field_dict["x_studio_duration"]: 20,
+            self.reservation_field_dict["x_studio_distance"]: 12.7,
+            # self.reservation_field_dict["x_studio_car_type"]: "x_studio_car_type",
+            # self.reservation_field_dict["x_studio_trip_type"]: "x_studio_trip_type",
         }
 
         payload_create = {
@@ -266,7 +298,7 @@ class OdooTestCase(TestCase):
                     self.db,
                     uid,
                     self.password,
-                    self.app,
+                    self.app_reservation,
                     "create",
                     [reservation_data],
                 ],
@@ -295,7 +327,7 @@ class OdooTestCase(TestCase):
                     self.db,
                     uid,
                     self.password,
-                    self.app,
+                    self.app_reservation,
                     "unlink",
                     [[new_reservation_id]],
                 ],
@@ -318,10 +350,10 @@ class OdooTestCase(TestCase):
                     self.db,
                     uid,
                     self.password,
-                    self.app,
+                    self.app_reservation,
                     "search_read",
                     [[["id", "=", new_reservation_id]]],
-                    {"fields": self.fields_list},
+                    {"fields": self.reservation_field_list},
                 ],
             },
         }

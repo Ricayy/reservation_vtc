@@ -1,7 +1,5 @@
 from django.shortcuts import render
-
 from config import settings
-
 
 def main(request):
     context = {
