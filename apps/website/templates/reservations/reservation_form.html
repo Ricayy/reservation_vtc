@@ -1,0 +1,340 @@
+{% extends "website/master.html" %}
+
+{% block title %}
+    reservation_form.html
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.suggestions {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 9999;
+}
+
+.suggestions div {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.suggestions div:hover {
+    background: #eee;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1>Page de réservation</h1>
+
+    <h3>Numéro de téléphone : 07 55 55 55 55</h3>
+    <form action="{% url 'confirm_reservation' %}" method="post">
+    {% csrf_token %}
+        <table>
+            <tr>
+                <th>{{ form.address_start.label_tag }}</th>
+                <td>
+                    {{ form.address_start }}
+                    <div id="suggestions_start" class="suggestions" style="display:none;"></div>
+                </td>
+            </tr>
+
+            <tr>
+                <th>{{ form.address_end.label_tag }}</th>
+                <td>
+                    {{ form.address_end }}
+                    <div id="suggestions_end" class="suggestions" style="display:none;"></div>
+                </td>
+            </tr>
+
+            <tr>
+                <th>
+                    <div id="route-info" style="margin: 10px 0; font-weight: bold;"></div>
+                    <div id="route-info-2" style="margin: 10px 0; font-weight: bold;"></div>
+                </th>
+                <td>
+                    <div id="map" data-mapbox-token="{{ mapbox_token }}" style="width: 100%; height: 400px; margin: 20px 0;"></div>
+                </td>
+            </tr>
+
+            <tr>
+                <th>{{ form.date_start.label_tag }}</th>
+                <td>{{ form.date_start }}</td>
+            </tr>
+
+            <tr>
+                <th>{{ form.time_start.label_tag }}</th>
+                <td>{{ form.time_start }}</td>
+            </tr>
+
+            <tr>
+                <th>{{ form.car_type.label_tag }}</th>
+                <td>
+                    <select id="id_car_type" name="car_type">
+                        {% for car in vehicule_types %}
+                            <option value="{{ car.id }}" data-price="{{ car.vehicule_price_distance }}" data-seats="{{ car.vehicule_max_seats }}">
+                                {{ car.vehicule_type_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <th>{{ form.nb_passengers.label_tag }}</th>
+                <td>{{ form.nb_passengers }}</td>
+            </tr>
+            <tr>
+                <th>{{ form.nb_luggages.label_tag }}</th>
+                <td>{{ form.nb_luggages }}</td>
+            </tr>
+            <tr>
+                <th>{{ form.trip_type.label_tag }}</th>
+                <td>{{ form.trip_type }}</td>
+            </tr>
+            <tr>
+                <th>{{ form.last_name.label_tag }}</th>
+                <td>{{ form.last_name }}</td>
+            </tr>
+            <tr>
+                <th>{{ form.first_name.label_tag }}</th>
+                <td>{{ form.first_name }}</td>
+            </tr>
+            <tr>
+                <th>{{ form.phone.label_tag }}</th>
+                <td>{{ form.phone }}</td>
+            </tr>
+            <tr>
+                <th>{{ form.email.label_tag }}</th>
+                <td>{{ form.email }}</td>
+            </tr>
+            <tr>
+                <th>{{ form.note.label_tag }}</th>
+                <td>{{ form.note }}</td>
+            </tr>
+            <tr>
+                <th><input type="checkbox" id="data_agreement" name="data_agreement" value="check" ></th>
+                <td><label for="data_agreement">En cochant cette case, vous acceptez que vos données fournies soient utilisées pour le traitement de votre demande.</label></td>
+            </tr>
+        </table>
+
+        <input type="hidden" id="distance" name="distance">
+        <input type="hidden" id="duration" name="duration">
+        <input type="hidden" id="price" name="price">
+        <button type="submit">Commander</button>
+    </form>
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
+
+<script>
+    const token = document.getElementById("map").dataset.mapboxToken;
+    mapboxgl.accessToken = token;
+
+    // Carte Mapbox
+    let map = new mapboxgl.Map({
+        container: "map",
+        style: "mapbox://styles/mapbox/streets-v12",
+        center: [2.3522, 48.8566],
+        zoom: 11
+    });
+
+    let startCoords = null;
+    let endCoords = null;
+    let startMarker = null;
+    let endMarker = null;
+    let mapLoaded = false;
+    let currentDistanceKm = 0;
+
+    map.on("load", () => {
+        mapLoaded = true;
+        map.addSource("route", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+        map.addLayer({
+            id: "route",
+            type: "line",
+            source: "route",
+            layout: { "line-join": "round", "line-cap": "round" },
+            paint: { "line-width": 6, "line-color": "#0077ff" }
+        });
+    });
+
+    // Autocomplétion Mapbox
+    async function geocodeAddress(inputId, suggestionsId, callback) {
+        const input = document.getElementById(inputId);
+        const suggestions = document.getElementById(suggestionsId);
+
+        input.addEventListener("input", async () => {
+            const value = input.value.trim();
+            if (value.length < 3) { suggestions.style.display = "none"; return; }
+
+            let url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(value)}.json?autocomplete=true&limit=5&language=fr&country=fr&access_token=${mapboxgl.accessToken}`;
+            let response = await fetch(url);
+            let data = await response.json();
+            if (!data.features.length) { suggestions.style.display = "none"; return; }
+
+            suggestions.innerHTML = "";
+            suggestions.style.display = "block";
+
+            data.features.forEach(feature => {
+                let item = document.createElement("div");
+                item.textContent = feature.place_name;
+                item.addEventListener("click", () => {
+                    input.value = feature.place_name;
+                    suggestions.style.display = "none";
+                    callback(feature.geometry.coordinates);
+                });
+                suggestions.appendChild(item);
+            });
+        });
+
+        document.addEventListener("click", e => {
+            if (!suggestions.contains(e.target) && e.target !== input) suggestions.style.display = "none";
+        });
+    }
+
+    // Ajouter les marqueurs et calcul initial
+    function setupMarker(inputId, suggestionsId, color, setCoordsCallback) {
+        geocodeAddress(inputId, suggestionsId, coords => {
+            setCoordsCallback(coords);
+            if (inputId === "id_address_start") {
+                if (startMarker) startMarker.remove();
+                startMarker = new mapboxgl.Marker({ color }).setLngLat(coords).addTo(map);
+            } else {
+                if (endMarker) endMarker.remove();
+                endMarker = new mapboxgl.Marker({ color }).setLngLat(coords).addTo(map);
+            }
+            updateRouteSimple();
+        });
+    }
+
+    setupMarker("id_address_start", "suggestions_start", "green", coords => startCoords = coords);
+    setupMarker("id_address_end", "suggestions_end", "red", coords => endCoords = coords);
+
+    // Coloration par congestion
+    function colorByCongestion(level) {
+        switch(level) {
+            case "low": return "#2ECC71";
+            case "moderate": return "#F1C40F";
+            case "heavy": return "#E67E22";
+            case "severe": return "#E74C3C";
+            default: return "#0077ff";
+        }
+    }
+
+    // Calcul simple du trajet (distance seule)
+    async function updateRouteSimple() {
+        if (!mapLoaded || !startCoords || !endCoords) return;
+
+        let url = `https://api.mapbox.com/directions/v5/mapbox/driving/${startCoords[0]},${startCoords[1]};${endCoords[0]},${endCoords[1]}?geometries=geojson&overview=full&access_token=${mapboxgl.accessToken}`;
+        try {
+            let response = await fetch(url);
+            let json = await response.json();
+            if (!json.routes || !json.routes.length) return;
+
+            let route = json.routes[0];
+            let coords = route.geometry.coordinates;
+            currentDistanceKm = (route.distance / 1000).toFixed(2);
+
+            // GeoJSON simple
+            let geojson = { type: "FeatureCollection", features: [{ type: "Feature", geometry: { type: "LineString", coordinates: coords } }] };
+            map.getSource("route").setData(geojson);
+
+            map.fitBounds([startCoords, endCoords], { padding: 50 });
+
+            // Affichage distance simple
+            document.getElementById("distance").value = currentDistanceKm;
+
+            updatePrice();
+            updateRouteWithTraffic(); // tente la mise à jour avec trafic si date/heure présentes
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Mise à jour avec trafic + congestion
+    async function updateRouteWithTraffic() {
+        if (!mapLoaded || !startCoords || !endCoords) return;
+        let dateInput = document.getElementById("id_date_start").value;
+        let timeInput = document.getElementById("id_time_start").value;
+        if (!dateInput || !timeInput) return;
+
+        let departAt = `${dateInput}T${timeInput}`;
+        let url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${startCoords[0]},${startCoords[1]};${endCoords[0]},${endCoords[1]}?geometries=geojson&overview=full&annotations=duration,congestion&depart_at=${departAt}&access_token=${mapboxgl.accessToken}`;
+
+        try {
+            let response = await fetch(url);
+            let json = await response.json();
+            if (!json.routes || !json.routes.length) return;
+
+            let route = json.routes[0];
+            let coords = route.geometry.coordinates;
+            let congestions = route.legs[0].annotation.congestion;
+
+            // GeoJSON segmenté pour couleur
+            let features = [];
+            for (let i = 0; i < coords.length - 1; i++) {
+                features.push({ type: "Feature", geometry: { type: "LineString", coordinates: [coords[i], coords[i+1]] }, properties: { color: colorByCongestion(congestions[i]) } });
+            }
+            map.getSource("route").setData({ type: "FeatureCollection", features });
+
+            map.fitBounds([startCoords, endCoords], { padding: 50 });
+
+            let durationTrafficMin = Math.round(route.duration / 60);
+            document.getElementById("duration").value = durationTrafficMin;
+            document.getElementById("route-info").innerHTML = `Durée estimée : ${durationTrafficMin} min (avec trafic)`;
+
+            updatePrice();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Calcul du prix
+    function updatePrice() {
+        let carTypeSelect = document.getElementById("id_car_type");
+        if (!carTypeSelect || currentDistanceKm == 0) return;
+
+        let selectedOption = carTypeSelect.options[carTypeSelect.selectedIndex];
+        if (!selectedOption) return;
+
+        let pricePerKm = parseFloat(selectedOption.dataset.price || 0);
+        let price = (currentDistanceKm * pricePerKm).toFixed(2);
+        document.getElementById("route-info-2").innerHTML = `Distance : ${currentDistanceKm} km — Prix estimé : ${price} €`;
+        let hiddenPriceInput = document.getElementById("price");
+        if (hiddenPriceInput) {
+            hiddenPriceInput.value = price;
+        }
+    }
+
+    // Événements pour date/heure et véhicule
+    document.getElementById("id_date_start").addEventListener("change", updateRouteWithTraffic);
+    document.getElementById("id_time_start").addEventListener("change", updateRouteWithTraffic);
+    document.getElementById("id_car_type").addEventListener("change", updatePrice);
+
+    const passengerInput = document.getElementById("id_nb_passengers");
+    const carTypeSelect = document.getElementById("id_car_type");
+
+    function validatePassengers() {
+        let nb = parseInt(passengerInput.value || 0);
+        let selectedOption = carTypeSelect.options[carTypeSelect.selectedIndex];
+
+        if (!selectedOption) return;
+
+        let maxSeats = parseInt(selectedOption.dataset.seats);
+
+        // Empêche les valeurs négatives
+        if (nb < 0) passengerInput.value = 0;
+
+        // Empêche de dépasser le max du véhicule
+        if (nb > maxSeats) passengerInput.value = maxSeats;
+    }
+
+    passengerInput.addEventListener("input", validatePassengers);
+    carTypeSelect.addEventListener("change", validatePassengers);
+</script>
+
+{% endblock %}

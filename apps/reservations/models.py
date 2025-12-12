@@ -28,7 +28,7 @@ class Reservation(models.Model):
     phone = models.CharField(null=True)
     email = models.EmailField(null=True)
     note = models.CharField(null=True)
-    price = models.FloatField(null=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     duration = models.IntegerField(null=True)
     distance = models.FloatField(null=True)
     date_reservation = models.DateField(null=True, auto_now_add=True)

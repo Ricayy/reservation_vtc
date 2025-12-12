@@ -1,8 +1,10 @@
 import os
 import xmlrpc.client
 
+import requests
 from dotenv import load_dotenv
 
+from apps.core.models import OdooContactModel
 
 load_dotenv()
 
@@ -40,9 +42,19 @@ class OdooClient:
         self.password = os.getenv("ODOO_PASSWORD")
         self.app_reservation = os.getenv("ODOO_APP_RESERVATION")
         self.app_contact = os.getenv("ODOO_APP_CONTACT")
-        common = xmlrpc.client.ServerProxy("%s/xmlrpc/2/common" % self.url)
-        self.auth = common.authenticate(self.db, self.username, self.password, {})
-        self.models = xmlrpc.client.ServerProxy("{}/xmlrpc/2/object".format(self.url))
+
+        auth_response = requests.post(
+            f"{self.url}/web/session/authenticate",
+            json={
+                "jsonrpc": "2.0",
+                "params": {
+                    "db": self.db,
+                    "login": self.username,
+                    "password": self.password,
+                }
+            }
+        ).json()
+        self.uid = auth_response["result"]["uid"]
 
     def create_reservation(self, values):
         """
@@ -50,9 +62,80 @@ class OdooClient:
 
         :param values: Dict[str]
             Dictionnaire contenant une réservation à publier sur Odoo
-        :return result:
+        :return:
             Résultat de la requête de création
         """
-        result = self.models.execute_kw(self.db, self.auth, self.password, self.app_reservation, "create",
-                                        [values])
-        return result
+        json = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "id": 1,
+            "params": {
+                "service": "object",
+                "method": "execute_kw",
+                "args": [
+                    self.db,
+                    self.uid,
+                    self.password,
+                    self.app_reservation,
+                    "create",
+                    [values],
+                ],
+            },
+        }
+        return requests.post(self.url_json, json=json).json()
+
+
+    def query_search_read_user_by_email(self, email):
+        json = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "id": 1,
+            "params": {
+                "service": "object",
+                "method": "execute_kw",
+                "args": [
+                    self.db,
+                    self.uid,
+                    self.password,
+                    self.app_contact,
+                    "search_read",
+                    [[[OdooContactModel.email, "in", [email]]]],
+                    {"fields": [
+                        OdooContactModel.email,
+                        OdooContactModel.last_name,
+                        OdooContactModel.first_name,
+                        OdooContactModel.phone
+                    ]},
+                ],
+            },
+        }
+        return requests.post(self.url_json, json=json).json()
+
+
+    def search_read_user_by_email(self, email):
+        return OdooClient().query_search_read_user_by_email(email)["result"]
+
+
+    def query_create_user(self, user_data):
+        json = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "id": 1,
+            "params": {
+                "service": "object",
+                "method": "execute_kw",
+                "args": [
+                    self.db,
+                    self.uid,
+                    self.password,
+                    self.app_contact,
+                    "create",
+                    [user_data],
+                ]
+            }
+        }
+        return requests.post(self.url_json, json=json).json()
+
+
+    def create_user(self, user_data):
+        return OdooClient().query_create_user(user_data)

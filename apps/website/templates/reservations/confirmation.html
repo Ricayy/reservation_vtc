@@ -6,19 +6,19 @@
 
 
 {% block content %}
-    <a href="/reservation/" class="btn btn-primary">Revenir au formulaire</a>
+    <a href="{% url 'reservation_add' %}" class="btn btn-primary">Revenir au formulaire</a>
     <h1>Récapitulatif réservation</h1>
 
     <p><strong>Départ :</strong> {{ reservation.address_start }}</p>
     <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
     <p><strong>Date et heure :</strong> {{ reservation.datetime_start|date:"d/m/Y H:i" }}</p>
-<!--    <p><strong>Véhicule :</strong> {{ reservation.car_type }}</p>-->
+    <p><strong>Véhicule :</strong> {{ reservation.car_type }}</p>
     <p><strong>Passagers :</strong> {{ reservation.nb_passengers }}</p>
     <p><strong>Bagages :</strong> {{ reservation.nb_luggages }}</p>
 <!--    <p><strong>Type de trajet :</strong> {{ reservation.trip_type }}</p>-->
-    <p><strong>Prix :</strong> {{ reservation.price }}</p>
     <p><strong>Distance :</strong> {{ reservation.distance }} km</p>
     <p><strong>Durée :</strong> {{ reservation.duration }} min</p>
+    <p><strong>Prix :</strong> {{ reservation.price }} €</p>
 
     <h3>Coordonnées</h3>
     <p><strong>Nom :</strong> {{ reservation.last_name }}</p>
@@ -28,7 +28,8 @@
 
     <p><strong>Message :</strong> {{ reservation.note }}</p>
 
-    <form action="/reservation/validation/" method="post">
+<!--    <form action="/validation/" method="post">-->
+    <form action="{% url 'validation' %}" method="post">
     {% csrf_token %}
 
     {% for key, value in reservation.items %}
