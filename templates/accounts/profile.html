@@ -1,6 +1,36 @@
 {% extends "website/master.html" %}
 
 {% block content %}
-<h1>Bienvenue, {{ user.username }} !</h1>
-<p>Email : {{ user.email }}</p>
+<h1>Profil de {{ user.email }} !</h1>
+
+<h3>Historique des réservations </h3>
+<table>
+    <thead>
+        <tr>
+            <td>Adresse de départ</td>
+            <td>Adresse d'arrivée</td>
+            <td>Date et heure de départ</td>
+            <td>Véhicule</td>
+            <td>Distance</td>
+            <td>Prix</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for res in res_list %}
+            <tr>
+                <td>{{ res.x_studio_address_start }}</td>
+                <td>{{ res.x_studio_address_end }}</td>
+                <td>{{ res.x_studio_datetime_start }}</td>
+                <td>{{ res.x_studio_car_type.1 }}</td>
+                <td>{{ res.x_studio_distance }} km</td>
+                <td>{{ res.x_studio_price }} €</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">Aucune réservation pour le moment.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 {% endblock %}

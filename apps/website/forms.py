@@ -31,7 +31,6 @@ class ReservationForm(forms.ModelForm):
                     "nb_passengers",
                     f"Le véhicule sélectionné ne permet que {max_seats} places."
                 )
-
         return cleaned_data
 
 

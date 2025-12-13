@@ -158,7 +158,10 @@
             type: "line",
             source: "route",
             layout: { "line-join": "round", "line-cap": "round" },
-            paint: { "line-width": 6, "line-color": "#0077ff" }
+            paint: {
+                "line-width": 6,
+                "line-color": ["get", "color"]
+            }
         });
     });
 

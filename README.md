@@ -1,15 +1,15 @@
 # reservation_vtc
 A faire :
-- Suppression depuis formulaire sur la bdd
-- Saisie par défaut
-- Authentification
-- Multilangues
+- Affichage réservation depuis page profil pour user connecté
+- Affichage réservation depuis page unique pour user invité
+- Annulation réservation depuis page profil ou page unique
+- Modèles Odoo Trajet
+- Stripe
 - Style
+- Multilangues
 - Notification des courses par mail, sms ou autres
 - Pages informations, avis, services, ...
-- Header et footer
-- Stripe
-- Modèles Odoo Trajet
+- Footer
 
 # Commandes Django
 Création d'un projet Django : 

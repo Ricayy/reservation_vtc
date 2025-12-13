@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
 from apps.core.models import OdooContactModel
-from apps.core.odoo_client import search_read_reservations_by_user
+from apps.core.odoo_client import get_res_by_email
 from apps.website.forms import RegisterForm, LoginForm
 
 
@@ -47,7 +47,7 @@ def login_view(request):
         {"form": form, "error": error}
     )
 
-
+@login_required
 def logout_view(request):
     logout(request)
     return redirect("reservation_add")
@@ -55,8 +55,5 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    reservations = search_read_reservations_by_user(str(request.user))
-    print("reservations--------------")
-    print(reservations)
-    print(reservations["result"][0][OdooContactModel.reservation_id])
-    return render(request, "accounts/profile.html", context={"reservations_list": reservations})
+    res = get_res_by_email(str(request.user))
+    return render(request, "accounts/profile.html", context={"res_list": res["result"]})

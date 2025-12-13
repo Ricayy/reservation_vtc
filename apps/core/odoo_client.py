@@ -4,7 +4,7 @@ import xmlrpc.client
 import requests
 from dotenv import load_dotenv
 
-from apps.core.models import OdooContactModel
+from apps.core.models import OdooContactModel, OdooReservationModel
 
 load_dotenv()
 
@@ -34,16 +34,17 @@ def create_user(user_data):
     return OdooClient().query_create_user(user_data)
 
 
-def create_reservation(user_data):
+def create_res(user_data):
     return OdooClient().query_create_reservation(user_data)
 
 
-def search_read_user_by_email(email):
+def get_user_by_email(email):
     return OdooClient().query_search_read_user_by_email(email)["result"]
 
 
-def search_read_reservations_by_user(email):
-    return OdooClient().query_search_read_reservations_by_user(email)
+def get_res_by_email(email):
+    res_id = OdooClient().query_search_read_res_by_user(email)
+    return OdooClient().query_search_read_res_by_id(res_id["result"][0][OdooContactModel.reservation_id])
 
 
 class OdooClient:
@@ -148,7 +149,7 @@ class OdooClient:
         }
         return requests.post(self.url_json, json=json).json()
 
-    def query_search_read_reservations_by_user(self, email):
+    def query_search_read_res_by_user(self, email):
         json = {
             "jsonrpc": "2.0",
             "method": "call",
@@ -164,6 +165,36 @@ class OdooClient:
                     "search_read",
                     [[[OdooContactModel.email, "in", [email]]]],
                     {"fields": [OdooContactModel.reservation_id]
+                     },
+                ],
+            },
+        }
+        return requests.post(self.url_json, json=json).json()
+
+    def query_search_read_res_by_id(self, reservations_id):
+        json = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "id": 1,
+            "params": {
+                "service": "object",
+                "method": "execute_kw",
+                "args": [
+                    self.db,
+                    self.uid,
+                    self.password,
+                    self.app_reservation,
+                    "search_read",
+                    [[[OdooReservationModel.id, "in", reservations_id]]],
+                    {"fields": [
+                        OdooReservationModel.address_start,
+                        OdooReservationModel.address_end,
+                        OdooReservationModel.datetime_start,
+                        OdooReservationModel.price,
+                        OdooReservationModel.car_type,
+                        OdooReservationModel.distance,
+                        # OdooReservationModel.trip_type
+                    ]
                      },
                 ],
             },

@@ -5,6 +5,7 @@ class OdooReservationModel:
     """
     Dataclass contenant les noms des champs du modèle Reservation
     """
+    id= "id"
     name = "x_name"
     address_start = "x_studio_address_start"
     address_end = "x_studio_address_end"
@@ -26,6 +27,7 @@ class OdooContactModel:
     """
     Dataclass contenant les noms des champs du modèle Contact
     """
+    id = "id"
     email = "x_name"
     first_name = "x_studio_first_name"
     last_name = "x_studio_last_name"
@@ -37,4 +39,5 @@ class OdooVehiculeModel:
     """
     Dataclass contenant les noms des champs du modèle Vehicule
     """
+    id = "id"
     name = "x_name"

@@ -5,7 +5,6 @@ from django.shortcuts import render
 from django.views.generic import CreateView
 
 from apps.reservations.models import Reservation, VehiculeType
-from apps.reservations.views import LOCAL_TZ
 from apps.website.forms import ReservationForm
 from apps.website.models import FormField
 from config import settings
@@ -27,7 +26,6 @@ def confirm_reservation(request):
     if request.method == "POST":
         combined_str = f"{str(request.POST.get(FormField.date_start))} {request.POST.get(FormField.time_start)}"
         datetime_start = parser.parse(combined_str)
-        datetime_start = LOCAL_TZ.localize(datetime_start)
         reservation_data = {
             FormField.address_start: request.POST.get(FormField.address_start),
             FormField.address_end: request.POST.get(FormField.address_end),
@@ -43,7 +41,7 @@ def confirm_reservation(request):
             FormField.duration: request.POST.get(FormField.duration),
             FormField.distance: request.POST.get(FormField.distance),
             FormField.car_type: int(request.POST.get(FormField.car_type)),
-            FormField.trip_type: int(request.POST.get("trip_type")),
+            FormField.trip_type: int(request.POST.get(FormField.trip_type)),
         }
         return render(request, "reservations/confirmation.html", context={"reservation": reservation_data})
     return render(request, "website/error.html")
