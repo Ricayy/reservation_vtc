@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.reservations",
     "apps.core",
-    "apps.website"
-
+    "apps.website",
+    "apps.accounts",
 ]
 
 MIDDLEWARE = [
@@ -63,7 +63,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -111,6 +111,8 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+AUTH_USER_MODEL = "accounts.CustomUser"
 
 
 # Internationalization

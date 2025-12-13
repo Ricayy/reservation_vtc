@@ -4,29 +4,16 @@ from dateutil import parser
 from django.shortcuts import render
 from django.views.generic import CreateView
 
-from apps.core.models import OdooReservationModel, OdooContactModel, OdooVehiculeModel, FormField
 from apps.reservations.models import Reservation, VehiculeType
 from apps.reservations.views import LOCAL_TZ
-from apps.website.form import ReservationForm
+from apps.website.forms import ReservationForm
+from apps.website.models import FormField
 from config import settings
 
 
 class ReservationCreateView(CreateView):
     model = Reservation
     form_class = ReservationForm
-    # fields = ("address_start",
-    #           "address_end",
-    #           "date_start",
-    #           "time_start",
-    #           "car_type",
-    #           "nb_passengers",
-    #           "nb_luggages",
-    #           "trip_type",
-    #           "last_name",
-    #           "first_name",
-    #           "phone",
-    #           "email",
-    #           "note",)
     template_name = "reservations/reservation_form.html"
 
     def get_context_data(self, **kwargs):

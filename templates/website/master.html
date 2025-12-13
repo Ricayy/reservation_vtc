@@ -4,13 +4,11 @@
     <title>{% block title %}{% endblock %}</title>
     {% block extra_css %}{% endblock %}
 </head>
-<header>
-</header>
 <body>
-
-{% block content %}
-{% endblock %}
-
+{% include "website/navbar.html" %}
+<main>
+    {% block content %}{% endblock %}
+</main>
 </body>
 <footer>
 </footer>

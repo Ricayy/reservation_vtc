@@ -1,0 +1,23 @@
+{% extends "website/master.html" %}
+
+{% block title %}
+    register.html
+{% endblock %}
+
+{% block extra_css %}
+<style>
+
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Créer un compte</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">S'inscrire</button>
+</form>
+
+<a href="{% url 'login' %}">Déjà un compte ? Se connecter</a>
+{% endblock %}

@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 
@@ -32,3 +34,7 @@ class Reservation(models.Model):
     duration = models.IntegerField(null=True)
     distance = models.FloatField(null=True)
     date_reservation = models.DateField(null=True, auto_now_add=True)
+    public_token = models.UUIDField(default=uuid.uuid4, unique=True)
+
+    def get_public_url(self):
+        return f"/reservation/{self.public_token}/"

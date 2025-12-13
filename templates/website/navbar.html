@@ -1,0 +1,78 @@
+{% block extra_css %}
+    <style>
+    .site-header {
+        width: 100%;
+        background-color: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .header-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 16px 24px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .site-name a {
+        font-size: 20px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #111827;
+    }
+
+    .auth-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn-login {
+        color: #111827;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-login:hover {
+        background-color: #f3f4f6;
+    }
+
+    .btn-register {
+        background-color: #2563eb;
+        color: #ffffff;
+    }
+
+    .btn-register:hover {
+        background-color: #1d4ed8;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+<header class="site-header">
+    <div class="header-container">
+        <div class="site-name">
+            <a href="/">MonSiteVTC</a>
+        </div>
+
+        <nav class="auth-buttons">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="btn btn-login">Mon profil {{ user.username }}</a>
+                <a href="{% url 'logout' %}" class="btn btn-register">Déconnexion</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-login">Connexion</a>
+                <a href="{% url 'register' %}" class="btn btn-register">Créer un compte</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+{% endblock %}

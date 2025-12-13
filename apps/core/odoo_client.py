@@ -29,6 +29,23 @@ def json_search_read(db, uid, password, app, id_odoo, fields):
         },
     }
 
+
+def create_user(user_data):
+    return OdooClient().query_create_user(user_data)
+
+
+def create_reservation(user_data):
+    return OdooClient().query_create_reservation(user_data)
+
+
+def search_read_user_by_email(email):
+    return OdooClient().query_search_read_user_by_email(email)["result"]
+
+
+def search_read_reservations_by_user(email):
+    return OdooClient().query_search_read_reservations_by_user(email)
+
+
 class OdooClient:
     def __init__(self):
         """
@@ -56,7 +73,7 @@ class OdooClient:
         ).json()
         self.uid = auth_response["result"]["uid"]
 
-    def create_reservation(self, values):
+    def query_create_reservation(self, values):
         """
         Méthode de publication d'une réservation dans Odoo
 
@@ -111,11 +128,6 @@ class OdooClient:
         }
         return requests.post(self.url_json, json=json).json()
 
-
-    def search_read_user_by_email(self, email):
-        return OdooClient().query_search_read_user_by_email(email)["result"]
-
-
     def query_create_user(self, user_data):
         json = {
             "jsonrpc": "2.0",
@@ -136,6 +148,24 @@ class OdooClient:
         }
         return requests.post(self.url_json, json=json).json()
 
-
-    def create_user(self, user_data):
-        return OdooClient().query_create_user(user_data)
+    def query_search_read_reservations_by_user(self, email):
+        json = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "id": 1,
+            "params": {
+                "service": "object",
+                "method": "execute_kw",
+                "args": [
+                    self.db,
+                    self.uid,
+                    self.password,
+                    self.app_contact,
+                    "search_read",
+                    [[[OdooContactModel.email, "in", [email]]]],
+                    {"fields": [OdooContactModel.reservation_id]
+                     },
+                ],
+            },
+        }
+        return requests.post(self.url_json, json=json).json()
