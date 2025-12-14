@@ -4,59 +4,73 @@ from dateutil import parser
 from django.shortcuts import render
 from django.views.generic import CreateView
 
-from apps.core.models import OdooReservationModel, OdooContactModel, OdooVehiculeModel, FormField
 from apps.reservations.models import Reservation, VehiculeType
-from apps.reservations.views import LOCAL_TZ
-from apps.website.form import ReservationForm
+from apps.website.forms import ReservationForm
+from apps.website.models import FormField
 from config import settings
 
 
 class ReservationCreateView(CreateView):
     model = Reservation
     form_class = ReservationForm
-    # fields = ("address_start",
-    #           "address_end",
-    #           "date_start",
-    #           "time_start",
-    #           "car_type",
-    #           "nb_passengers",
-    #           "nb_luggages",
-    #           "trip_type",
-    #           "last_name",
-    #           "first_name",
-    #           "phone",
-    #           "email",
-    #           "note",)
     template_name = "reservations/reservation_form.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["mapbox_token"] = settings.MAPBOX_API_KEY
-        context["vehicule_types"] = VehiculeType.objects.all()
+        vehicules = VehiculeType.objects.all()
+        context["vehicule_types"] = vehicules
+        context["vehicule_prices"] = {str(v.id): float(v.vehicule_price_distance or 0) for v in vehicules}
+        context["vehicule_seats"] = {str(v.id): v.vehicule_max_seats or 0 for v in vehicules}
+
         return context
 
 
-def confirm_reservation(request):
+def recap_reservation(request):
+    vehicules = VehiculeType.objects.all()
+
     if request.method == "POST":
-        combined_str = f"{str(request.POST.get(FormField.date_start))} {request.POST.get(FormField.time_start)}"
-        datetime_start = parser.parse(combined_str)
-        datetime_start = LOCAL_TZ.localize(datetime_start)
-        reservation_data = {
-            FormField.address_start: request.POST.get(FormField.address_start),
-            FormField.address_end: request.POST.get(FormField.address_end),
-            FormField.datetime_start: datetime_start,
-            FormField.nb_passengers: request.POST.get(FormField.nb_passengers),
-            FormField.nb_luggages: request.POST.get(FormField.nb_luggages),
-            FormField.email: request.POST.get(FormField.email),
-            FormField.last_name: request.POST.get(FormField.last_name),
-            FormField.first_name: request.POST.get(FormField.first_name),
-            FormField.phone: request.POST.get(FormField.phone),
-            FormField.note: request.POST.get(FormField.note),
-            FormField.price: request.POST.get(FormField.price),
-            FormField.duration: request.POST.get(FormField.duration),
-            FormField.distance: request.POST.get(FormField.distance),
-            FormField.car_type: int(request.POST.get(FormField.car_type)),
-            FormField.trip_type: int(request.POST.get("trip_type")),
+        form = ReservationForm(request.POST, vehicules=vehicules)
+        if not form.is_valid():
+            return render(request, "reservations/reservation_form.html", {
+                "form": form,
+                "mapbox_token": settings.MAPBOX_API_KEY,
+                "vehicule_prices": {str(v.id): v.vehicule_price_distance for v in vehicules},
+                "vehicule_seats": {str(v.id): v.vehicule_max_seats for v in vehicules},
+            })
+
+        data = form.cleaned_data
+        price = data[FormField.price] * data["trip_type"].id
+        new_reservation = {
+            FormField.address_start: data[FormField.address_start],
+            FormField.address_end: data[FormField.address_end],
+            FormField.nb_passengers: data[FormField.nb_passengers],
+            FormField.nb_luggages: data[FormField.nb_luggages],
+            FormField.note: data[FormField.note],
+            FormField.price: price,
+            FormField.duration: data[FormField.duration],
+            FormField.distance: data[FormField.distance],
+            FormField.car_type: [],
+            FormField.email: data[FormField.email],
+            FormField.last_name: data[FormField.last_name],
+            FormField.first_name: data[FormField.first_name],
+            FormField.phone: data[FormField.phone],
         }
-        return render(request, "reservations/confirmation.html", context={"reservation": reservation_data})
-    return render(request, "website/error.html")
+        new_reservation[FormField.car_type].append(data[FormField.car_type].id)
+        new_reservation[FormField.car_type].append(data[FormField.car_type].vehicule_type_name)
+
+        datetime_start = datetime.combine(data[FormField.date_start], data[FormField.time_start])
+        new_reservation[FormField.datetime_start] = datetime_start.strftime("%Y-%m-%d %H:%M")
+
+        return render(request, "reservations/recap.html", {
+            "reservation": new_reservation,
+        })
+
+    # GET
+    form = ReservationForm(vehicules=vehicules)
+    return render(request, "reservations/reservation.html", {
+        "form": form,
+        "vehicules": vehicules,
+        "vehicule_prices": {str(v.id): v.vehicule_price_distance or 0 for v in vehicules},
+        "vehicule_seats": {str(v.id): v.vehicule_max_seats or 0 for v in vehicules},
+    })

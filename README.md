@@ -1,18 +1,14 @@
 # reservation_vtc
 A faire :
-- Django form
-- Suppression depuis formulaire sur la bdd
-- Liste déroulante pour véhicule
-- Saisie par défaut
-- Authentification
-- Multilangues
+- Affichage réservation depuis page unique pour user invité
+- Annulation réservation depuis page profil ou page unique
+- Modèles Odoo Trajet
+- Stripe
 - Style
+- Multilangues
 - Notification des courses par mail, sms ou autres
 - Pages informations, avis, services, ...
-- Header et footer
-- Stripe
-- Modèles Odoo Vehicule, Trajet, Contact
-- Association Contact avec email
+- Footer
 
 # Commandes Django
 Création d'un projet Django : 

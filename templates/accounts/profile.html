@@ -1,0 +1,91 @@
+{% extends "website/master.html" %}
+
+{% block extra_css %}
+<style>
+.profile-card {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+    border: 1px solid #dcdfe6;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.profile-card h1,
+.profile-card h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.profile-card table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.profile-card th,
+.profile-card td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #dcdfe6;
+}
+
+.profile-card thead {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+.profile-card tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.profile-card tbody tr:hover {
+    background-color: #f0f4ff;
+}
+
+.profile-card td[colspan] {
+    text-align: center;
+    color: #6b7280; /* gris doux pour message "Aucune réservation" */
+    font-style: italic;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card profile-card">
+    <h1>Profil de {{ user.email }}</h1>
+
+    <h3>Historique des réservations</h3>
+    <table>
+        <thead>
+            <tr>
+                <td>Adresse de départ</td>
+                <td>Adresse d'arrivée</td>
+                <td>Date et heure de départ</td>
+                <td>Véhicule</td>
+                <td>Distance</td>
+                <td>Prix</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for res in res_list %}
+                <tr>
+                    <td>{{ res.x_studio_address_start }}</td>
+                    <td>{{ res.x_studio_address_end }}</td>
+                    <td>{{ res.x_studio_datetime_start }}</td>
+                    <td>{{ res.x_studio_car_type.1 }}</td>
+                    <td>{{ res.x_studio_distance }} km</td>
+                    <td>{{ res.x_studio_price }} €</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">Aucune réservation pour le moment.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

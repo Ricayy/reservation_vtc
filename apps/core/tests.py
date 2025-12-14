@@ -4,7 +4,7 @@ from datetime import datetime
 import django
 import requests
 
-from apps.core.models import OdooContactModel, OdooReservationModel
+from apps.core.models import OdooReservationModel
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
