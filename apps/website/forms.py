@@ -1,31 +1,43 @@
 from django import forms
 
 from apps.accounts.models import CustomUser
-from apps.reservations.models import Reservation
+from apps.reservations.models import Reservation, VehiculeType
+
 
 class ReservationForm(forms.ModelForm):
+    car_type = forms.ModelChoiceField(
+        queryset=VehiculeType.objects.all(),
+        empty_label="Sélectionnez un véhicule",
+        to_field_name="id"
+    )
+
     class Meta:
         model = Reservation
         fields = "__all__"
         widgets = {
             'date_start': forms.DateInput(attrs={'type': 'date'}),
             'time_start': forms.TimeInput(attrs={'type': 'time'}),
+            'car_type': forms.Select(attrs={'id': 'id_car_type'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        vehicules = kwargs.pop('vehicules', None)
+        super().__init__(*args, **kwargs)
+        if vehicules is not None:
+            self.fields['car_type'].queryset = vehicules
+        # self.fields['car_type'].empty_label = "Sélectionnez un véhicule"
+        # Important : assure que option.value = UUID
+        # self.fields['car_type'].to_field_name = 'id'
 
     def clean(self):
         cleaned_data = super().clean()
-
         car_type = cleaned_data.get("car_type")
         nb_passengers = cleaned_data.get("nb_passengers")
 
         if car_type and nb_passengers is not None:
             max_seats = car_type.vehicule_max_seats
-
-            # Erreur si négatif
             if nb_passengers < 0:
                 self.add_error("nb_passengers", "Le nombre de passagers ne peut pas être négatif.")
-
-            # Erreur si trop élevé
             if nb_passengers > max_seats:
                 self.add_error(
                     "nb_passengers",

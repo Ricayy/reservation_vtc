@@ -1,3 +1,4 @@
+import ast
 from datetime import datetime
 from django.shortcuts import render
 from dateutil import parser
@@ -13,6 +14,7 @@ def validation_reservation(request):
     :return:
     """
     if request.method == "POST":
+        id_car_type = ast.literal_eval(request.POST.get(FormField.car_type))
         new_reservation = {
             OdooReservationModel.name: "Reservation " + datetime.strftime(datetime.today(), "%d/%m/%Y %H:%M:%S"),
             OdooReservationModel.address_start: request.POST.get(FormField.address_start),
@@ -23,11 +25,10 @@ def validation_reservation(request):
             OdooReservationModel.price: request.POST.get(FormField.price),
             OdooReservationModel.duration: request.POST.get(FormField.duration),
             OdooReservationModel.distance: request.POST.get(FormField.distance),
-            OdooReservationModel.car_type: request.POST.get(FormField.car_type),
+            OdooReservationModel.car_type: id_car_type[0],
+            OdooReservationModel.datetime_start: request.POST.get(FormField.datetime_start),
             # OdooReservationModel.trip_type: request.POST.get(FormField.trip_type),
         }
-        datetime_start = parser.parse(request.POST.get(FormField.datetime_start))
-        new_reservation[OdooReservationModel.datetime_start] = datetime_start.strftime("%Y-%m-%d %H:%M")
 
         id_odoo = get_user_by_email(request.POST.get(FormField.email))
         user_data = {
@@ -42,8 +43,8 @@ def validation_reservation(request):
             id_odoo = create_user(user_data)
             id_user = id_odoo["result"]
         new_reservation[OdooReservationModel.email] = id_user
-
         response = create_res(new_reservation)
+        print(response)
         if response["result"]:
             reservation = {
                 FormField.address_start: request.POST.get(FormField.address_start),

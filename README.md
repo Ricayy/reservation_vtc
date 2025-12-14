@@ -1,6 +1,5 @@
 # reservation_vtc
 A faire :
-- Affichage réservation depuis page profil pour user connecté
 - Affichage réservation depuis page unique pour user invité
 - Annulation réservation depuis page profil ou page unique
 - Modèles Odoo Trajet

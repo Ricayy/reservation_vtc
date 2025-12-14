@@ -10,9 +10,9 @@
 
 <p>Votre réservation a été envoyée à Odoo.</p>
 
-<p><strong>Départ :</strong> {{ reservation.x_studio_address_start }}</p>
-<p><strong>Arrivée :</strong> {{ reservation.x_studio_address_end }}</p>
-<p><strong>Date et heure :</strong> {{ reservation.x_studio_datetime_start|date:"d/m/Y H:i" }}</p>
+<p><strong>Départ :</strong> {{ reservation.address_start }}</p>
+<p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
+<p><strong>Date et heure :</strong> {{ reservation.datetime_start }}</p>
 
 <a href="/">Revenir au formulaire</a>
 {% endblock %}

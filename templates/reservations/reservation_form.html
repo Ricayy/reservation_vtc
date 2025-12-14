@@ -74,13 +74,8 @@
             <tr>
                 <th>{{ form.car_type.label_tag }}</th>
                 <td>
-                    <select id="id_car_type" name="car_type">
-                        {% for car in vehicule_types %}
-                            <option value="{{ car.id }}" data-price="{{ car.vehicule_price_distance }}" data-seats="{{ car.vehicule_max_seats }}">
-                                {{ car.vehicule_type_name }}
-                            </option>
-                        {% endfor %}
-                    </select>
+                    {{ form.car_type }}
+                    {{ form.car_type.errors }}
                 </td>
             </tr>
 
@@ -125,13 +120,34 @@
         <input type="hidden" id="distance" name="distance">
         <input type="hidden" id="duration" name="duration">
         <input type="hidden" id="price" name="price">
+
         <button type="submit">Commander</button>
     </form>
 
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet" />
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
 
+{{ vehicule_prices|json_script:"vehicule-prices" }}
+{{ vehicule_seats|json_script:"vehicule-seats" }}
+
 <script>
+    const VEHICULE_PRICES = JSON.parse(document.getElementById("vehicule-prices").textContent);
+    const VEHICULE_SEATS = JSON.parse(document.getElementById("vehicule-seats").textContent);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const select = document.getElementById("id_car_type");
+        if (!select) return;
+
+        for (let option of select.options) {
+            const val = option.value;
+            if (!val) continue;
+
+            option.dataset.price = VEHICULE_PRICES[val] ?? 0;
+            option.dataset.seats = VEHICULE_SEATS[val] ?? 0;
+        }
+    });
+
+
     const token = document.getElementById("map").dataset.mapboxToken;
     mapboxgl.accessToken = token;
 
@@ -240,7 +256,7 @@
 
             let route = json.routes[0];
             let coords = route.geometry.coordinates;
-            currentDistanceKm = (route.distance / 1000).toFixed(2);
+            currentDistanceKm = parseFloat(route.distance / 1000);
 
             // GeoJSON simple
             let geojson = { type: "FeatureCollection", features: [{ type: "Feature", geometry: { type: "LineString", coordinates: coords } }] };
@@ -280,37 +296,51 @@
             // GeoJSON segmenté pour couleur
             let features = [];
             for (let i = 0; i < coords.length - 1; i++) {
-                features.push({ type: "Feature", geometry: { type: "LineString", coordinates: [coords[i], coords[i+1]] }, properties: { color: colorByCongestion(congestions[i]) } });
+                features.push({
+                    type: "Feature",
+                    geometry: { type: "LineString", coordinates: [coords[i], coords[i+1]] },
+                    properties: { color: colorByCongestion(congestions[i]) }
+                });
             }
-            map.getSource("route").setData({ type: "FeatureCollection", features });
 
-            map.fitBounds([startCoords, endCoords], { padding: 50 });
+            // Vérifie si la source existe
+            if (map.getSource("route")) {
+                map.getSource("route").setData({ type: "FeatureCollection", features });
+            } else {
+                map.addSource("route", { type: "geojson", data: { type: "FeatureCollection", features } });
+                map.addLayer({
+                    id: "route",
+                    type: "line",
+                    source: "route",
+                    layout: { "line-join": "round", "line-cap": "round" },
+                    paint: { "line-width": 6, "line-color": ["get", "color"] }
+                });
+            }
 
-            let durationTrafficMin = Math.round(route.duration / 60);
-            document.getElementById("duration").value = durationTrafficMin;
-            document.getElementById("route-info").innerHTML = `Durée estimée : ${durationTrafficMin} min (avec trafic)`;
+        map.fitBounds([startCoords, endCoords], { padding: 50 });
 
-            updatePrice();
-        } catch (err) {
-            console.error(err);
-        }
+        let durationTrafficMin = Math.round(route.duration / 60);
+        document.getElementById("duration").value = durationTrafficMin;
+        document.getElementById("route-info").innerHTML = `Durée estimée : ${durationTrafficMin} min (avec trafic)`;
+
+        updatePrice();
+    } catch (err) {
+        console.error(err);
     }
+}
 
     // Calcul du prix
     function updatePrice() {
-        let carTypeSelect = document.getElementById("id_car_type");
-        if (!carTypeSelect || currentDistanceKm == 0) return;
+        const select = document.getElementById("id_car_type");
+        const priceInfo = document.getElementById("route-info-2");
+        if (!select || !select.value) return;
 
-        let selectedOption = carTypeSelect.options[carTypeSelect.selectedIndex];
-        if (!selectedOption) return;
+        const selectedOption = select.options[select.selectedIndex];
+        const pricePerKm = parseFloat(selectedOption.dataset.price || 0);
+        const price = (currentDistanceKm * pricePerKm) || 0;
 
-        let pricePerKm = parseFloat(selectedOption.dataset.price || 0);
-        let price = (currentDistanceKm * pricePerKm).toFixed(2);
-        document.getElementById("route-info-2").innerHTML = `Distance : ${currentDistanceKm} km — Prix estimé : ${price} €`;
-        let hiddenPriceInput = document.getElementById("price");
-        if (hiddenPriceInput) {
-            hiddenPriceInput.value = price;
-        }
+        priceInfo.innerHTML = `Distance : ${currentDistanceKm.toFixed(2)} km — Prix estimé : ${price.toFixed(2)} €`;
+        document.getElementById("price").value = price.toFixed(2);
     }
 
     // Événements pour date/heure et véhicule
@@ -338,6 +368,33 @@
 
     passengerInput.addEventListener("input", validatePassengers);
     carTypeSelect.addEventListener("change", validatePassengers);
+
+    // Assurer que distance, duration, price et public_token sont toujours remplis avant submit
+    const form = document.querySelector("form");
+    form.addEventListener("submit", (e) => {
+        // Met à jour le prix si nécessaire
+        updatePrice();
+
+        // Remplit les champs cachés
+        document.getElementById("distance").value = currentDistanceKm.toFixed(2) || 0;
+
+        const durationEl = document.getElementById("duration");
+        if (!durationEl.value || durationEl.value === "0") {
+            // Si duration non calculée, mettre une valeur par défaut (ou laisser à 0)
+            durationEl.value = 0;
+        }
+
+        const priceEl = document.getElementById("price");
+        if (!priceEl.value || priceEl.value === "0") {
+            priceEl.value = (currentDistanceKm * parseFloat(document.getElementById("id_car_type").selectedOptions[0]?.dataset.price || 0)).toFixed(2);
+        }
+
+        // Remplit le public_token si nécessaire
+<!--        const publicTokenEl = document.getElementById("public_token");-->
+<!--        if (!publicTokenEl.value) {-->
+<!--            publicTokenEl.value = mapboxgl.accessToken;-->
+<!--        }-->
+    });
 </script>
 
 {% endblock %}

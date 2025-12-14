@@ -1,8 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-
-from apps.core.models import OdooContactModel
 from apps.core.odoo_client import get_res_by_email
 from apps.website.forms import RegisterForm, LoginForm
 
