@@ -4,30 +4,54 @@
     confirmation.html
 {% endblock %}
 
+{% block extra_css %}
+<style>
+.recap-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.recap-section p {
+    margin: 6px 0;
+    font-size: 15px;
+}
+
+.recap-section h3 {
+    margin-bottom: 10px;
+    color: #2f5bea;
+}
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="card recap">
     <a href="{% url 'reservation_add' %}" class="btn btn-primary">Revenir au formulaire</a>
     <h1>Récapitulatif réservation</h1>
-
-    <p><strong>Départ :</strong> {{ reservation.address_start }}</p>
-    <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
-    <p><strong>Date et heure :</strong> {{ reservation.datetime_start }}</p>
-    <p><strong>Véhicule :</strong> {{ reservation.car_type.1 }}</p>
-    <p><strong>Passagers :</strong> {{ reservation.nb_passengers }}</p>
-    <p><strong>Bagages :</strong> {{ reservation.nb_luggages }}</p>
+    <div class="recap-section">
+        <h3>Trajet</h3>
+        <p><strong>Départ :</strong> {{ reservation.address_start }}</p>
+        <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
+        <p><strong>Date et heure :</strong> {{ reservation.datetime_start }}</p>
+        <p><strong>Véhicule :</strong> {{ reservation.car_type.1 }}</p>
+        <p><strong>Distance :</strong> {{ reservation.distance }} km</p>
+        <p><strong>Durée :</strong> {{ reservation.duration }} min</p>
+        <p><strong>Prix :</strong> {{ reservation.price }} €</p>
+    </div>
+    <div class="recap-section">
+        <h3>Passagers</h3>
+        <p><strong>Passagers :</strong> {{ reservation.nb_passengers }}</p>
+        <p><strong>Bagages :</strong> {{ reservation.nb_luggages }}</p>
 <!--    <p><strong>Type de trajet :</strong> {{ reservation.trip_type }}</p>-->
-    <p><strong>Distance :</strong> {{ reservation.distance }} km</p>
-    <p><strong>Durée :</strong> {{ reservation.duration }} min</p>
-    <p><strong>Prix :</strong> {{ reservation.price }} €</p>
-
-    <h3>Coordonnées</h3>
-    <p><strong>Nom :</strong> {{ reservation.last_name }}</p>
-    <p><strong>Prénom :</strong> {{ reservation.first_name }}</p>
-    <p><strong>Téléphone :</strong> {{ reservation.phone }}</p>
-    <p><strong>Email :</strong> {{ reservation.email }}</p>
-
-    <p><strong>Message :</strong> {{ reservation.note }}</p>
-
+    </div>
+    <div class="recap-section">
+        <h3>Coordonnées</h3>
+        <p><strong>Nom :</strong> {{ reservation.last_name }}</p>
+        <p><strong>Prénom :</strong> {{ reservation.first_name }}</p>
+        <p><strong>Téléphone :</strong> {{ reservation.phone }}</p>
+        <p><strong>Email :</strong> {{ reservation.email }}</p>
+        <p><strong>Message :</strong> {{ reservation.note }}</p>
+    </div>
     <form action="{% url 'validation' %}" method="post">
         {% csrf_token %}
 
@@ -36,4 +60,5 @@
         {% endfor %}
         <input type="submit" value="Valider la réservation">
     </form>
+</div>
 {% endblock %}

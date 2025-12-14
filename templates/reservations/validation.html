@@ -4,15 +4,49 @@
     validation.html
 {% endblock %}
 
+{% block extra_css %}
+<style>
+.validation-card {
+    text-align: center;
+}
+
+.validation-card p {
+    margin: 10px 0;
+    font-size: 15px;
+}
+
+.validation-card p strong {
+    font-weight: 600;
+}
+
+.validation-success {
+    margin: 20px auto;
+    padding: 14px 18px;
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.validation-actions {
+    margin-top: 30px;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<h1>Réservation validée</h1>
+<div class="card validation-card">
+    <h1>Réservation validée</h1>
 
-<p>Votre réservation a été envoyée à Odoo.</p>
+    <div class="validation-success">Votre réservation a été enregister.</div>
 
-<p><strong>Départ :</strong> {{ reservation.address_start }}</p>
-<p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
-<p><strong>Date et heure :</strong> {{ reservation.datetime_start }}</p>
+    <p><strong>Départ :</strong> {{ reservation.address_start }}</p>
+    <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
+    <p><strong>Date et heure :</strong> {{ reservation.datetime_start }}</p>
 
-<a href="/">Revenir au formulaire</a>
+    <div class="validation-actions">
+        <a href="/" class="btn">Revenir à l'accueil</a>
+    </div>
+</div>
 {% endblock %}

@@ -40,14 +40,14 @@ def recap_reservation(request):
             })
 
         data = form.cleaned_data
-
+        price = data[FormField.price] * data["trip_type"].id
         new_reservation = {
             FormField.address_start: data[FormField.address_start],
             FormField.address_end: data[FormField.address_end],
             FormField.nb_passengers: data[FormField.nb_passengers],
             FormField.nb_luggages: data[FormField.nb_luggages],
             FormField.note: data[FormField.note],
-            FormField.price: data[FormField.price],
+            FormField.price: price,
             FormField.duration: data[FormField.duration],
             FormField.distance: data[FormField.distance],
             FormField.car_type: [],
