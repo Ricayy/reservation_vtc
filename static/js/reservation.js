@@ -1,4 +1,5 @@
-const VEHICULE_PRICES = JSON.parse(document.getElementById("vehicule-prices").textContent);
+const VEHICULE_PRICE_KM = JSON.parse(document.getElementById("vehicule-price-km").textContent);
+const VEHICULE_PRICE_HOUR = JSON.parse(document.getElementById("vehicule-price-hour").textContent);
 const VEHICULE_SEATS  = JSON.parse(document.getElementById("vehicule-seats").textContent);
 
 /* ================= POIS CENTRALISÉS ================= */
@@ -46,11 +47,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const carSelect = document.getElementById("id_car_type");
     [...carSelect.options].forEach(opt => {
         if (!opt.value) return;
-        opt.dataset.price = VEHICULE_PRICES[opt.value] ?? 0;
+        opt.dataset.priceKm = VEHICULE_PRICE_KM[opt.value] ?? 0;
+        opt.dataset.priceHour = VEHICULE_PRICE_HOUR[opt.value] ?? 0
         opt.dataset.seats = VEHICULE_SEATS[opt.value] ?? 0;
     });
 
-    // Map
+    /* ================= MAP ================= */
     mapboxgl.accessToken = document.getElementById("map").dataset.mapboxToken;
     const map = new mapboxgl.Map({
         container: "map",
@@ -59,12 +61,9 @@ document.addEventListener("DOMContentLoaded", () => {
         zoom: 11
     });
 
-
     map.on("load", () => {
-//        map.addSource("route", { type:"geojson", data:{ type:"FeatureCollection", features:[] } });
-//        map.addLayer({ id:"route", type:"line", source:"route", paint:{ "line-width":6, "line-color":"#0077ff" }});
-
         mapLoaded = true;
+
         map.addSource("route", {
             type: "geojson",
             data: { type:"FeatureCollection", features:[] }
@@ -76,11 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             source: "route",
             paint: {
                 "line-width": 6,
-                "line-color": [
-                    "coalesce",
-                    ["get", "color"],
-                    "#0077ff"
-                ]
+                "line-color": "#0077ff"
             }
         });
     });
@@ -100,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ================= AUTOCOMPLETE ================= */
     function setupAutocomplete(inputId, suggestionsId, type){
         const input = document.getElementById(inputId);
-        const box   = document.getElementById(suggestionsId);
+        const box = document.getElementById(suggestionsId);
 
         input.addEventListener("input", async ()=>{
             if(input.value.length<3){ box.style.display="none"; return; }
@@ -123,6 +118,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     else endCoords = f.geometry.coordinates;
 
                     isMiseDis = false;
+                    if (type === "end") {
+                        setTripType("simple");
+                    }
                     refreshMarkers();
                     drawRoute();
                 };
@@ -148,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Mise à disposition
                 input.value = poi.label;
                 isMiseDis = true;
+                setTripType("ride");
                 currentDistanceKm = 0;
                 endCoords = null;
                 map.getSource("route").setData({ type:"FeatureCollection", features:[] });
@@ -159,6 +158,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(type==="start") startCoords = poi.coords;
                 else endCoords = poi.coords;
                 isMiseDis = false;
+                if (type === "end") {
+                    setTripType("simple");
+                }
                 refreshMarkers();
                 drawRoute();
             }
@@ -194,92 +196,55 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    /* ================= ROUTE ================= */
-    function colorByCongestion(level){
-        switch(level){
-            case "low": return "#2ecc71";
-            case "moderate": return "#f1c40f";
-            case "heavy": return "#e67e22";
-            case "severe": return "#e74c3c";
-            default: return "#3498db";
-        }
+    function setTripType(value) {
+        const tripInput = document.getElementById("trip_type");
+        if (!tripInput) return;
+        tripInput.value = value;
     }
+    document.getElementById("id_address_end").addEventListener("input", () => {
+        if (!isMiseDis) {
+            setTripType("simple");
+        }
+    });
 
-    async function drawRoute() {
-        if (isMiseDis || !startCoords || !endCoords) return;
-        if (!mapLoaded || !map.getSource("route")) return;
 
-        const dateInput = document.getElementById("id_date_start").value;
-        const timeInput = document.getElementById("id_time_start").value;
-        if (!dateInput || !timeInput) return;
-
-        const departAt = `${dateInput}T${timeInput}`;
+    /* ================= ROUTE ================= */
+    async function drawRoute(){
+        if(isMiseDis || !startCoords || !endCoords) return;
+        if(!mapLoaded) return;
 
         const url =
-            `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/` +
+            `https://api.mapbox.com/directions/v5/mapbox/driving/` +
             `${startCoords[0]},${startCoords[1]};${endCoords[0]},${endCoords[1]}` +
-            `?geometries=geojson&overview=full&annotations=duration,congestion` +
-            `&depart_at=${encodeURIComponent(departAt)}` +
+            `?geometries=geojson&overview=full` +
             `&access_token=${mapboxgl.accessToken}`;
 
-        try {
+        try{
             const res = await fetch(url);
             const json = await res.json();
-
-            if (!json.routes || !json.routes.length) {
-                console.warn("Aucun itinéraire retourné par Mapbox", json);
-                return;
-            }
+            if(!json.routes?.length) return;
 
             const route = json.routes[0];
-
-            /* ===== DISTANCE ===== */
             currentDistanceKm = route.distance / 1000;
-            document.getElementById("distance").value =
-                currentDistanceKm.toFixed(2);
-
-            /* ===== DURÉE ===== */
-            const durationMin = Math.round(route.duration / 60);
-            document.getElementById("duration").value = durationMin;
-
-            /* ===== ROUTE COLORÉE ===== */
-            const coords = route.geometry.coordinates;
-            const congestions =
-                route.legs?.[0]?.annotation?.congestion || [];
-
-            const features = [];
-            for (let i = 0; i < coords.length - 1; i++) {
-                features.push({
-                    type: "Feature",
-                    geometry: {
-                        type: "LineString",
-                        coordinates: [coords[i], coords[i + 1]]
-                    },
-                    properties: {
-                        color: colorByCongestion(congestions[i])
-                    }
-                });
-            }
+            document.getElementById("distance").value = currentDistanceKm.toFixed(2);
+            document.getElementById("duration").value = Math.round(route.duration / 60);
 
             map.getSource("route").setData({
-                type: "FeatureCollection",
-                features
+                type:"FeatureCollection",
+                features:[{
+                    type:"Feature",
+                    geometry: route.geometry
+                }]
             });
 
-            map.fitBounds([startCoords, endCoords], { padding: 60 });
-
+            map.fitBounds([startCoords,endCoords],{padding:60});
             refreshMarkers();
             updatePrice();
 
-            document.getElementById("route-info").innerHTML =
-                `Durée estimée : ${durationMin} min (trafic inclus)`;
-            updateRouteInfoVisibility();
-
-        } catch (err) {
-            console.error("Erreur calcul itinéraire :", err);
+        }catch(err){
+            console.error(err);
         }
     }
-
 
     function updateRouteInfoVisibility(){
         const info1 = document.getElementById("route-info");
@@ -303,7 +268,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function updatePrice(){
         const opt = carSelect.selectedOptions[0];
         if(!opt) return;
-        const tripType = document.getElementById("id_trip_type").value;
         let price = 0;
 
         if(isMiseDis){
@@ -311,28 +275,27 @@ document.addEventListener("DOMContentLoaded", () => {
             const hoursSelect = document.getElementById("end_mise_dis");
             const hours = parseInt(hoursSelect?.value || 1);
 
-            const vehiculeType = carSelect.value.toLowerCase();
-            console.log(carSelect.value.toLowerCase())
-            let rate = 45;
-            if(vehiculeType.includes(2)) rate = 60;
-            price = hours * rate;
+            const priceHour = parseFloat(opt.dataset.priceHour) || 0;
+            console.log("priceHour " + priceHour)
+            price = hours * priceHour;
         } else {
-            const priceKm = parseFloat(opt.dataset.price);
-            price = currentDistanceKm * priceKm * (tripType==="2"?2:1);
+            const priceKm = parseFloat(opt.dataset.priceKm);
+            console.log("priceKm " + priceKm)
+            price = currentDistanceKm * priceKm;
         }
 
         document.getElementById("price").value = price.toFixed(2);
+        duration = document.getElementById("duration").value
         const info = document.getElementById("route-info-2");
         if(isMiseDis){
             info.innerHTML = `Mise à disposition : ${price.toFixed(2)} €`;
         } else {
-            info.innerHTML = `Distance : ${currentDistanceKm.toFixed(2)} km — Prix estimé : ${price.toFixed(2)} €`;
+            info.innerHTML = `Durée estimé : ${duration} min — Prix estimé : ${price.toFixed(2)} €`;
         }
         info.dataset.visible="true";
     }
 
     carSelect.addEventListener("change", updatePrice);
-    document.getElementById("id_trip_type").addEventListener("change", updatePrice);
 
     /* ================= VALIDATION PASSAGERS & BAGAGES ================= */
     const passengerInput = document.getElementById("id_nb_passengers");
@@ -355,17 +318,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     passengerInput.addEventListener("input", validatePassengers);
     luggageInput.addEventListener("input", validateLuggages);
+
+
+    // logs
     function consoleTest() {
-        console.log("id_address_start " + document.getElementById("id_address_start").value);
-        console.log("id_address_end " + document.getElementById("id_address_end").value);
+//        console.log("id_address_start " + document.getElementById("id_address_start").value);
+//        console.log("id_address_end " + document.getElementById("id_address_end").value);
         console.log("duration " + document.getElementById("duration").value);
         console.log("distance " + document.getElementById("distance").value);
         console.log("price " + document.getElementById("price").value);
-        console.log("end_mise_dis " + document.getElementById("end_mise_dis").value);
-        console.log("id_car_type " + document.getElementById("id_car_type").value);
-        console.log("id_trip_type " + document.getElementById("id_trip_type").value);
-        console.log("id_date_start " + document.getElementById("id_date_start").value);
-        console.log("id_time_start " + document.getElementById("id_time_start").value);
+        console.log("trip_type " + document.getElementById("trip_type").value);
+//        console.log("end_mise_dis " + document.getElementById("end_mise_dis").value);
+//        console.log("id_car_type " + document.getElementById("id_car_type").value);
+//        console.log("id_trip_type " + document.getElementById("trip_type").value);
+//        console.log("id_date_start " + document.getElementById("id_date_start").value);
+//        console.log("id_time_start " + document.getElementById("id_time_start").value);
     }
     carSelect.addEventListener("change", ()=>{
         validatePassengers();

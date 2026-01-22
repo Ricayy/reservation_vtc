@@ -6,16 +6,11 @@ from django.db import models
 class VehiculeType(models.Model):
     id = models.AutoField(primary_key=True)
     vehicule_type_name = models.CharField(max_length=120)
-    vehicule_max_seats = models.IntegerField(null=True)
-    vehicule_price_distance = models.FloatField(null=True)
+    vehicule_max_seats = models.IntegerField(null=True, default=4)
+    vehicule_price_distance = models.FloatField(null=True, default=1.8)
+    vehicule_price_hour = models.FloatField(null=True, default=45.00)
     def __str__(self):
         return self.vehicule_type_name
-
-class TripType(models.Model):
-    id = models.AutoField(primary_key=True)
-    trip_type_name = models.CharField(max_length=120)
-    def __str__(self):
-        return self.trip_type_name
 
 
 class Reservation(models.Model):
@@ -27,7 +22,6 @@ class Reservation(models.Model):
     car_type = models.ForeignKey(VehiculeType, on_delete=models.SET_NULL, null=True)
     nb_passengers = models.IntegerField(null=True, default=1)
     nb_luggages = models.IntegerField(null=True, default=0)
-    trip_type = models.ForeignKey(TripType, on_delete=models.SET_NULL, null=True)
     last_name = models.CharField(null=True)
     first_name = models.CharField(null=True)
     phone = models.CharField(null=True)

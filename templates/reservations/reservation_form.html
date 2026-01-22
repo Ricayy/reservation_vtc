@@ -200,7 +200,6 @@ input[type="checkbox"] {
             </tr>
 
             <tr><th>Véhicule</th><td>{{ form.car_type }}</td></tr>
-            <tr><th>Type de trajet</th><td>{{ form.trip_type }}</td></tr>
             <tr><th>Date</th><td>{{ form.date_start }}</td></tr>
             <tr><th>Heure</th><td>{{ form.time_start }}</td></tr>
             <tr><th>Passagers</th><td>{{ form.nb_passengers }}</td></tr>
@@ -219,7 +218,8 @@ input[type="checkbox"] {
         </table>
 
         <input type="hidden" id="distance" name="distance" required>
-        <input type="hidden" id="duration" name="duration">
+        <input type="hidden" id="trip_type" name="trip_type" required>
+        <input type="hidden" id="duration" name="duration" required>
         <input type="hidden" id="price" name="price" required>
 
         <button type="submit">Commander</button>
@@ -229,7 +229,8 @@ input[type="checkbox"] {
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
 
-{{ vehicule_prices|json_script:"vehicule-prices" }}
+{{ vehicule_price_km|json_script:"vehicule-price-km" }}
+{{ vehicule_price_hour|json_script:"vehicule-price-hour" }}
 {{ vehicule_seats|json_script:"vehicule-seats" }}
 
 <script src="{% static 'js/reservation.js' %}"></script>

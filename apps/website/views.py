@@ -20,7 +20,8 @@ class ReservationCreateView(CreateView):
         context["mapbox_token"] = settings.MAPBOX_API_KEY
         vehicules = VehiculeType.objects.all()
         context["vehicule_types"] = vehicules
-        context["vehicule_prices"] = {str(v.id): float(v.vehicule_price_distance or 0) for v in vehicules}
+        context["vehicule_price_km"] = {str(v.id): float(v.vehicule_price_distance or 0) for v in vehicules}
+        context["vehicule_price_hour"] = {str(v.id): float(v.vehicule_price_hour or 0) for v in vehicules}
         context["vehicule_seats"] = {str(v.id): v.vehicule_max_seats or 0 for v in vehicules}
 
         return context
@@ -35,12 +36,13 @@ def recap_reservation(request):
             return render(request, "reservations/reservation_form.html", {
                 "form": form,
                 "mapbox_token": settings.MAPBOX_API_KEY,
-                "vehicule_prices": {str(v.id): v.vehicule_price_distance for v in vehicules},
+                "vehicule_price_km": {str(v.id): v.vehicule_price_distance for v in vehicules},
+                "vehicule_price_hour": {str(v.id): v.vehicule_price_hour for v in vehicules},
                 "vehicule_seats": {str(v.id): v.vehicule_max_seats for v in vehicules},
             })
 
         data = form.cleaned_data
-        price = data[FormField.price] * data["trip_type"].id
+        price = data[FormField.price]
         new_reservation = {
             FormField.address_start: data[FormField.address_start],
             FormField.address_end: data[FormField.address_end],
