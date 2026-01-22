@@ -74,7 +74,7 @@ class RegisterForm(forms.ModelForm):
         user = super().save(commit=False)
         email = self.cleaned_data["email"]
 
-        user.username = email  # important
+        user.username = email
         user.email = email
         user.set_password(self.cleaned_data["password1"])
 

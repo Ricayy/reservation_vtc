@@ -1,14 +1,17 @@
 # reservation_vtc
 A faire :
+- Réservation ou planification
+- Modèles Odoo Trajet
+- Mise à disposition
 - Affichage réservation depuis page unique pour user invité
 - Annulation réservation depuis page profil ou page unique
-- Modèles Odoo Trajet
-- Stripe
+- Bon de commande
 - Style
 - Multilangues
 - Notification des courses par mail, sms ou autres
 - Pages informations, avis, services, ...
 - Footer
+- Ajout auto complete custom POI
 
 # Commandes Django
 Création d'un projet Django : 
