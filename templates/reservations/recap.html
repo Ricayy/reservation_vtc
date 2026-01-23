@@ -1,4 +1,6 @@
 {% extends "website/master.html" %}
+{% load static %}
+{% load duration_filters %}
 
 {% block title %}
     confirmation.html
@@ -31,18 +33,25 @@
     <div class="recap-section">
         <h3>Trajet</h3>
         <p><strong>Départ :</strong> {{ reservation.address_start }}</p>
-        <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
+
+        {% if reservation.trip_type.0 == 1 %}
+            {# Trajet simple #}
+            <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
+            <p><strong>Distance :</strong> {{ reservation.distance }} km</p>
+        {% endif %}
+
+        <p><strong>Type de trajet :</strong> {{ reservation.trip_type.1 }}</p>
         <p><strong>Date et heure :</strong> {{ reservation.datetime_start }}</p>
         <p><strong>Véhicule :</strong> {{ reservation.car_type.1 }}</p>
-        <p><strong>Distance :</strong> {{ reservation.distance }} km</p>
-        <p><strong>Durée :</strong> {{ reservation.duration }} min</p>
+
+        {# Durée formatée #}
+        <p><strong>Durée :</strong> {{ reservation.duration|minutes_to_hours }}</p>
         <p><strong>Prix :</strong> {{ reservation.price }} €</p>
     </div>
     <div class="recap-section">
         <h3>Passagers</h3>
         <p><strong>Passagers :</strong> {{ reservation.nb_passengers }}</p>
         <p><strong>Bagages :</strong> {{ reservation.nb_luggages }}</p>
-<!--    <p><strong>Type de trajet :</strong> {{ reservation.trip_type }}</p>-->
     </div>
     <div class="recap-section">
         <h3>Coordonnées</h3>
@@ -61,4 +70,5 @@
         <input type="submit" value="Valider la réservation">
     </form>
 </div>
+
 {% endblock %}

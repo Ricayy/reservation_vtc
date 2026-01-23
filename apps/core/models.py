@@ -41,3 +41,11 @@ class OdooVehiculeModel:
     """
     id = "id"
     name = "x_name"
+
+@dataclass
+class OdooReservationStateModel:
+    """
+    Dataclass contenant les noms des champs du modèle Etat reservation
+    """
+    id = "id"
+    name = "x_name"

@@ -31,18 +31,40 @@ def json_search_read(db, uid, password, app, id_odoo, fields):
 
 
 def create_user(user_data):
+    """
+    Fonction d'appel de la requête Odoo de création d'un utilisateur
+    :param user_data:
+    :return:
+    """
     return OdooClient().query_create_user(user_data)
 
 
 def create_res(user_data):
+    """
+    Fonction d'appel de la requête Odoo de création d'une réservation
+    :param user_data:
+    :return:
+    """
     return OdooClient().query_create_reservation(user_data)
 
 
 def get_user_by_email(email):
+    """
+    Fonction d'appel de la requête Odoo de récupération d'un utilisateur par adresse email
+
+    :param email:
+    :return:
+    """
     return OdooClient().query_search_read_user_by_email(email)["result"]
 
 
 def get_res_by_email(email):
+    """
+    Fonction d'appel de la requête Odoo de récupération d'une réservation par adresse email
+
+    :param email:
+    :return:
+    """
     res_id = OdooClient().query_search_read_res_by_user(email)
     return OdooClient().query_search_read_res_by_id(res_id["result"][0][OdooContactModel.reservation_id])
 

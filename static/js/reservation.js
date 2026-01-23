@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     isMiseDis = false;
                     if (type === "end") {
-                        setTripType("simple");
+                        setTripType(1);
                     }
                     refreshMarkers();
                     drawRoute();
@@ -133,39 +133,63 @@ document.addEventListener("DOMContentLoaded", () => {
     setupAutocomplete("id_address_end", "suggestions_end", "end");
 
     /* ================= POI SELECT ================= */
-    function setupPoi(selectId, type){
+    function setupPoi(selectId, type) {
         const select = document.getElementById(selectId);
         const cat = select.dataset.category;
 
-        select.addEventListener("change", ()=>{
+        select.addEventListener("change", () => {
             const poi = POIS[cat][select.value];
-            if(!poi) return;
-            const input = document.getElementById(`id_address_${type}`);
+            if (!poi) return;
 
-            if(cat === "mise_dis") {
-                // Mise à disposition
-                input.value = poi.label;
+            const addressInput = document.getElementById(`id_address_${type}`);
+            const durationInput = document.getElementById("duration");
+            const distanceInput = document.getElementById("distance");
+            const infoDiv = document.getElementById("route-info-2");
+
+            /* ================= MISE À DISPOSITION ================= */
+            if (cat === "mise_dis") {
                 isMiseDis = true;
-                setTripType("ride");
+                setTripType(2); // ride
+
+                // reset trajet
+                addressInput.value = "";
+                durationInput.value = poi.value * 60;
                 currentDistanceKm = 0;
+                distanceInput.value = 0;
                 endCoords = null;
-                map.getSource("route").setData({ type:"FeatureCollection", features:[] });
+
+                if (map.getSource("route")) {
+                    map.getSource("route").setData({
+                        type: "FeatureCollection",
+                        features: []
+                    });
+                }
+
                 refreshMarkers();
                 updatePrice();
-            } else {
-                // POI classique => traite comme adresse
-                input.value = poi.address;
-                if(type==="start") startCoords = poi.coords;
-                else endCoords = poi.coords;
-                isMiseDis = false;
-                if (type === "end") {
-                    setTripType("simple");
-                }
-                refreshMarkers();
-                drawRoute();
+                return;
             }
+
+            /* ================= TRAJET CLASSIQUE ================= */
+            isMiseDis = false;
+
+            addressInput.value = poi.address;
+
+            if (type === "start") {
+                startCoords = poi.coords;
+            } else {
+                endCoords = poi.coords;
+                setTripType(1); // simple
+            }
+
+            currentDistanceKm = 0;
+            distanceInput.value = 0;
+
+            drawRoute();
+            refreshMarkers();
         });
     }
+
 
     ["start","end"].forEach(prefix=>{
         ["aeroport","gare","loisir","mise_dis"].forEach(cat=>{
@@ -203,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     document.getElementById("id_address_end").addEventListener("input", () => {
         if (!isMiseDis) {
-            setTripType("simple");
+            setTripType(1);
         }
     });
 
@@ -265,6 +289,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ================= PRIX ================= */
+    function formatMinutes(minutes) {
+        minutes = parseInt(minutes) || 0;
+        if (minutes < 60) return `${minutes} min`;
+
+        const hours = Math.floor(minutes / 60);
+        const remaining = minutes % 60;
+
+        if (remaining === 0) return `${hours} h`;
+        return `${hours} h ${remaining} min`;
+    }
+
     function updatePrice(){
         const opt = carSelect.selectedOptions[0];
         if(!opt) return;
@@ -276,23 +311,25 @@ document.addEventListener("DOMContentLoaded", () => {
             const hours = parseInt(hoursSelect?.value || 1);
 
             const priceHour = parseFloat(opt.dataset.priceHour) || 0;
-            console.log("priceHour " + priceHour)
             price = hours * priceHour;
         } else {
-            const priceKm = parseFloat(opt.dataset.priceKm);
-            console.log("priceKm " + priceKm)
+            const priceKm = parseFloat(opt.dataset.priceKm) || 0;
             price = currentDistanceKm * priceKm;
         }
 
         document.getElementById("price").value = price.toFixed(2);
-        duration = document.getElementById("duration").value
+
+        // Récupère la durée brute
+        const duration = parseInt(document.getElementById("duration").value) || 0;
         const info = document.getElementById("route-info-2");
+
         if(isMiseDis){
             info.innerHTML = `Mise à disposition : ${price.toFixed(2)} €`;
         } else {
-            info.innerHTML = `Durée estimé : ${duration} min — Prix estimé : ${price.toFixed(2)} €`;
+            info.innerHTML = `Durée estimée : ${formatMinutes(duration)} — Prix estimé : ${price.toFixed(2)} €`;
         }
-        info.dataset.visible="true";
+
+        info.dataset.visible = "true";
     }
 
     carSelect.addEventListener("change", updatePrice);
@@ -320,24 +357,9 @@ document.addEventListener("DOMContentLoaded", () => {
     luggageInput.addEventListener("input", validateLuggages);
 
 
-    // logs
-    function consoleTest() {
-//        console.log("id_address_start " + document.getElementById("id_address_start").value);
-//        console.log("id_address_end " + document.getElementById("id_address_end").value);
-        console.log("duration " + document.getElementById("duration").value);
-        console.log("distance " + document.getElementById("distance").value);
-        console.log("price " + document.getElementById("price").value);
-        console.log("trip_type " + document.getElementById("trip_type").value);
-//        console.log("end_mise_dis " + document.getElementById("end_mise_dis").value);
-//        console.log("id_car_type " + document.getElementById("id_car_type").value);
-//        console.log("id_trip_type " + document.getElementById("trip_type").value);
-//        console.log("id_date_start " + document.getElementById("id_date_start").value);
-//        console.log("id_time_start " + document.getElementById("id_time_start").value);
-    }
     carSelect.addEventListener("change", ()=>{
         validatePassengers();
         validateLuggages();
         updatePrice();
-        consoleTest();
     });
 });

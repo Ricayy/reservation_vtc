@@ -13,6 +13,13 @@ class VehiculeType(models.Model):
         return self.vehicule_type_name
 
 
+class TripType(models.Model):
+    id = models.AutoField(primary_key=True)
+    trip_type_name = models.CharField(max_length=120)
+    def __str__(self):
+        return self.trip_type_name
+
+
 class Reservation(models.Model):
     id = models.AutoField(primary_key=True)
     address_start = models.CharField(null=True)
@@ -20,6 +27,7 @@ class Reservation(models.Model):
     date_start = models.DateField(null=True)
     time_start = models.TimeField(null=True)
     car_type = models.ForeignKey(VehiculeType, on_delete=models.SET_NULL, null=True)
+    trip_type = models.ForeignKey(TripType, on_delete=models.SET_NULL, null=True)
     nb_passengers = models.IntegerField(null=True, default=1)
     nb_luggages = models.IntegerField(null=True, default=0)
     last_name = models.CharField(null=True)

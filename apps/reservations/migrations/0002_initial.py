@@ -2,8 +2,6 @@ from django.db import migrations
 
 def create_initial_data(apps, schema_editor):
     VehiculeType = apps.get_model("reservations", "VehiculeType")
-
-    # Insert VehiculeType values
     VehiculeType.objects.create(
         vehicule_type_name="Voiture",
         vehicule_max_seats=4,
@@ -17,11 +15,19 @@ def create_initial_data(apps, schema_editor):
         vehicule_price_hour=60.00,
     )
 
+    TripType = apps.get_model("reservations", "TripType")
+    TripType.objects.create(
+        trip_type_name="Simple",
+    )
+    TripType.objects.create(
+        trip_type_name="Mise à disposition",
+    )
 
 def delete_initial_data(apps, schema_editor):
     VehiculeType = apps.get_model("reservations", "VehiculeType")
-
     VehiculeType.objects.all().delete()
+    TripType = apps.get_model("reservations", "TripType")
+    TripType.objects.all().delete()
 
 
 class Migration(migrations.Migration):

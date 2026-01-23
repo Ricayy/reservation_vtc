@@ -1,13 +1,17 @@
 from django import forms
 
 from apps.accounts.models import CustomUser
-from apps.reservations.models import Reservation, VehiculeType
+from apps.reservations.models import Reservation, VehiculeType, TripType
 
 
 class ReservationForm(forms.ModelForm):
     car_type = forms.ModelChoiceField(
         queryset=VehiculeType.objects.all(),
         empty_label="Sélectionnez un véhicule",
+        to_field_name="id"
+    )
+    trip_type = forms.ModelChoiceField(
+        queryset=TripType.objects.all(),
         to_field_name="id"
     )
 
@@ -21,13 +25,9 @@ class ReservationForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        vehicules = kwargs.pop('vehicules', None)
         super().__init__(*args, **kwargs)
-        if vehicules is not None:
-            self.fields['car_type'].queryset = vehicules
-        # self.fields['car_type'].empty_label = "Sélectionnez un véhicule"
-        # Important : assure que option.value = UUID
-        # self.fields['car_type'].to_field_name = 'id'
+        self.fields["address_end"].required = False
+        self.fields["note"].required = False
 
     def clean(self):
         cleaned_data = super().clean()
@@ -43,6 +43,15 @@ class ReservationForm(forms.ModelForm):
                     "nb_passengers",
                     f"Le véhicule sélectionné ne permet que {max_seats} places."
                 )
+        trip_type = cleaned_data.get("trip_type")
+        address_end = cleaned_data.get("address_end")
+
+        # 1 = trajet simple
+        if trip_type and trip_type.id == 1 and not address_end:
+            self.add_error(
+                "address_end",
+                "L'adresse de destination est obligatoire pour un trajet simple."
+            )
         return cleaned_data
 
 
