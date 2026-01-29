@@ -23,3 +23,4 @@ def minutes_to_hours(minutes):
     if remaining == 0:
         return f"{hours} h"
     return f"{hours} h {remaining} min"
+

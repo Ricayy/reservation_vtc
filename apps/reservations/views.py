@@ -1,10 +1,57 @@
 import ast
 from datetime import datetime
+
+from django.core.mail import send_mail
+from django.conf import settings
 from django.shortcuts import render
-from dateutil import parser
+
 from apps.core.models import OdooReservationModel, OdooContactModel
 from apps.core.odoo_client import get_user_by_email, create_user, create_res
 from apps.website.models import FormField
+
+
+def build_email_message(res_data, trip_type):
+    address_start = res_data[OdooReservationModel.address_start]
+    address_end = res_data[OdooReservationModel.address_end]
+    distance = res_data[OdooReservationModel.distance]
+    duration = int(res_data[OdooReservationModel.duration])
+    price = res_data[OdooReservationModel.price]
+    base = [
+        "Bonjour,",
+        "",
+        "Nous vous confirmons la prise en compte de votre réservation VTC.",
+        "",
+        f"Départ : {address_start}",
+    ]
+
+    # Course simple
+    if trip_type == 1:
+        base += [
+            f"Arrivée : {address_end}",
+            f"Distance : {distance} km",
+        ]
+
+    # Mise à disposition
+    elif trip_type == 2:
+        if duration >= 60:
+            duration = duration // 60
+        base += [
+            "Type de trajet : Mise à disposition",
+            f"Durée réservée : {duration} heure(s)",
+        ]
+
+    base += [
+        "",
+        f"Prix estimé : {price} €",
+        "",
+        "Un chauffeur vous sera attribué prochainement.",
+        "",
+        "Cordialement,",
+        "L'équipe VTC"
+    ]
+
+    return "\n".join(base)
+
 
 
 def validation_reservation(request):
@@ -51,13 +98,27 @@ def validation_reservation(request):
             id_user = id_odoo["result"]
         new_reservation[OdooReservationModel.email] = id_user
         print(new_reservation)
-        response = create_res(new_reservation)
-        print(response)
+        print()
+        # response = create_res(new_reservation)
+        # print(response)
+        # print()
+        response = {"result": 1}
         if response["result"]:
+            message = build_email_message(new_reservation, id_trip_type)
+            send_mail(
+                subject="Confirmation de votre reservation VTC",
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user_data[OdooContactModel.email]],
+                fail_silently=False,
+            )
+
             reservation = {
-                FormField.address_start: data[FormField.address_start],
-                FormField.address_end: data[FormField.address_end],
-                FormField.datetime_start: new_reservation[OdooReservationModel.datetime_start]
+                FormField.address_start: new_reservation[OdooReservationModel.address_start],
+                FormField.address_end: new_reservation[OdooReservationModel.address_end],
+                FormField.trip_type: new_reservation[OdooReservationModel.trip_type],
+                FormField.duration: int(new_reservation[OdooReservationModel.duration]),
+                FormField.datetime_start: data[FormField.datetime_start]
             }
             return render(request, "reservations/validation.html", {"reservation": reservation})
         else:

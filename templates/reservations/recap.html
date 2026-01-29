@@ -45,8 +45,8 @@
         <p><strong>Véhicule :</strong> {{ reservation.car_type.1 }}</p>
 
         {# Durée formatée #}
-        <p><strong>Durée :</strong> {{ reservation.duration|minutes_to_hours }}</p>
-        <p><strong>Prix :</strong> {{ reservation.price }} €</p>
+        <p><strong>Durée estimé:</strong> {{ reservation.duration|minutes_to_hours }}</p>
+        <p><strong>Prix estimé:</strong> {{ reservation.price }} €</p>
     </div>
     <div class="recap-section">
         <h3>Passagers</h3>
@@ -59,7 +59,9 @@
         <p><strong>Prénom :</strong> {{ reservation.first_name }}</p>
         <p><strong>Téléphone :</strong> {{ reservation.phone }}</p>
         <p><strong>Email :</strong> {{ reservation.email }}</p>
+        {% if reservation.note != "" %}
         <p><strong>Message :</strong> {{ reservation.note }}</p>
+        {% endif %}
     </div>
     <form action="{% url 'validation' %}" method="post">
         {% csrf_token %}

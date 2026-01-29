@@ -42,9 +42,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "apps.website",
     "apps.reservations",
     "apps.core",
-    "apps.website",
     "apps.accounts",
 ]
 
@@ -137,3 +137,8 @@ STATICFILES_DIRS = [BASE_DIR / "static",]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# Email backend dev
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@vtc-test.local"

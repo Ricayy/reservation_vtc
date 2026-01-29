@@ -1,14 +1,12 @@
 from datetime import datetime
 
-from dateutil import parser
 from django.shortcuts import render
 from django.views.generic import CreateView
 
-from apps.reservations.models import Reservation, VehiculeType, TripType
+from apps.reservations.models import Reservation
 from apps.website.context import reservation_common_context
 from apps.website.forms import ReservationForm
 from apps.website.models import FormField
-from config import settings
 
 
 class ReservationCreateView(CreateView):
@@ -60,12 +58,12 @@ def recap_reservation(request):
         new_reservation[FormField.trip_type].append(data[FormField.trip_type].id)
         new_reservation[FormField.trip_type].append(data[FormField.trip_type].trip_type_name)
 
-        # Date / heure
+        # Date et heure
         datetime_start = datetime.combine(data[FormField.date_start], data[FormField.time_start])
         new_reservation[FormField.datetime_start] = datetime_start.strftime("%d/%m/%Y - %H:%M")
 
         for key in new_reservation.keys():
-            if new_reservation[key] == None:
+            if new_reservation[key] is None:
                 new_reservation[key] = ""
 
         return render(request, "reservations/recap.html", {"reservation": new_reservation})

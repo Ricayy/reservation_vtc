@@ -1,4 +1,5 @@
 {% extends "website/master.html" %}
+{% load duration_filters %}
 
 {% block title %}
     validation.html
@@ -39,11 +40,20 @@
 <div class="card validation-card">
     <h1>Réservation validée</h1>
 
-    <div class="validation-success">Votre réservation a été enregister.</div>
+    <div class="validation-success">
+        Votre réservation a été enregistrée et un mail de confirmation va vous être envoyé
+    </div>
 
     <p><strong>Départ :</strong> {{ reservation.address_start }}</p>
-    <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
-    <p><strong>Date et heure :</strong> {{ reservation.datetime_start }}</p>
+    {% if reservation.trip_type == 1 %}
+        <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
+    {% elif reservation.trip_type == 2 %}
+        <p><strong>Durée de mise à disposition :</strong> {{ reservation.duration|minutes_to_hours }}</p>
+    {% endif %}
+    <p><strong>Date et heure de prise en charge :</strong> {{ reservation.datetime_start }}</p>
+    <div class="validation-success">
+        Un chauffeur va au plus vite prendre contact avec vous
+    </div>
 
     <div class="validation-actions">
         <a href="/" class="btn">Revenir à l'accueil</a>

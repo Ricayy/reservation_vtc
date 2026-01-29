@@ -1,14 +1,12 @@
 # reservation_vtc
 A faire :
+- Bon de commande pour VTC et clients
+- Notification des courses par mail, sms ou autres
 - Réservation ou planification
-- Modèles Odoo Trajet
-- Mise à disposition
 - Affichage réservation depuis page unique pour user invité
 - Annulation réservation depuis page profil ou page unique
-- Bon de commande
 - Style
 - Multilangues
-- Notification des courses par mail, sms ou autres
 - Pages informations, avis, services, ...
 - Footer
 - Ajout auto complete custom POI
