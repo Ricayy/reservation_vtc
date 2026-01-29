@@ -51,6 +51,9 @@
         <p><strong>Durée de mise à disposition :</strong> {{ reservation.duration|minutes_to_hours }}</p>
     {% endif %}
     <p><strong>Date et heure de prise en charge :</strong> {{ reservation.datetime_start }}</p>
+
+    <a href="{% url 'order' reservation.id %}" target="_blank">Voir le PDF</a>
+
     <div class="validation-success">
         Un chauffeur va au plus vite prendre contact avec vous
     </div>

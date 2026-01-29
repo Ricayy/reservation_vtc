@@ -1,13 +1,31 @@
 import ast
+import io
 from datetime import datetime
 
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.conf import settings
 from django.shortcuts import render
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
 
 from apps.core.models import OdooReservationModel, OdooContactModel
-from apps.core.odoo_client import get_user_by_email, create_user, create_res
+from apps.core.odoo_client import get_user_by_email, create_user, create_res, get_res_by_id, get_user_by_id
 from apps.website.models import FormField
+
+from django.http import HttpResponse
+
+def preview_order_pdf(request, id_res):
+    """
+    Aperçu du PDF de la réservation dans le navigateur.
+    """
+    try:
+        pdf_file = build_order_pdf(id_res)
+    except Exception as e:
+        return HttpResponse(f"Erreur génération PDF : {e}")
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="order_{id_res}.pdf"'
+    return response
 
 
 def build_email_message(res_data, trip_type):
@@ -53,6 +71,43 @@ def build_email_message(res_data, trip_type):
     return "\n".join(base)
 
 
+def build_order_pdf(id_res):
+    # Récupération donnée réservation
+    res_data = get_res_by_id(id_res)[0]
+    user_data = get_user_by_id(res_data[OdooReservationModel.email][0])[0]
+    # Normalisation des données pour l'affichage
+    res_data[OdooReservationModel.email] = user_data
+    res_data[OdooReservationModel.car_type] = res_data[OdooReservationModel.car_type][1]
+    res_data[OdooReservationModel.trip_type] = res_data[OdooReservationModel.trip_type][1]
+    res_data[OdooReservationModel.datetime_start] = datetime.strptime(res_data[OdooReservationModel.datetime_start], "%Y-%m-%d %H:%M:%S")
+    res_data[OdooReservationModel.datetime_start] = res_data[OdooReservationModel.datetime_start].strftime("%d/%m/%Y - %H:%M")
+
+    # Rendu HTML
+    html_string = render_to_string("reservations/order.html", {"res_data": res_data})
+
+    # Génération PDF en mémoire
+    pdf_file = io.BytesIO()
+    pisa_status = pisa.CreatePDF(io.StringIO(html_string), dest=pdf_file)
+
+    if pisa_status.err:
+        raise Exception("Erreur lors de la génération du PDF")
+
+    pdf_file.seek(0)
+    return pdf_file.read()
+
+
+def gen_mail_and_order_pdf(new_reservation, email_user, id_trip_type, id_res):
+    message = build_email_message(new_reservation, id_trip_type)
+    pdf_file = build_order_pdf(id_res)
+    mail = EmailMessage(
+        subject="Confirmation de votre reservation VTC",
+        body=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[email_user],
+    )
+    mail.attach(f"order_{id_res}.pdf", pdf_file, 'application/pdf')
+    mail.send()
+
 
 def validation_reservation(request):
     """
@@ -97,28 +152,23 @@ def validation_reservation(request):
             id_odoo = create_user(user_data)
             id_user = id_odoo["result"]
         new_reservation[OdooReservationModel.email] = id_user
+        print("new_reservation data")
         print(new_reservation)
         print()
-        # response = create_res(new_reservation)
-        # print(response)
-        # print()
-        response = {"result": 1}
+        response = create_res(new_reservation)
+        print("response create_res")
+        print(response)
+        print()
         if response["result"]:
-            message = build_email_message(new_reservation, id_trip_type)
-            send_mail(
-                subject="Confirmation de votre reservation VTC",
-                message=message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user_data[OdooContactModel.email]],
-                fail_silently=False,
-            )
+            gen_mail_and_order_pdf(new_reservation, user_data[OdooContactModel.email], id_trip_type, response["result"])
 
             reservation = {
+               "id": response["result"],
                 FormField.address_start: new_reservation[OdooReservationModel.address_start],
                 FormField.address_end: new_reservation[OdooReservationModel.address_end],
                 FormField.trip_type: new_reservation[OdooReservationModel.trip_type],
                 FormField.duration: int(new_reservation[OdooReservationModel.duration]),
-                FormField.datetime_start: data[FormField.datetime_start]
+                FormField.datetime_start: data[FormField.datetime_start],
             }
             return render(request, "reservations/validation.html", {"reservation": reservation})
         else:
