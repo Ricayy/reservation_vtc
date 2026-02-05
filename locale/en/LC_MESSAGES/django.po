@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-05 16:41+0100\n"
+"POT-Creation-Date: 2026-02-05 19:41+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,30 +18,168 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\apps\reservations\models.py:5
+#: .\apps\reservations\models.py:6
 msgid "Voiture"
 msgstr "Car"
 
-#: .\apps\reservations\models.py:6
+#: .\apps\reservations\models.py:7
 msgid "Van"
 msgstr "Van"
 
-#: .\apps\reservations\models.py:10
+#: .\apps\reservations\models.py:11
+#: .\templates\reservations\reservation_form.html:249
 msgid "Simple"
 msgstr "Simple"
 
-#: .\apps\reservations\models.py:11
+#: .\apps\reservations\models.py:12
 #: .\templates\reservations\reservation_form.html:170
+#: .\templates\reservations\reservation_form.html:250
 msgid "Mise à disposition"
 msgstr "Hourly car service"
+
+#: .\templates\accounts\login.html:86 .\templates\accounts\login.html:98
+#: .\templates\website\navbar.html:85
+msgid "Connexion"
+msgstr "Log in"
+
+#: .\templates\accounts\login.html:103 .\templates\accounts\register.html:86
+#: .\templates\website\navbar.html:86
+msgid "Créer un compte"
+msgstr "Sign up"
+
+#: .\templates\accounts\profile.html:58
+msgid "Profil de"
+msgstr "Profile of"
+
+#: .\templates\accounts\profile.html:60
+msgid "Historique des réservations"
+msgstr "Reservations history"
+
+#: .\templates\accounts\profile.html:64
+msgid "Adresse de départ"
+msgstr "Departure address"
+
+#: .\templates\accounts\profile.html:65
+msgid "Adresse d'arrivée"
+msgstr "Arrival address"
+
+#: .\templates\accounts\profile.html:66
+msgid "Date et heure de départ"
+msgstr "Date and time of departure"
+
+#: .\templates\accounts\profile.html:67 .\templates\reservations\recap.html:46
+#: .\templates\reservations\reservation_form.html:190
+msgid "Véhicule"
+msgstr "Vehicule"
+
+#: .\templates\accounts\profile.html:68 .\templates\reservations\recap.html:41
+msgid "Distance"
+msgstr "Distance"
+
+#: .\templates\accounts\profile.html:69
+msgid "Prix"
+msgstr "Price"
+
+#: .\templates\accounts\profile.html:84
+msgid "Aucune réservation pour le moment."
+msgstr "No reservations at the moment."
+
+#: .\templates\accounts\register.html:98
+msgid "S'inscrire"
+msgstr "Sign up"
+
+#: .\templates\accounts\register.html:103
+msgid "Déjà un compte ? Se connecter"
+msgstr "Already registered ? Log in"
+
+#: .\templates\reservations\recap.html:32
+msgid "Revenir au formulaire"
+msgstr "Return to the form"
+
+#: .\templates\reservations\recap.html:33
+msgid "Récapitulatif réservation"
+msgstr "Booking summary"
+
+#: .\templates\reservations\recap.html:35
+msgid "Trajet"
+msgstr "Route details"
+
+#: .\templates\reservations\recap.html:36
+#: .\templates\reservations\reservation_form.html:134
+#: .\templates\reservations\validation.html:48
+msgid "Départ"
+msgstr "Departure"
+
+#: .\templates\reservations\recap.html:40
+#: .\templates\reservations\reservation_form.html:163
+#: .\templates\reservations\validation.html:50
+msgid "Arrivée"
+msgstr "Arrival"
+
+#: .\templates\reservations\recap.html:44
+msgid "Type de trajet"
+msgstr "Type of ride"
+
+#: .\templates\reservations\recap.html:45
+msgid "Date et heure"
+msgstr "Date and time"
+
+#: .\templates\reservations\recap.html:49
+msgid "Durée estimé"
+msgstr "Estimated duration"
+
+#: .\templates\reservations\recap.html:50
+#: .\templates\reservations\reservation_form.html:245
+msgid "Prix estimé"
+msgstr "Estimated price"
+
+#: .\templates\reservations\recap.html:53
+#: .\templates\reservations\recap.html:54
+#: .\templates\reservations\reservation_form.html:204
+msgid "Passagers"
+msgstr "Passengers"
+
+#: .\templates\reservations\recap.html:55
+#: .\templates\reservations\reservation_form.html:205
+msgid "Bagages"
+msgstr "Luggages"
+
+#: .\templates\reservations\recap.html:58
+msgid "Coordonnées"
+msgstr "Contact details"
+
+#: .\templates\reservations\recap.html:59
+#: .\templates\reservations\reservation_form.html:206
+msgid "Nom"
+msgstr "Last name"
+
+#: .\templates\reservations\recap.html:60
+#: .\templates\reservations\reservation_form.html:207
+msgid "Prénom"
+msgstr "First name"
+
+#: .\templates\reservations\recap.html:61
+#: .\templates\reservations\reservation_form.html:208
+msgid "Téléphone"
+msgstr "Phone"
+
+#: .\templates\reservations\recap.html:62
+#: .\templates\reservations\reservation_form.html:209
+msgid "Email"
+msgstr "Email"
+
+#: .\templates\reservations\recap.html:64
+#: .\templates\reservations\reservation_form.html:210
+msgid "Commentaires"
+msgstr "Commentary"
+
+#: .\templates\reservations\recap.html:73
+msgid "Valider la réservation"
+msgstr "Submit reservation"
 
 #: .\templates\reservations\reservation_form.html:126
 msgid "Réservation VTC"
 msgstr "Book a ride"
-
-#: .\templates\reservations\reservation_form.html:134
-msgid "Départ"
-msgstr "Departure"
 
 #: .\templates\reservations\reservation_form.html:137
 #: .\templates\reservations\reservation_form.html:166
@@ -83,14 +221,6 @@ msgstr "Choose a leisure place"
 msgid "Choisir une durée"
 msgstr "Choose a duration"
 
-#: .\templates\reservations\reservation_form.html:163
-msgid "Arrivée"
-msgstr "Arrival"
-
-#: .\templates\reservations\reservation_form.html:190
-msgid "Véhicule"
-msgstr "Vehicule"
-
 #: .\templates\reservations\reservation_form.html:202
 msgid "Date"
 msgstr "Date"
@@ -98,34 +228,6 @@ msgstr "Date"
 #: .\templates\reservations\reservation_form.html:203
 msgid "Heure"
 msgstr "Hour"
-
-#: .\templates\reservations\reservation_form.html:204
-msgid "Passagers"
-msgstr "Passengers"
-
-#: .\templates\reservations\reservation_form.html:205
-msgid "Bagages"
-msgstr "Luggages"
-
-#: .\templates\reservations\reservation_form.html:206
-msgid "Nom"
-msgstr "Last name"
-
-#: .\templates\reservations\reservation_form.html:207
-msgid "Prénom"
-msgstr "First name"
-
-#: .\templates\reservations\reservation_form.html:208
-msgid "Téléphone"
-msgstr "Phone"
-
-#: .\templates\reservations\reservation_form.html:209
-msgid "Email"
-msgstr "Email"
-
-#: .\templates\reservations\reservation_form.html:210
-msgid "Commentaires"
-msgstr "Commentary"
 
 #: .\templates\reservations\reservation_form.html:214
 msgid ""
@@ -135,34 +237,54 @@ msgstr ""
 "By checking this box, you agree that the informationyou provide may be used "
 "to process your request."
 
-#: .\templates\reservations\reservation_form.html:224
+#: .\templates\reservations\reservation_form.html:229
 msgid "Valider"
 msgstr "Submit"
 
-#: .\templates\reservations\reservation_form.html:237
+#: .\templates\reservations\reservation_form.html:244
 msgid "Durée estimée"
 msgstr "Estimated duration"
 
-#: .\templates\reservations\reservation_form.html:238
-msgid "Prix estimé"
-msgstr "Estimated price"
-
-#: .\templates\reservations\reservation_form.html:239
+#: .\templates\reservations\reservation_form.html:246
 msgid "Mise à disposition à"
 msgstr "Hourly car service for"
 
-#: .\templates\website\navbar.html:64
+#: .\templates\reservations\validation.html:42
+msgid "Réservation validée"
+msgstr "Booking complete"
+
+#: .\templates\reservations\validation.html:45
+msgid ""
+"Votre réservation a été enregistrée et un mail de confirmation va vous être "
+"envoyé"
+msgstr ""
+"Your reservation has been registered and a confirmation email will be sent "
+"to you"
+
+#: .\templates\reservations\validation.html:52
+msgid "Durée de mise à disposition"
+msgstr "Service duration"
+
+#: .\templates\reservations\validation.html:54
+msgid "Date et heure de prise en charge"
+msgstr "Date and time of pickup"
+
+#: .\templates\reservations\validation.html:56
+msgid "Voir le PDF"
+msgstr "See the PDF"
+
+#: .\templates\reservations\validation.html:59
+msgid "Un chauffeur va au plus vite prendre contact avec vous"
+msgstr "A driver will contact you as soon as possible"
+
+#: .\templates\reservations\validation.html:63
+msgid "Revenir à l'accueil"
+msgstr "Go back to main page"
+
+#: .\templates\website\navbar.html:82
 msgid "Mon profil"
 msgstr "My profile"
 
-#: .\templates\website\navbar.html:65
+#: .\templates\website\navbar.html:83
 msgid "Déconnexion"
 msgstr "Log out"
-
-#: .\templates\website\navbar.html:67
-msgid "Connexion"
-msgstr "Log in"
-
-#: .\templates\website\navbar.html:68
-msgid "Créer un compte"
-msgstr "Sign up"

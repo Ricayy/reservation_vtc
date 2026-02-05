@@ -1,5 +1,4 @@
 {% load i18n %}
-
 {% block extra_css %}
 <style>
 .site-header {
@@ -49,6 +48,25 @@
     background: #f3f4f6;
     color: #111827;
 }
+.language-switcher select {
+    padding: 6px 10px;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #111827;
+    cursor: pointer;
+}
+
+.language-switcher select:focus {
+    outline: none;
+    border-color: #0077ff;
+    box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.3);
+}
+
+.language-switcher {
+    display: inline-block;
+}
 </style>
 {% endblock %}
 
@@ -67,6 +85,14 @@
                 <a href="{% url 'login' %}" class="btn">{% trans "Connexion" %}</a>
                 <a href="{% url 'register' %}" class="btn">{% trans "Créer un compte" %}</a>
             {% endif %}
+            <form action="{% url 'set_language' %}" method="post" class="language-switcher">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                <select name="language" onchange="this.form.submit()">
+                    <option value="fr" {% if request.LANGUAGE_CODE == "fr" %}selected{% endif %}>FR</option>
+                    <option value="en" {% if request.LANGUAGE_CODE == "en" %}selected{% endif %}>EN</option>
+                </select>
+            </form>
         </nav>
     </div>
 </header>
