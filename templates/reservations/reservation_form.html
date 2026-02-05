@@ -1,43 +1,122 @@
 {% extends "website/master.html" %}
-
+{% load static %}
+{% load i18n %}
 {% block title %}
     reservation_form.html
 {% endblock %}
 
 {% block extra_css %}
 <style>
-/* --- TABLE → GRID --- */
+/* === FORM LAYOUT === */
+
 table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 20px 15px;
+    border-spacing: 0 28px;
 }
 
 tr {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+tr:not(:last-child) {
+    margin-bottom: 20px;
+}
+
+/* LABEL */
+th {
+    width: 100%;
+    text-align: left;
+    font-weight: 600;
+    font-size: 16px;
+    color: #374151;
+    padding: 0;
+}
+
+/* FIELD */
+td {
+    width: 100%;
+    position: relative;
+    padding: 0;
+}
+
+/* === FORM SECTIONS === */
+
+.form-section {
+    display: block;
+    padding: 24px 0;
+}
+
+.form-section + .form-section {
+    border-top: 1px solid #e5e7eb;
+    margin-top: 32px;
+    padding-top: 32px;
+}
+
+.section-title th {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2f5bea;
+    padding-bottom: 12px;
+    text-align: center;
+}
+
+.form-section.two-columns {
+    display: flex;
+    flex-wrap: wrap;
     gap: 20px;
 }
 
-th {
-    flex: 1;
-    text-align: center;
-    font-weight: 600;
+.form-section.two-columns .section-title {
+    flex-basis: 100%;
 }
 
-td {
-    position: relative;
-    flex: 3;
+.form-section.two-columns tr {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 45%;
+    min-width: 200px;
+    margin-bottom: 20px;
 }
 
-/* --- INPUTS --- */
-input, select, textarea {
+.form-section.two-columns th {
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.form-section.two-columns td {
+    width: 100%;
+}
+
+@media (max-width: 480px) {
+    .form-section.two-columns {
+        flex-direction: column;
+    }
+
+    .form-section.two-columns tr {
+        flex: 1 1 100%;
+    }
+}
+
+/* === INPUTS === */
+
+input,
+select,
+textarea {
     width: 100%;
     height: 44px;
     padding: 10px 12px;
     border: 1px solid #dcdfe6;
     border-radius: 6px;
     font-size: 15px;
+    background: #fff;
+}
+
+textarea {
+    min-height: 90px;
+    resize: vertical;
 }
 
 input:focus,
@@ -54,462 +133,266 @@ input[type="number"] {
 input[type="radio"],
 input[type="checkbox"] {
     width: auto;
+    height: auto;
 }
 
-/* --- MAP --- */
+/* === MAP === */
+
 #map {
     width: 100%;
-    height: 380px;
+    height: clamp(260px, 40vw, 380px);
     border-radius: 10px;
+    overflow: hidden;
 }
 
-/* --- ROUTE INFO --- */
-#route-info,
-#route-info-2 {
-    background: #f5f5f5;
+/* === ROUTE INFO === */
+
+#route-info {
+    background: #f1f4ff;
     border: 1px solid #dcdfe6;
     border-radius: 6px;
     padding: 12px 16px;
-    color: #222;
+    color: #2f5bea;
     font-weight: 600;
-    margin: 10px 0;
+    margin-bottom: 10px;
     display: none;
+    text-align: center;
 }
 
-/* --- Affichage lorsque contenu présent --- */
-#route-info[data-visible="true"],
-#route-info-2[data-visible="true"] {
+#route-info[data-visible="true"] {
     display: block;
 }
 
+/* === SUGGESTIONS === */
 
-/* --- SUGGESTIONS --- */
 .suggestions {
     position: absolute;
     top: calc(100% + 4px);
     left: 0;
     width: 100%;
-    background: white;
+    background: #fff;
     border: 1px solid #ddd;
     border-radius: 6px;
     max-height: 200px;
     overflow-y: auto;
     z-index: 1000;
     box-shadow: 0 6px 18px rgba(0,0,0,.08);
-    text-align: left;
 }
 
 .suggestions div {
-    padding: 10px;
+    padding: 10px 12px;
     cursor: pointer;
 }
 
 .suggestions div:hover {
-    background: #f0f0f0;
+    background: #f3f4f6;
 }
 
-/* --- RESPONSIVE --- */
-@media (max-width: 900px) {
+.suggestions:empty {
+    display: none;
+}
+
+/* === ADDRESS BUTTON === */
+.address-toggle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.address-toggle button {
+    flex: 1 1 auto;
+    min-width: 120px;
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 6px;
+    white-space: nowrap;
+    background: #2f5bea;
+}
+
+/* === MOBILE === */
+
+@media (max-width: 768px) {
     tr {
         flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
     }
 
     th, td {
         width: 100%;
     }
+}
+@media (max-width: 480px) {
+    .address-toggle {
+        gap: 6px;
+    }
 
-    #map {
-        height: 300px;
+    .address-toggle button {
+        flex: 1 1 48%;
+        font-size: 13px;
+        padding: 10px;
     }
 }
+
+@media (max-width: 360px) {
+    .address-toggle button {
+        flex: 1 1 100%;
+    }
+}
+
 </style>
 {% endblock %}
 
-
 {% block content %}
 <div class="card">
-    <h1>Page de réservation</h1>
-    <form action="{% url 'confirm_reservation' %}" method="post">
-    {% csrf_token %}
+    <h1>{% trans "Réservation VTC" %}</h1>
+
+    <form method="post" action="{% url 'confirm_reservation' %}">
+        {% csrf_token %}
+
         <table>
-            <tr>
-<!--                <th>{{ form.address_start.label_tag }}</th>-->
-                <th>Adresse de départ</th>
-                <td>
-                    {{ form.address_start }}
-                    <div id="suggestions_start" class="suggestions" style="display:none;"></div>
-                </td>
-            </tr>
+            <tbody class="form-section">
+                <tr class="section-title">
+                    <th colspan="2">{% trans "Trajet" %}</th>
+                </tr>
+                <!-- ================= DÉPART ================= -->
+                <tr>
+                    <th>{% trans "Départ" %}</th>
+                    <td>
+                        <div class="address-toggle">
+                            <button type="button" data-target="start" data-mode="address">{% trans "Adresse" %}</button>
+                            <button type="button" data-target="start" data-mode="aeroport">{% trans "Aéroport" %}</button>
+                            <button type="button" data-target="start" data-mode="gare">{% trans "Gare" %}</button>
+                            <button type="button" data-target="start" data-mode="loisir">{% trans "Loisirs" %}</button>
+                        </div>
 
-            <tr>
-<!--                <th>{{ form.address_end.label_tag }}</th>-->
-                <th>Adresse d'arrivée</th>
-                <td>
-                    {{ form.address_end }}
-                    <div id="suggestions_end" class="suggestions" style="display:none;"></div>
-                </td>
-            </tr>
+                        <input id="id_address_start" name="address_start" placeholder="Adresse de départ" required>
+                        <div id="suggestions_start" class="suggestions"></div>
 
-            <tr>
-                <th>
-                    <div id="route-info" style="margin: 10px 0; font-weight: bold;"></div>
-                    <div id="route-info-2" style="margin: 10px 0; font-weight: bold;"></div>
-                </th>
-                <td>
-                    <div id="map" data-mapbox-token="{{ mapbox_token }}" style="width: 100%; height: 400px; margin: 20px 0;"></div>
-                </td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.car_type.label_tag }}</th>-->
-                <th>Véhicule</th>
-                <td>
-                    {{ form.car_type }}
-                    {{ form.car_type.errors }}
-                </td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.trip_type.label_tag }}</th>-->
-                <th>Type de trajet</th>
-                <td>{{ form.trip_type }}</td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.date_start.label_tag }}</th>-->
-                <th>Date de départ</th>
-                <td>{{ form.date_start }}</td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.time_start.label_tag }}</th>-->
-                <th>Heure de départ</th>
-                <td>{{ form.time_start }}</td>
-            </tr>
+                        <select id="start_aeroport" class="poi-select" hidden>
+                            <option value="">{% trans "Choisir un aéroport" %}</option>
+                        </select>
+                        <select id="start_gare" class="poi-select" hidden>
+                            <option value="">{% trans "Choisir une gare" %}</option>
+                        </select>
+                        <select id="start_loisir" class="poi-select" hidden>
+                            <option value="">{% trans "Choisir un lieu de loisir" %}</option>
+                        </select>
+                        <select id="start_mise_dis" class="poi-select" hidden>
+                            <option value="">{% trans "Choisir une durée" %}</option>
+                        </select>
+                    </td>
+                </tr>
 
-            <tr>
-<!--                <th>{{ form.nb_passengers.label_tag }}</th>-->
-                <th>Nombre de passagers</th>
-                <td>{{ form.nb_passengers }}</td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.nb_luggages.label_tag }}</th>-->
-                <th>Nombre de bagages</th>
-                <td>{{ form.nb_luggages }}</td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.last_name.label_tag }}</th>-->
-                <th>Nom de famille</th>
-                <td>{{ form.last_name }}</td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.first_name.label_tag }}</th>-->
-                <th>Prénom</th>
-                <td>{{ form.first_name }}</td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.phone.label_tag }}</th>-->
-                <th>Téléphone</th>
-                <td>{{ form.phone }}</td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.email.label_tag }}</th>-->
-                <th>Email</th>
-                <td>{{ form.email }}</td>
-            </tr>
-            <tr>
-<!--                <th>{{ form.note.label_tag }}</th>-->
-                <th>Commentaires</th>
-                <td>{{ form.note }}</td>
-            </tr>
+                <!-- ================= ARRIVÉE ================= -->
+                <tr>
+                    <th>{% trans "Arrivée" %}</th>
+                    <td>
+                        <div class="address-toggle">
+                            <button type="button" data-target="end" data-mode="address">{% trans "Adresse" %}</button>
+                            <button type="button" data-target="end" data-mode="aeroport">{% trans "Aéroport" %}</button>
+                            <button type="button" data-target="end" data-mode="gare">{% trans "Gare" %}</button>
+                            <button type="button" data-target="end" data-mode="loisir">{% trans "Loisirs" %}</button>
+                            <button type="button" data-target="end" data-mode="mise_dis">{% trans "Mise à disposition" %}</button>
+                        </div>
+
+                        <input id="id_address_end" name="address_end" placeholder="Adresse d’arrivée">
+                        <div id="suggestions_end" class="suggestions"></div>
+
+                        <select id="end_aeroport" class="poi-select" hidden>
+                            <option value="">{% trans "Choisir un aéroport" %}</option>
+                        </select>
+                        <select id="end_gare" class="poi-select" hidden>
+                            <option value="">{% trans "Choisir une gare" %}</option>
+                        </select>
+                        <select id="end_loisir" class="poi-select" hidden>
+                            <option value="">{% trans "Choisir un lieu de loisir" %}</option>
+                        </select>
+                        <select id="end_mise_dis" class="poi-select" hidden>
+                            <option value="">{% trans "Choisir une durée" %}</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr><th>{% trans "Véhicule" %}</th><td>{{ form.car_type }}</td></tr>
+
+                <!-- ================= MAP & INFOS ================= -->
+                <tr>
+                    <th>
+                        <div id="route-info"></div>
+                    </th>
+                    <td>
+                        <div id="map" data-mapbox-token="{{ mapbox_token }}"></div>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody class="form-section two-columns">
+                <tr class="section-title">
+                    <th colspan="2">{% trans "Date et heure de prise en charge" %}</th>
+                </tr>
+                <tr><th>{% trans "Date" %}</th><td>{{ form.date_start }}</td></tr>
+                <tr><th>{% trans "Heure" %}</th><td>{{ form.time_start }}</td></tr>
+            </tbody>
+            <tbody class="form-section two-columns">
+                <tr class="section-title">
+                    <th colspan="2">{% trans "Nombre de passagers et de bagages" %}</th>
+                </tr>
+                <tr><th>{% trans "Passagers" %}</th><td>{{ form.nb_passengers }}</td></tr>
+                <tr><th>{% trans "Bagages" %}</th><td>{{ form.nb_luggages }}</td></tr>
+            </tbody>
+            <tbody class="form-section two-columns">
+                <tr class="section-title">
+                    <th colspan="2">{% trans "Contact" %}</th>
+                </tr>
+
+                <tr><th>{% trans "Nom" %}</th><td>{{ form.last_name }}</td></tr>
+                <tr><th>{% trans "Prénom" %}</th><td>{{ form.first_name }}</td></tr>
+                <tr><th>{% trans "Téléphone" %}</th><td>{{ form.phone }}</td></tr>
+                <tr><th>{% trans "Email" %}</th><td>{{ form.email }}</td></tr>
+                <tr><th>{% trans "Commentaires" %}</th><td>{{ form.note }}</td></tr>
+            </tbody>
             <tr>
                 <td>
-                    <input type="checkbox" id="data_agreement" name="data_agreement" value="check" >
-                    <label for="data_agreement">En cochant cette case, vous acceptez que vos données fournies soient utilisées pour le traitement de votre demande.</label>
+                    <input type="checkbox" id="data_agreement" name="data_agreement" value="check">
+                    <label for="data_agreement">{% trans "En cochant cette case, vous acceptez que vos données fournies soient utilisées pour le traitement de votre demande." %}</label>
                 </td>
             </tr>
         </table>
 
-        <input type="hidden" id="distance" name="distance">
-        <input type="hidden" id="duration" name="duration">
-        <input type="hidden" id="price" name="price">
+        <input type="hidden" id="distance" name="distance" required>
+        <input type="hidden" id="trip_type" name="trip_type" required>
+        <input type="hidden" id="trip_type_id" name="trip_type_id">
+        <input type="hidden" id="trip_type_label" name="trip_type_label">
+        <input type="hidden" id="duration" name="duration" required>
+        <input type="hidden" id="price" name="price" required>
+        <input type="hidden" id="vehicule_id" name="vehicule_id">
+        <input type="hidden" id="vehicule_label" name="vehicule_label">
 
-        <button type="submit">Commander</button>
+
+        <button type="submit">{% trans "Valider" %}</button>
     </form>
 </div>
 
-<link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet" />
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
 
-{{ vehicule_prices|json_script:"vehicule-prices" }}
+{{ vehicule_price_km|json_script:"vehicule-price-km" }}
+{{ vehicule_price_hour|json_script:"vehicule-price-hour" }}
 {{ vehicule_seats|json_script:"vehicule-seats" }}
+{{ VEHICULE_DATA|json_script:"vehicule-data" }}
+{{ TRIP_DATA|json_script:"trip-data" }}
 
 <script>
-const VEHICULE_PRICES = JSON.parse(document.getElementById("vehicule-prices").textContent);
-const VEHICULE_SEATS = JSON.parse(document.getElementById("vehicule-seats").textContent);
-
-document.addEventListener("DOMContentLoaded", () => {
-    // Initialisation des data-attributes prix et sièges
-    const carSelect = document.getElementById("id_car_type");
-    if (carSelect) {
-        for (let option of carSelect.options) {
-            const val = option.value;
-            if (!val) continue;
-            option.dataset.price = VEHICULE_PRICES[val] ?? 0;
-            option.dataset.seats = VEHICULE_SEATS[val] ?? 0;
-        }
-    }
-    carSelect.addEventListener("change", () => {
-        validatePassengers(); // optionnel, tu l’as déjà
-        updatePrice();         // ← recalculer le prix à chaque changement de véhicule
-    });
-
-    // Mapbox
-    const token = document.getElementById("map").dataset.mapboxToken;
-    mapboxgl.accessToken = token;
-
-    let map = new mapboxgl.Map({
-        container: "map",
-        style: "mapbox://styles/mapbox/streets-v12",
-        center: [2.3522, 48.8566],
-        zoom: 11
-    });
-
-    let startCoords = null;
-    let endCoords = null;
-    let startMarker = null;
-    let endMarker = null;
-    let mapLoaded = false;
-    let currentDistanceKm = 0;
-
-    map.on("load", () => {
-        mapLoaded = true;
-        map.addSource("route", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-        map.addLayer({
-            id: "route",
-            type: "line",
-            source: "route",
-            layout: { "line-join": "round", "line-cap": "round" },
-            paint: { "line-width": 6, "line-color": ["get", "color"] }
-        });
-    });
-
-    // Autocomplétion Mapbox
-    async function geocodeAddress(inputId, suggestionsId, callback) {
-        const input = document.getElementById(inputId);
-        const suggestions = document.getElementById(suggestionsId);
-
-        input.addEventListener("input", async () => {
-            const value = input.value.trim();
-            if (value.length < 3) { suggestions.style.display = "none"; return; }
-
-            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(value)}.json?autocomplete=true&limit=5&language=fr&country=fr&access_token=${mapboxgl.accessToken}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            if (!data.features.length) { suggestions.style.display = "none"; return; }
-
-            suggestions.innerHTML = "";
-            suggestions.style.display = "block";
-
-            data.features.forEach(feature => {
-                let item = document.createElement("div");
-                item.textContent = feature.place_name;
-                item.addEventListener("click", () => {
-                    input.value = feature.place_name;
-                    suggestions.style.display = "none";
-                    callback(feature.geometry.coordinates);
-                });
-                suggestions.appendChild(item);
-            });
-        });
-
-        document.addEventListener("click", e => {
-            if (!suggestions.contains(e.target) && e.target !== input) suggestions.style.display = "none";
-        });
-    }
-
-    function setupMarker(inputId, suggestionsId, color, setCoordsCallback) {
-        geocodeAddress(inputId, suggestionsId, coords => {
-            setCoordsCallback(coords);
-            if (inputId === "id_address_start") {
-                if (startMarker) startMarker.remove();
-                startMarker = new mapboxgl.Marker({ color }).setLngLat(coords).addTo(map);
-            } else {
-                if (endMarker) endMarker.remove();
-                endMarker = new mapboxgl.Marker({ color }).setLngLat(coords).addTo(map);
-            }
-            updateRouteSimple();
-        });
-    }
-
-    setupMarker("id_address_start", "suggestions_start", "green", coords => startCoords = coords);
-    setupMarker("id_address_end", "suggestions_end", "red", coords => endCoords = coords);
-
-    function colorByCongestion(level) {
-        switch(level) {
-            case "low": return "#2ECC71";
-            case "moderate": return "#F1C40F";
-            case "heavy": return "#E67E22";
-            case "severe": return "#E74C3C";
-            default: return "#0077ff";
-        }
-    }
-
-    async function updateRouteSimple() {
-        if (!mapLoaded || !startCoords || !endCoords) return;
-
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${startCoords[0]},${startCoords[1]};${endCoords[0]},${endCoords[1]}?geometries=geojson&overview=full&access_token=${mapboxgl.accessToken}`;
-        try {
-            const response = await fetch(url);
-            const json = await response.json();
-            if (!json.routes || !json.routes.length) return;
-
-            const route = json.routes[0];
-            const coords = route.geometry.coordinates;
-            currentDistanceKm = parseFloat(route.distance / 1000);
-
-            const geojson = { type: "FeatureCollection", features: [{ type: "Feature", geometry: { type: "LineString", coordinates: coords } }] };
-            map.getSource("route").setData(geojson);
-
-            map.fitBounds([startCoords, endCoords], { padding: 50 });
-            document.getElementById("distance").value = currentDistanceKm;
-
-            updatePrice();
-            updateRouteWithTraffic();
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    async function updateRouteWithTraffic() {
-        if (!mapLoaded || !startCoords || !endCoords) return;
-        const dateInput = document.getElementById("id_date_start").value;
-        const timeInput = document.getElementById("id_time_start").value;
-        if (!dateInput || !timeInput) return;
-
-        const departAt = `${dateInput}T${timeInput}`;
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${startCoords[0]},${startCoords[1]};${endCoords[0]},${endCoords[1]}?geometries=geojson&overview=full&annotations=duration,congestion&depart_at=${departAt}&access_token=${mapboxgl.accessToken}`;
-
-        try {
-            const response = await fetch(url);
-            const json = await response.json();
-            if (!json.routes || !json.routes.length) return;
-
-            const route = json.routes[0];
-            const coords = route.geometry.coordinates;
-            const congestions = route.legs[0].annotation.congestion;
-
-            let features = [];
-            for (let i = 0; i < coords.length - 1; i++) {
-                features.push({
-                    type: "Feature",
-                    geometry: { type: "LineString", coordinates: [coords[i], coords[i+1]] },
-                    properties: { color: colorByCongestion(congestions[i]) }
-                });
-            }
-
-            if (map.getSource("route")) {
-                map.getSource("route").setData({ type: "FeatureCollection", features });
-            }
-
-            map.fitBounds([startCoords, endCoords], { padding: 50 });
-
-            const durationTrafficMin = Math.round(route.duration / 60);
-            document.getElementById("duration").value = durationTrafficMin;
-            document.getElementById("route-info").innerHTML = `Durée estimée : ${durationTrafficMin} min (avec trafic)`;
-
-            updatePrice();
-            updateRouteInfoVisibility();
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    function updateRouteInfoVisibility() {
-        const info = document.getElementById("route-info");
-        const info2 = document.getElementById("route-info-2");
-        info.dataset.visible = info.innerHTML.trim() !== "";
-        info2.dataset.visible = info2.innerHTML.trim() !== "";
-    }
-
-    function updatePrice() {
-        const carSelect = document.getElementById("id_car_type");
-        const tripSelect = document.getElementById("id_trip_type");
-        const priceInfo = document.getElementById("route-info-2");
-
-        if (!carSelect || !carSelect.value) {
-            priceInfo.innerHTML = "";
-            updateRouteInfoVisibility();
-            return;
-        }
-
-        const selectedCar = carSelect.options[carSelect.selectedIndex];
-        const pricePerKm = parseFloat(selectedCar.dataset.price || 0);
-
-        // Calcul en centimes pour éviter les imprécisions
-        let distanceCm = Math.round(currentDistanceKm * 100); // distance * 100
-        let priceCm = distanceCm * pricePerKm; // multiplication en "centi-euros"
-
-        // Multiplier selon le type de trajet
-        let multiplier = tripSelect && tripSelect.value === "2" ? 2 : 1;
-        priceCm = Math.round(priceCm * multiplier);
-
-        // Convertir en euros avec 2 décimales
-        let finalPrice = priceCm / 100;
-
-        priceInfo.innerHTML = `Distance : ${currentDistanceKm.toFixed(2)} km — Prix estimé : ${finalPrice.toFixed(2)} €`;
-        document.getElementById("price").value = finalPrice.toFixed(2);
-
-        updateRouteInfoVisibility();
-    }
-
-    // Événements pour date/heure et trajet
-    document.getElementById("id_date_start").addEventListener("change", updateRouteWithTraffic);
-    document.getElementById("id_time_start").addEventListener("change", updateRouteWithTraffic);
-    const tripTypeSelect = document.getElementById("id_trip_type");
-    if (tripTypeSelect) tripTypeSelect.addEventListener("change", updatePrice);
-
-    // Validation des passagers
-    const passengerInput = document.getElementById("id_nb_passengers");
-    function validatePassengers() {
-        const nb = parseInt(passengerInput.value || 0);
-        const selectedOption = carSelect.options[carSelect.selectedIndex];
-        if (!selectedOption) return;
-
-        const maxSeats = parseInt(selectedOption.dataset.seats);
-
-        // Empêche les valeurs négatives
-        if (nb < 0) passengerInput.value = 0;
-
-        // Empêche de dépasser le max du véhicule
-        if (nb > maxSeats) passengerInput.value = maxSeats;
-    }
-    passengerInput.addEventListener("input", validatePassengers);
-    carSelect.addEventListener("change", validatePassengers);
-
-    // Remplissage des champs cachés avant submit
-    const form = document.querySelector("form");
-    form.addEventListener("submit", (e) => {
-        // Met à jour le prix si nécessaire
-        updatePrice();
-
-        // Remplit les champs cachés
-        document.getElementById("distance").value = currentDistanceKm.toFixed(2) || 0;
-
-        const durationEl = document.getElementById("duration");
-        if (!durationEl.value || durationEl.value === "0") {
-            // Si duration non calculée, mettre une valeur par défaut (ou laisser à 0)
-            durationEl.value = 0;
-        }
-
-        const priceEl = document.getElementById("price");
-        if (!priceEl.value || priceEl.value === "0") {
-            priceEl.value = (currentDistanceKm * parseFloat(document.getElementById("id_car_type").selectedOptions[0]?.dataset.price || 0)).toFixed(2);
-        }
-    });
-
-        // Remplit le public_token si nécessaire
-<!--        const publicTokenEl = document.getElementById("public_token");-->
-<!--        if (!publicTokenEl.value) {-->
-<!--            publicTokenEl.value = mapboxgl.accessToken;-->
-<!--        }-->
-    });
+    window.TRANSLATIONS = {
+        "duration_calcul": "{% trans 'Durée estimée'|escapejs %}",
+        "price_calcul": "{% trans 'Prix estimé'|escapejs %}",
+        "available_calcul": "{% trans 'Mise à disposition à'|escapejs %}",
+    };
+    window.TRIP_LABELS = {
+        simple: "{% trans 'Simple' %}",
+        hourly: "{% trans 'Mise à disposition' %}"
+    };
 </script>
 
+<script src="{% static 'js/reservation.js' %}"></script>
 {% endblock %}

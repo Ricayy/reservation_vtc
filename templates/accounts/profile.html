@@ -1,5 +1,5 @@
 {% extends "website/master.html" %}
-
+{% load i18n %}
 {% block extra_css %}
 <style>
 .profile-card {
@@ -55,18 +55,18 @@
 
 {% block content %}
 <div class="card profile-card">
-    <h1>Profil de {{ user.email }}</h1>
+    <h1>{% trans "Profil de" %} {{ user.email }}</h1>
 
-    <h3>Historique des réservations</h3>
+    <h3>{% trans "Historique des réservations" %}</h3>
     <table>
         <thead>
             <tr>
-                <td>Adresse de départ</td>
-                <td>Adresse d'arrivée</td>
-                <td>Date et heure de départ</td>
-                <td>Véhicule</td>
-                <td>Distance</td>
-                <td>Prix</td>
+                <td>{% trans "Adresse de départ" %}</td>
+                <td>{% trans "Adresse d'arrivée" %}</td>
+                <td>{% trans "Date et heure de départ" %}</td>
+                <td>{% trans "Véhicule" %}</td>
+                <td>{% trans "Distance" %}</td>
+                <td>{% trans "Prix" %}</td>
             </tr>
         </thead>
         <tbody>
@@ -81,7 +81,7 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="6">Aucune réservation pour le moment.</td>
+                    <td colspan="6">{% trans "Aucune réservation pour le moment." %}</td>
                 </tr>
             {% endfor %}
         </tbody>

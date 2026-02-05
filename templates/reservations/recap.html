@@ -1,4 +1,7 @@
 {% extends "website/master.html" %}
+{% load static %}
+{% load duration_filters %}
+{% load i18n %}
 
 {% block title %}
     confirmation.html
@@ -26,31 +29,40 @@
 
 {% block content %}
 <div class="card recap">
-    <a href="{% url 'reservation_add' %}" class="btn btn-primary">Revenir au formulaire</a>
-    <h1>Récapitulatif réservation</h1>
+    <a href="{% url 'reservation_add' %}" class="btn btn-primary">{% trans "Revenir au formulaire" %}</a>
+    <h1>{% trans "Récapitulatif réservation" %}</h1>
     <div class="recap-section">
-        <h3>Trajet</h3>
-        <p><strong>Départ :</strong> {{ reservation.address_start }}</p>
-        <p><strong>Arrivée :</strong> {{ reservation.address_end }}</p>
-        <p><strong>Date et heure :</strong> {{ reservation.datetime_start }}</p>
-        <p><strong>Véhicule :</strong> {{ reservation.car_type.1 }}</p>
-        <p><strong>Distance :</strong> {{ reservation.distance }} km</p>
-        <p><strong>Durée :</strong> {{ reservation.duration }} min</p>
-        <p><strong>Prix :</strong> {{ reservation.price }} €</p>
+        <h3>{% trans "Trajet" %}</h3>
+        <p><strong>{% trans "Départ" %} :</strong> {{ reservation.address_start }}</p>
+
+        {% if reservation.trip_type.0 == "simple" %}
+            {# Trajet simple #}
+            <p><strong>{% trans "Arrivée" %} :</strong> {{ reservation.address_end }}</p>
+            <p><strong>{% trans "Distance" %} :</strong> {{ reservation.distance }} km</p>
+        {% endif %}
+
+        <p><strong>{% trans "Type de trajet" %} :</strong> {{ reservation.trip_type.2 }}</p>
+        <p><strong>{% trans "Date et heure" %} :</strong> {{ reservation.datetime_start }}</p>
+        <p><strong>{% trans "Véhicule" %} :</strong> {{ reservation.car_type.2 }}</p>
+
+        {# Durée formatée #}
+        <p><strong>{% trans "Durée estimé" %} :</strong> {{ reservation.duration|minutes_to_hours }}</p>
+        <p><strong>{% trans "Prix estimé" %} :</strong> {{ reservation.price }} €</p>
     </div>
     <div class="recap-section">
-        <h3>Passagers</h3>
-        <p><strong>Passagers :</strong> {{ reservation.nb_passengers }}</p>
-        <p><strong>Bagages :</strong> {{ reservation.nb_luggages }}</p>
-<!--    <p><strong>Type de trajet :</strong> {{ reservation.trip_type }}</p>-->
+        <h3>{% trans "Passagers" %}</h3>
+        <p><strong>{% trans "Passagers" %} :</strong> {{ reservation.nb_passengers }}</p>
+        <p><strong>{% trans "Bagages" %} :</strong> {{ reservation.nb_luggages }}</p>
     </div>
     <div class="recap-section">
-        <h3>Coordonnées</h3>
-        <p><strong>Nom :</strong> {{ reservation.last_name }}</p>
-        <p><strong>Prénom :</strong> {{ reservation.first_name }}</p>
-        <p><strong>Téléphone :</strong> {{ reservation.phone }}</p>
-        <p><strong>Email :</strong> {{ reservation.email }}</p>
-        <p><strong>Message :</strong> {{ reservation.note }}</p>
+        <h3>{% trans "Coordonnées" %}</h3>
+        <p><strong>{% trans "Nom" %} :</strong> {{ reservation.last_name }}</p>
+        <p><strong>{% trans "Prénom" %} :</strong> {{ reservation.first_name }}</p>
+        <p><strong>{% trans "Téléphone" %} :</strong> {{ reservation.phone }}</p>
+        <p><strong>{% trans "Email" %} :</strong> {{ reservation.email }}</p>
+        {% if reservation.note != "" %}
+        <p><strong>{% trans "Commentaires" %} :</strong> {{ reservation.note }}</p>
+        {% endif %}
     </div>
     <form action="{% url 'validation' %}" method="post">
         {% csrf_token %}
@@ -58,7 +70,8 @@
         {% for key, value in reservation.items %}
             <input type="hidden" name="{{ key }}" value="{{ value }}">
         {% endfor %}
-        <input type="submit" value="Valider la réservation">
+        <input type="submit" value="{% trans 'Valider la réservation' %}">
     </form>
 </div>
+
 {% endblock %}

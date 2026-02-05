@@ -5,7 +5,6 @@ from apps.accounts.models import CustomUser
 
 
 class RegisterViewTest(TestCase):
-
     def setUp(self):
         self.url = reverse("register")
 
@@ -46,8 +45,7 @@ class RegisterViewTest(TestCase):
 
     def test_register_duplicate_email(self):
         CustomUser.objects.create_user(
-            email="test@example.com",
-            password="Password123!"
+            email="test@example.com", password="Password123!"
         )
 
         data = {

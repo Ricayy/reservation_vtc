@@ -5,7 +5,6 @@ from apps.accounts.models import CustomUser
 
 
 class LoginViewTest(TestCase):
-
     def setUp(self):
         self.url = reverse("login")
 
@@ -13,9 +12,7 @@ class LoginViewTest(TestCase):
         self.password = "StrongPassword123!"
 
         self.user = CustomUser.objects.create_user(
-            username=self.email,
-            email=self.email,
-            password=self.password
+            username=self.email, email=self.email, password=self.password
         )
 
     def test_login_page_loads(self):
@@ -27,10 +24,7 @@ class LoginViewTest(TestCase):
 
     def test_user_can_login_with_valid_credentials(self):
         """Un utilisateur peut se connecter avec de bons identifiants"""
-        data = {
-            "email": self.email,
-            "password": self.password
-        }
+        data = {"email": self.email, "password": self.password}
 
         response = self.client.post(self.url, data)
 
@@ -44,10 +38,7 @@ class LoginViewTest(TestCase):
 
     def test_login_fails_with_wrong_password(self):
         """La connexion échoue si le mot de passe est incorrect"""
-        data = {
-            "email": self.email,
-            "password": "WrongPassword!"
-        }
+        data = {"email": self.email, "password": "WrongPassword!"}
 
         response = self.client.post(self.url, data)
 
@@ -58,10 +49,7 @@ class LoginViewTest(TestCase):
 
     def test_login_fails_with_unknown_user(self):
         """La connexion échoue si l'utilisateur n'existe pas"""
-        data = {
-            "email": "unknown@test.com",
-            "password": "SomePassword123!"
-        }
+        data = {"email": "unknown@test.com", "password": "SomePassword123!"}
 
         response = self.client.post(self.url, data)
 
@@ -72,10 +60,7 @@ class LoginViewTest(TestCase):
 
     def test_login_form_validation_error(self):
         """Le formulaire invalide empêche l'authentification"""
-        data = {
-            "email": "",
-            "password": ""
-        }
+        data = {"email": "", "password": ""}
 
         response = self.client.post(self.url, data)
 
@@ -84,10 +69,7 @@ class LoginViewTest(TestCase):
 
     def test_user_session_is_created_after_login(self):
         """La session Django est bien créée après la connexion"""
-        self.client.post(self.url, {
-            "email": self.email,
-            "password": self.password
-        })
+        self.client.post(self.url, {"email": self.email, "password": self.password})
 
         # Vérifie que l'ID utilisateur est stocké en session
         session = self.client.session

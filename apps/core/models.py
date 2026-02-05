@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class OdooReservationModel:
     """
     Dataclass contenant les noms des champs du modèle Reservation
     """
-    id= "id"
+
+    id = "id"
     name = "x_name"
     address_start = "x_studio_address_start"
     address_end = "x_studio_address_end"
@@ -22,11 +24,13 @@ class OdooReservationModel:
     car_type = "x_studio_car_type"
     trip_type = "x_studio_trip_type"
 
+
 @dataclass
 class OdooContactModel:
     """
     Dataclass contenant les noms des champs du modèle Contact
     """
+
     id = "id"
     email = "x_name"
     first_name = "x_studio_first_name"
@@ -34,10 +38,22 @@ class OdooContactModel:
     phone = "x_studio_phone"
     reservation_id = "x_studio_reservation"
 
+
 @dataclass
 class OdooVehiculeModel:
     """
     Dataclass contenant les noms des champs du modèle Vehicule
     """
+
+    id = "id"
+    name = "x_name"
+
+
+@dataclass
+class OdooReservationStateModel:
+    """
+    Dataclass contenant les noms des champs du modèle Etat reservation
+    """
+
     id = "id"
     name = "x_name"

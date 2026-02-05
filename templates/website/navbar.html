@@ -1,3 +1,4 @@
+{% load i18n %}
 {% block extra_css %}
 <style>
 .site-header {
@@ -14,6 +15,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+    gap: 12px;
 }
 
 .site-name a {
@@ -23,29 +26,65 @@
     color: #111827;
 }
 
+/* === NAVBAR BUTTON VARIANTS === */
+
 .auth-buttons {
     display: flex;
-    gap: 12px;
+    flex-wrap: nowrap;
+    gap: 8px;
+    align-items: center;
 }
 
-/* === NAVBAR BUTTON VARIANTS === */
 .auth-buttons .btn {
+    background: #2f5bea;
     padding: 10px 20px;
     font-size: 14px;
 }
 
+.auth-buttons .btn,
+.auth-buttons .btn-outline {
+    flex: 0 1 auto;
+    min-width: auto;
+    padding: 10px 20px;
+    font-size: clamp(12px, 1.5vw, 16px);
+    text-align: center;
+    white-space: nowrap;
+    overflow: visible;
+}
+
 /* Bouton "Connexion / Profil" → sobre */
+/* Variante outline */
 .auth-buttons .btn-outline {
     background: transparent;
     color: #111827;
     border: 1px solid #d1d5db;
-    padding: 10px 20px;
-    font-size: 14px;
 }
 
 .auth-buttons .btn-outline:hover {
     background: #f3f4f6;
+}
+
+
+/* === Sélecteur de langue === */
+.language-switcher {
+    flex: 0 0 auto;
+    margin-left: 8px;
+}
+
+.language-switcher select {
+    padding: 8px 10px;
+    font-size: clamp(12px, 1.5vw, 16px);
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background-color: #ffffff;
     color: #111827;
+    cursor: pointer;
+}
+
+.language-switcher select:focus {
+    outline: none;
+    border-color: #0077ff;
+    box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.3);
 }
 </style>
 {% endblock %}
@@ -59,12 +98,20 @@
 
         <nav class="auth-buttons">
             {% if user.is_authenticated %}
-                <a href="{% url 'profile' %}" class="btn btn-outline">Mon profil ({{ user.username }})</a>
-                <a href="{% url 'logout' %}" class="btn">Déconnexion</a>
+                <a href="{% url 'profile' %}" class="btn btn-outline">{% trans "Mon profil" %}</a>
+                <a href="{% url 'logout' %}" class="btn">{% trans "Déconnexion" %}</a>
             {% else %}
-                <a href="{% url 'login' %}" class="btn">Connexion</a>
-                <a href="{% url 'register' %}" class="btn">Créer un compte</a>
+                <a href="{% url 'login' %}" class="btn">{% trans "Connexion" %}</a>
+                <a href="{% url 'register' %}" class="btn">{% trans "Créer un compte" %}</a>
             {% endif %}
+            <form action="{% url 'set_language' %}" method="post" class="language-switcher">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                <select name="language" onchange="this.form.submit()">
+                    <option value="fr" {% if request.LANGUAGE_CODE == "fr" %}selected{% endif %}>FR</option>
+                    <option value="en" {% if request.LANGUAGE_CODE == "en" %}selected{% endif %}>EN</option>
+                </select>
+            </form>
         </nav>
     </div>
 </header>

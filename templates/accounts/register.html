@@ -1,5 +1,5 @@
 {% extends "website/master.html" %}
-
+{% load i18n %}
 {% block title %}
     register.html
 {% endblock %}
@@ -83,7 +83,7 @@
 
 {% block content %}
 <div class="card register-card">
-    <h1>Créer un compte</h1>
+    <h1>{% trans "Créer un compte" %}</h1>
 
     {% if error %}
         <div class="register-error">
@@ -95,12 +95,12 @@
         {% csrf_token %}
         {{ form.as_p }}
         <div class="register-actions">
-            <button type="submit" class="btn">S'inscrire</button>
+            <button type="submit" class="btn">{% trans "S'inscrire" %}</button>
         </div>
     </form>
 
     <div class="register-login">
-        <a href="{% url 'login' %}">Déjà un compte ? Se connecter</a>
+        <a href="{% url 'login' %}">{% trans "Déjà un compte ? Se connecter" %}</a>
     </div>
 </div>
 {% endblock %}

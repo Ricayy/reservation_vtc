@@ -1,14 +1,23 @@
-# reservation_vtc
-A faire :
-- Affichage réservation depuis page unique pour user invité
-- Annulation réservation depuis page profil ou page unique
-- Modèles Odoo Trajet
-- Stripe
+# A faire :
 - Style
-- Multilangues
-- Notification des courses par mail, sms ou autres
+- Notification des courses par email, sms ou autres
+- Email de confirmation depuis serveur
+- Annulation réservation depuis page profil ou page unique
+- Affichage réservation depuis page unique pour user invité
 - Pages informations, avis, services, ...
 - Footer
+- Ajout auto complete custom POI
+
+# Fait :
+- Formulaire de réservation (adresse, date, véhicule, info clients)
+- Auto suggestions/complétions sur les champs d'adresses
+- Prévisualisation du trajet et calcul de la distance et du prix en fonction du véhicule
+- Option de trajet (course simple ou mise à disposition)
+- Authentification pour clients -> liste des courses réservée
+- Enregistrement des réservations et info clients dans Odoo
+- Génération d'un bon de commande PDF contenant le récapitulatif de la réservation
+- Envoi d'un email automatique depuis back-end en local
+- Traduction sur toutes les pages 
 
 # Commandes Django
 Création d'un projet Django : 
