@@ -152,13 +152,7 @@ def validation_reservation(request):
             id_odoo = create_user(user_data)
             id_user = id_odoo["result"]
         new_reservation[OdooReservationModel.email] = id_user
-        print("new_reservation data")
-        print(new_reservation)
-        print()
         response = create_res(new_reservation)
-        print("response create_res")
-        print(response)
-        print()
         if response["result"]:
             gen_mail_and_order_pdf(new_reservation, user_data[OdooContactModel.email], id_trip_type, response["result"])
 

@@ -1,5 +1,6 @@
 {% extends "website/master.html" %}
 {% load static %}
+{% load i18n %}
 {% block title %}
     reservation_form.html
 {% endblock %}
@@ -120,10 +121,9 @@ input[type="checkbox"] {
 </style>
 {% endblock %}
 
-
 {% block content %}
 <div class="card">
-    <h1>Réservation VTC</h1>
+    <h1>{% trans "Réservation VTC" %}</h1>
 
     <form method="post" action="{% url 'confirm_reservation' %}">
         {% csrf_token %}
@@ -131,98 +131,102 @@ input[type="checkbox"] {
         <table>
             <!-- ================= DÉPART ================= -->
             <tr>
-                <th>Départ</th>
+                <th>{% trans "Départ" %}</th>
                 <td>
                     <div class="address-toggle">
-                        <button type="button" data-target="start" data-mode="address">Adresse</button>
-                        <button type="button" data-target="start" data-mode="aeroport">Aéroport</button>
-                        <button type="button" data-target="start" data-mode="gare">Gare</button>
-                        <button type="button" data-target="start" data-mode="loisir">Loisirs</button>
+                        <button type="button" data-target="start" data-mode="address">{% trans "Adresse" %}</button>
+                        <button type="button" data-target="start" data-mode="aeroport">{% trans "Aéroport" %}</button>
+                        <button type="button" data-target="start" data-mode="gare">{% trans "Gare" %}</button>
+                        <button type="button" data-target="start" data-mode="loisir">{% trans "Loisirs" %}</button>
                     </div>
 
                     <input id="id_address_start" name="address_start" placeholder="Adresse de départ" required>
                     <div id="suggestions_start" class="suggestions"></div>
 
                     <select id="start_aeroport" class="poi-select" hidden>
-                        <option value="">Choisir un aéroport</option>
+                        <option value="">{% trans "Choisir un aéroport" %}</option>
                     </select>
                     <select id="start_gare" class="poi-select" hidden>
-                        <option value="">Choisir une gare</option>
+                        <option value="">{% trans "Choisir une gare" %}</option>
                     </select>
                     <select id="start_loisir" class="poi-select" hidden>
-                        <option value="">Choisir un lieu de loisir</option>
+                        <option value="">{% trans "Choisir un lieu de loisir" %}</option>
                     </select>
                     <select id="start_mise_dis" class="poi-select" hidden>
-                        <option value="">Choisir une durée</option>
+                        <option value="">{% trans "Choisir une durée" %}</option>
                     </select>
                 </td>
             </tr>
 
             <!-- ================= ARRIVÉE ================= -->
             <tr>
-                <th>Arrivée</th>
+                <th>{% trans "Arrivée" %}</th>
                 <td>
                     <div class="address-toggle">
-                        <button type="button" data-target="end" data-mode="address">Adresse</button>
-                        <button type="button" data-target="end" data-mode="aeroport">Aéroport</button>
-                        <button type="button" data-target="end" data-mode="gare">Gare</button>
-                        <button type="button" data-target="end" data-mode="loisir">Loisirs</button>
-                        <button type="button" data-target="end" data-mode="mise_dis">Mise à disposition</button>
+                        <button type="button" data-target="end" data-mode="address">{% trans "Adresse" %}</button>
+                        <button type="button" data-target="end" data-mode="aeroport">{% trans "Aéroport" %}</button>
+                        <button type="button" data-target="end" data-mode="gare">{% trans "Gare" %}</button>
+                        <button type="button" data-target="end" data-mode="loisir">{% trans "Loisirs" %}</button>
+                        <button type="button" data-target="end" data-mode="mise_dis">{% trans "Mise à disposition" %}</button>
                     </div>
 
                     <input id="id_address_end" name="address_end" placeholder="Adresse d’arrivée">
                     <div id="suggestions_end" class="suggestions"></div>
 
                     <select id="end_aeroport" class="poi-select" hidden>
-                        <option value="">Choisir un aéroport</option>
+                        <option value="">{% trans "Choisir un aéroport" %}</option>
                     </select>
                     <select id="end_gare" class="poi-select" hidden>
-                        <option value="">Choisir une gare</option>
+                        <option value="">{% trans "Choisir une gare" %}</option>
                     </select>
                     <select id="end_loisir" class="poi-select" hidden>
-                        <option value="">Choisir un lieu de loisir</option>
+                        <option value="">{% trans "Choisir un lieu de loisir" %}</option>
                     </select>
                     <select id="end_mise_dis" class="poi-select" hidden>
-                        <option value="">Choisir une durée</option>
+                        <option value="">{% trans "Choisir une durée" %}</option>
                     </select>
                 </td>
             </tr>
-            <tr><th>Véhicule</th><td>{{ form.car_type }}</td></tr>
+            <tr><th>{% trans "Véhicule" %}</th><td>{{ form.car_type }}</td></tr>
 
             <!-- ================= MAP & INFOS ================= -->
             <tr>
                 <th>
                     <div id="route-info"></div>
-                    <div id="route-info-2"></div>
                 </th>
                 <td>
                     <div id="map" data-mapbox-token="{{ mapbox_token }}"></div>
                 </td>
             </tr>
 
-            <tr><th>Date</th><td>{{ form.date_start }}</td></tr>
-            <tr><th>Heure</th><td>{{ form.time_start }}</td></tr>
-            <tr><th>Passagers</th><td>{{ form.nb_passengers }}</td></tr>
-            <tr><th>Bagages</th><td>{{ form.nb_luggages }}</td></tr>
-            <tr><th>Nom</th><td>{{ form.last_name }}</td></tr>
-            <tr><th>Prénom</th><td>{{ form.first_name }}</td></tr>
-            <tr><th>Téléphone</th><td>{{ form.phone }}</td></tr>
-            <tr><th>Email</th><td>{{ form.email }}</td></tr>
-            <tr><th>Commentaires</th><td>{{ form.note }}</td></tr>
+            <tr><th>{% trans "Date" %}</th><td>{{ form.date_start }}</td></tr>
+            <tr><th>{% trans "Heure" %}</th><td>{{ form.time_start }}</td></tr>
+            <tr><th>{% trans "Passagers" %}</th><td>{{ form.nb_passengers }}</td></tr>
+            <tr><th>{% trans "Bagages" %}</th><td>{{ form.nb_luggages }}</td></tr>
+            <tr><th>{% trans "Nom" %}</th><td>{{ form.last_name }}</td></tr>
+            <tr><th>{% trans "Prénom" %}</th><td>{{ form.first_name }}</td></tr>
+            <tr><th>{% trans "Téléphone" %}</th><td>{{ form.phone }}</td></tr>
+            <tr><th>{% trans "Email" %}</th><td>{{ form.email }}</td></tr>
+            <tr><th>{% trans "Commentaires" %}</th><td>{{ form.note }}</td></tr>
             <tr>
                 <td>
                     <input type="checkbox" id="data_agreement" name="data_agreement" value="check">
-                    <label for="data_agreement">En cochant cette case, vous acceptez que vos données fournies soient utilisées pour le traitement de votre demande.</label>
+                    <label for="data_agreement">{% trans "En cochant cette case, vous acceptez que vos données fournies soient utilisées pour le traitement de votre demande." %}</label>
                 </td>
             </tr>
         </table>
 
         <input type="hidden" id="distance" name="distance" required>
         <input type="hidden" id="trip_type" name="trip_type" required>
+        <input type="hidden" id="trip_type_id" name="trip_type_id">
+        <input type="hidden" id="trip_type_label" name="trip_type_label">
         <input type="hidden" id="duration" name="duration" required>
         <input type="hidden" id="price" name="price" required>
+        <input type="hidden" id="vehicule_id" name="vehicule_id">
+        <input type="hidden" id="vehicule_label" name="vehicule_label">
 
-        <button type="submit">Commander</button>
+
+        <button type="submit">{% trans "Valider" %}</button>
     </form>
 </div>
 
@@ -232,6 +236,20 @@ input[type="checkbox"] {
 {{ vehicule_price_km|json_script:"vehicule-price-km" }}
 {{ vehicule_price_hour|json_script:"vehicule-price-hour" }}
 {{ vehicule_seats|json_script:"vehicule-seats" }}
+{{ VEHICULE_DATA|json_script:"vehicule-data" }}
+{{ TRIP_DATA|json_script:"trip-data" }}
+
+<script>
+    window.TRANSLATIONS = {
+        "duration_calcul": "{% trans 'Durée estimée'|escapejs %}",
+        "price_calcul": "{% trans 'Prix estimé'|escapejs %}",
+        "available_calcul": "{% trans 'Mise à disposition à'|escapejs %}",
+    };
+    window.TRIP_LABELS = {
+        simple: "{% trans 'Simple' %}",
+        hourly: "{% trans 'Mise à disposition' %}"
+    };
+</script>
 
 <script src="{% static 'js/reservation.js' %}"></script>
 {% endblock %}

@@ -26,13 +26,16 @@ def recap_reservation(request):
     form = ReservationForm(request.POST)
     context = reservation_common_context()
     context["form"] = form
-
+    print("request.POST.dict()")
+    print(request.POST.dict())
     # POST
     if request.method == "POST":
         if not form.is_valid():
             return render(request, "reservations/reservation_form.html", context)
 
-        data = form.cleaned_data
+        # data = form.cleaned_data
+        data = request.POST.dict()
+        # print(data)
         new_reservation = {
             FormField.address_start: data[FormField.address_start],
             FormField.address_end: data[FormField.address_end],
@@ -51,15 +54,17 @@ def recap_reservation(request):
         }
 
         # Véhicule
-        new_reservation[FormField.car_type].append(data[FormField.car_type].id)
-        new_reservation[FormField.car_type].append(data[FormField.car_type].vehicule_type_name)
+        new_reservation[FormField.car_type].append(data[FormField.vehicule_id])
+        new_reservation[FormField.car_type].append(data[FormField.vehicule_label])
 
         # Type de trajet
-        new_reservation[FormField.trip_type].append(data[FormField.trip_type].id)
-        new_reservation[FormField.trip_type].append(data[FormField.trip_type].trip_type_name)
+        new_reservation[FormField.trip_type].append(data[FormField.trip_type_id])
+        new_reservation[FormField.trip_type].append(data[FormField.trip_type_label])
 
         # Date et heure
-        datetime_start = datetime.combine(data[FormField.date_start], data[FormField.time_start])
+        date_obj = datetime.strptime(data[FormField.date_start], "%Y-%m-%d").date()
+        time_obj = datetime.strptime(data[FormField.time_start], "%H:%M").time()
+        datetime_start = datetime.combine(date_obj, time_obj)
         new_reservation[FormField.datetime_start] = datetime_start.strftime("%d/%m/%Y - %H:%M")
 
         for key in new_reservation.keys():

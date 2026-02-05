@@ -1,0 +1,168 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-05 16:41+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\apps\reservations\models.py:5
+msgid "Voiture"
+msgstr "Car"
+
+#: .\apps\reservations\models.py:6
+msgid "Van"
+msgstr "Van"
+
+#: .\apps\reservations\models.py:10
+msgid "Simple"
+msgstr "Simple"
+
+#: .\apps\reservations\models.py:11
+#: .\templates\reservations\reservation_form.html:170
+msgid "Mise à disposition"
+msgstr "Hourly car service"
+
+#: .\templates\reservations\reservation_form.html:126
+msgid "Réservation VTC"
+msgstr "Book a ride"
+
+#: .\templates\reservations\reservation_form.html:134
+msgid "Départ"
+msgstr "Departure"
+
+#: .\templates\reservations\reservation_form.html:137
+#: .\templates\reservations\reservation_form.html:166
+msgid "Adresse"
+msgstr "Address"
+
+#: .\templates\reservations\reservation_form.html:138
+#: .\templates\reservations\reservation_form.html:167
+msgid "Aéroport"
+msgstr "Airport"
+
+#: .\templates\reservations\reservation_form.html:139
+#: .\templates\reservations\reservation_form.html:168
+msgid "Gare"
+msgstr "Train station"
+
+#: .\templates\reservations\reservation_form.html:140
+#: .\templates\reservations\reservation_form.html:169
+msgid "Loisirs"
+msgstr "Activities"
+
+#: .\templates\reservations\reservation_form.html:147
+#: .\templates\reservations\reservation_form.html:177
+msgid "Choisir un aéroport"
+msgstr "Choose an airport"
+
+#: .\templates\reservations\reservation_form.html:150
+#: .\templates\reservations\reservation_form.html:180
+msgid "Choisir une gare"
+msgstr "Choose a train station"
+
+#: .\templates\reservations\reservation_form.html:153
+#: .\templates\reservations\reservation_form.html:183
+msgid "Choisir un lieu de loisir"
+msgstr "Choose a leisure place"
+
+#: .\templates\reservations\reservation_form.html:156
+#: .\templates\reservations\reservation_form.html:186
+msgid "Choisir une durée"
+msgstr "Choose a duration"
+
+#: .\templates\reservations\reservation_form.html:163
+msgid "Arrivée"
+msgstr "Arrival"
+
+#: .\templates\reservations\reservation_form.html:190
+msgid "Véhicule"
+msgstr "Vehicule"
+
+#: .\templates\reservations\reservation_form.html:202
+msgid "Date"
+msgstr "Date"
+
+#: .\templates\reservations\reservation_form.html:203
+msgid "Heure"
+msgstr "Hour"
+
+#: .\templates\reservations\reservation_form.html:204
+msgid "Passagers"
+msgstr "Passengers"
+
+#: .\templates\reservations\reservation_form.html:205
+msgid "Bagages"
+msgstr "Luggages"
+
+#: .\templates\reservations\reservation_form.html:206
+msgid "Nom"
+msgstr "Last name"
+
+#: .\templates\reservations\reservation_form.html:207
+msgid "Prénom"
+msgstr "First name"
+
+#: .\templates\reservations\reservation_form.html:208
+msgid "Téléphone"
+msgstr "Phone"
+
+#: .\templates\reservations\reservation_form.html:209
+msgid "Email"
+msgstr "Email"
+
+#: .\templates\reservations\reservation_form.html:210
+msgid "Commentaires"
+msgstr "Commentary"
+
+#: .\templates\reservations\reservation_form.html:214
+msgid ""
+"En cochant cette case, vous acceptez que vos données fournies soient "
+"utilisées pour le traitement de votre demande."
+msgstr ""
+"By checking this box, you agree that the informationyou provide may be used "
+"to process your request."
+
+#: .\templates\reservations\reservation_form.html:224
+msgid "Valider"
+msgstr "Submit"
+
+#: .\templates\reservations\reservation_form.html:237
+msgid "Durée estimée"
+msgstr "Estimated duration"
+
+#: .\templates\reservations\reservation_form.html:238
+msgid "Prix estimé"
+msgstr "Estimated price"
+
+#: .\templates\reservations\reservation_form.html:239
+msgid "Mise à disposition à"
+msgstr "Hourly car service for"
+
+#: .\templates\website\navbar.html:64
+msgid "Mon profil"
+msgstr "My profile"
+
+#: .\templates\website\navbar.html:65
+msgid "Déconnexion"
+msgstr "Log out"
+
+#: .\templates\website\navbar.html:67
+msgid "Connexion"
+msgstr "Log in"
+
+#: .\templates\website\navbar.html:68
+msgid "Créer un compte"
+msgstr "Sign up"

@@ -22,3 +22,8 @@ class FormField:
     price = "price"
     car_type = "car_type"
     trip_type = "trip_type"
+
+    vehicule_id = "vehicule_id"
+    vehicule_label = "vehicule_label"
+    trip_type_id = "trip_type_id"
+    trip_type_label = "trip_type_label"

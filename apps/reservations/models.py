@@ -1,23 +1,15 @@
-import uuid
-
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
-class VehiculeType(models.Model):
-    id = models.AutoField(primary_key=True)
-    vehicule_type_name = models.CharField(max_length=120)
-    vehicule_max_seats = models.IntegerField(null=True, default=4)
-    vehicule_price_distance = models.FloatField(null=True, default=1.8)
-    vehicule_price_hour = models.FloatField(null=True, default=45.00)
-    def __str__(self):
-        return self.vehicule_type_name
+class VehiculeType(models.TextChoices):
+    CAR = 'car', _('Voiture')
+    VAN = 'van', _('Van')
 
 
-class TripType(models.Model):
-    id = models.AutoField(primary_key=True)
-    trip_type_name = models.CharField(max_length=120)
-    def __str__(self):
-        return self.trip_type_name
+class TripType(models.TextChoices):
+    SIMPLE = 'simple', _('Simple')
+    HOURLY = 'hourly', _('Mise à disposition')
 
 
 class Reservation(models.Model):
@@ -26,8 +18,8 @@ class Reservation(models.Model):
     address_end = models.CharField(null=True)
     date_start = models.DateField(null=True)
     time_start = models.TimeField(null=True)
-    car_type = models.ForeignKey(VehiculeType, on_delete=models.SET_NULL, null=True)
-    trip_type = models.ForeignKey(TripType, on_delete=models.SET_NULL, null=True)
+    car_type = models.CharField(choices=VehiculeType.choices, default=VehiculeType.CAR)
+    trip_type = models.CharField(choices=TripType.choices, default=TripType.SIMPLE)
     nb_passengers = models.IntegerField(null=True, default=1)
     nb_luggages = models.IntegerField(null=True, default=0)
     last_name = models.CharField(null=True)
@@ -39,3 +31,12 @@ class Reservation(models.Model):
     duration = models.IntegerField(null=True)
     distance = models.FloatField(null=True)
     date_reservation = models.DateField(null=True, auto_now_add=True)
+
+    VEHICULE_DATA = {
+        VehiculeType.CAR: {'id': 1, 'max_seats': 4, 'price_distance': 1.80, 'price_hour': 45.0},
+        VehiculeType.VAN: {'id': 2, 'max_seats': 7, 'price_distance': 2.50, 'price_hour': 60.0},
+    }
+    TRIP_DATA = {
+        TripType.SIMPLE: {"id": 1},
+        TripType.HOURLY: {"id": 2},
+    }

@@ -3,16 +3,15 @@ from django import forms
 from apps.accounts.models import CustomUser
 from apps.reservations.models import Reservation, VehiculeType, TripType
 
-
 class ReservationForm(forms.ModelForm):
-    car_type = forms.ModelChoiceField(
-        queryset=VehiculeType.objects.all(),
-        empty_label="Sélectionnez un véhicule",
-        to_field_name="id"
+    car_type = forms.ChoiceField(
+        choices=VehiculeType.choices,
+        widget=forms.Select(attrs={'id': 'id_car_type'}),
+        required=True,
     )
-    trip_type = forms.ModelChoiceField(
-        queryset=TripType.objects.all(),
-        to_field_name="id"
+    trip_type = forms.ChoiceField(
+        choices=TripType.choices,
+        required=True,
     )
 
     class Meta:
@@ -21,7 +20,6 @@ class ReservationForm(forms.ModelForm):
         widgets = {
             'date_start': forms.DateInput(attrs={'type': 'date'}),
             'time_start': forms.TimeInput(attrs={'type': 'time'}),
-            'car_type': forms.Select(attrs={'id': 'id_car_type'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -35,7 +33,7 @@ class ReservationForm(forms.ModelForm):
         nb_passengers = cleaned_data.get("nb_passengers")
 
         if car_type and nb_passengers is not None:
-            max_seats = car_type.vehicule_max_seats
+            max_seats = Reservation.VEHICULE_DATA[car_type]['max_seats']
             if nb_passengers < 0:
                 self.add_error("nb_passengers", "Le nombre de passagers ne peut pas être négatif.")
             if nb_passengers > max_seats:
@@ -43,15 +41,17 @@ class ReservationForm(forms.ModelForm):
                     "nb_passengers",
                     f"Le véhicule sélectionné ne permet que {max_seats} places."
                 )
+
         trip_type = cleaned_data.get("trip_type")
         address_end = cleaned_data.get("address_end")
 
         # 1 = trajet simple
-        if trip_type and trip_type.id == 1 and not address_end:
+        if trip_type == TripType.SIMPLE and not address_end:
             self.add_error(
                 "address_end",
                 "L'adresse de destination est obligatoire pour un trajet simple."
             )
+
         return cleaned_data
 
 

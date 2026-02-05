@@ -1,6 +1,8 @@
 const VEHICULE_PRICE_KM = JSON.parse(document.getElementById("vehicule-price-km").textContent);
 const VEHICULE_PRICE_HOUR = JSON.parse(document.getElementById("vehicule-price-hour").textContent);
-const VEHICULE_SEATS  = JSON.parse(document.getElementById("vehicule-seats").textContent);
+const VEHICULE_SEATS = JSON.parse(document.getElementById("vehicule-seats").textContent);
+const VEHICULE_DATA = JSON.parse(document.getElementById("vehicule-data").textContent);
+const TRIP_DATA = JSON.parse(document.getElementById("trip-data").textContent);
 
 /* ================= POIS CENTRALISÉS ================= */
 const POIS = {
@@ -45,11 +47,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initialisation véhicules
     const carSelect = document.getElementById("id_car_type");
+    const vehiculeIdInput = document.getElementById("vehicule_id");
+    const vehiculeLabelInput = document.getElementById("vehicule_label");
+
+    // Initialise les data-* sur les options
     [...carSelect.options].forEach(opt => {
         if (!opt.value) return;
-        opt.dataset.priceKm = VEHICULE_PRICE_KM[opt.value] ?? 0;
-        opt.dataset.priceHour = VEHICULE_PRICE_HOUR[opt.value] ?? 0
-        opt.dataset.seats = VEHICULE_SEATS[opt.value] ?? 0;
+        const data = VEHICULE_DATA[opt.value];
+        if (!data) return; // sécurité si l'option n'a pas de data
+        opt.dataset.id = data.id;
+        opt.dataset.label = opt.textContent;
+        opt.dataset.priceKm = data.price_distance;
+        opt.dataset.priceHour = data.price_hour;
+        opt.dataset.seats = data.max_seats;
     });
 
     /* ================= MAP ================= */
@@ -119,7 +129,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     isMiseDis = false;
                     if (type === "end") {
-                        setTripType(1);
+                        if (cat === "mise_dis") {
+                            setTripType("hourly");
+                        } else {
+                            setTripType("simple");
+                        }
                     }
                     refreshMarkers();
                     drawRoute();
@@ -144,12 +158,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const addressInput = document.getElementById(`id_address_${type}`);
             const durationInput = document.getElementById("duration");
             const distanceInput = document.getElementById("distance");
-            const infoDiv = document.getElementById("route-info-2");
+            const infoDiv = document.getElementById("route-info");
 
             /* ================= MISE À DISPOSITION ================= */
             if (cat === "mise_dis") {
                 isMiseDis = true;
-                setTripType(2); // ride
+                setTripType("hourly");
 
                 // reset trajet
                 addressInput.value = "";
@@ -179,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 startCoords = poi.coords;
             } else {
                 endCoords = poi.coords;
-                setTripType(1); // simple
+                setTripType("simple");
             }
 
             currentDistanceKm = 0;
@@ -222,12 +236,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function setTripType(value) {
         const tripInput = document.getElementById("trip_type");
-        if (!tripInput) return;
+        const tripIdInput = document.getElementById("trip_type_id");
+        const tripLabelInput = document.getElementById("trip_type_label");
+        if (!tripInput || !tripIdInput || !tripLabelInput) return;
         tripInput.value = value;
+        tripIdInput.value = TRIP_DATA[value]?.id || "";
+        tripLabelInput.value = window.TRIP_LABELS[value] || "";
     }
     document.getElementById("id_address_end").addEventListener("input", () => {
         if (!isMiseDis) {
-            setTripType(1);
+            setTripType("simple");
         }
     });
 
@@ -271,11 +289,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateRouteInfoVisibility(){
-        const info1 = document.getElementById("route-info");
-        const info2 = document.getElementById("route-info-2");
+        const info = document.getElementById("route-info");
 
-        info1.dataset.visible = info1.innerHTML.trim() !== "";
-        info2.dataset.visible = info2.innerHTML.trim() !== "";
+        info.dataset.visible = info.innerHTML.trim() !== "";
     }
 
     document.getElementById("id_date_start").addEventListener("change", () => {
@@ -303,33 +319,27 @@ document.addEventListener("DOMContentLoaded", () => {
     function updatePrice(){
         const opt = carSelect.selectedOptions[0];
         if(!opt) return;
+
+        // Transmet l'id et le label au formulaire
+        vehiculeIdInput.value = opt.dataset.id;
+        vehiculeLabelInput.value = opt.dataset.label;
+
         let price = 0;
+        const duration = parseInt(document.getElementById("duration").value || 0);
 
-        if(isMiseDis){
-            // Tarif horaire
-            const hoursSelect = document.getElementById("end_mise_dis");
-            const hours = parseInt(hoursSelect?.value || 1);
-
-            const priceHour = parseFloat(opt.dataset.priceHour) || 0;
-            price = hours * priceHour;
+        if (isMiseDis) {
+            const hours = parseInt(document.getElementById("end_mise_dis")?.value || 1);
+            price = hours * parseFloat(opt.dataset.priceHour || 0);
+            document.getElementById("route-info").innerHTML =
+                `${window.TRANSLATIONS.available_calcul} : ${price.toFixed(2)} €`;
         } else {
-            const priceKm = parseFloat(opt.dataset.priceKm) || 0;
-            price = currentDistanceKm * priceKm;
+            price = currentDistanceKm * parseFloat(opt.dataset.priceKm || 0);
+            document.getElementById("route-info").innerHTML =
+                `${window.TRANSLATIONS.duration_calcul} : ${formatMinutes(duration)} — ${window.TRANSLATIONS.price_calcul} : ${price.toFixed(2)} €`;
         }
 
         document.getElementById("price").value = price.toFixed(2);
-
-        // Récupère la durée brute
-        const duration = parseInt(document.getElementById("duration").value) || 0;
-        const info = document.getElementById("route-info-2");
-
-        if(isMiseDis){
-            info.innerHTML = `Mise à disposition : ${price.toFixed(2)} €`;
-        } else {
-            info.innerHTML = `Durée estimée : ${formatMinutes(duration)} — Prix estimé : ${price.toFixed(2)} €`;
-        }
-
-        info.dataset.visible = "true";
+        document.getElementById("route-info").dataset.visible = "true";
     }
 
     carSelect.addEventListener("change", updatePrice);
