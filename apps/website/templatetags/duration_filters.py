@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
 def minutes_to_hours(minutes):
     """
@@ -23,4 +24,3 @@ def minutes_to_hours(minutes):
     if remaining == 0:
         return f"{hours} h"
     return f"{hours} h {remaining} min"
-

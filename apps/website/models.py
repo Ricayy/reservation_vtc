@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class FormField:
     """
     Dataclass contenant les noms des champs du formulaire de réservation
     """
+
     address_start = "address_start"
     address_end = "address_end"
     datetime_start = "datetime_start"

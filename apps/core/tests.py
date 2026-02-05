@@ -1,5 +1,7 @@
 import os
 from datetime import datetime
+from django.test import TestCase
+from dotenv import load_dotenv
 
 import django
 import requests
@@ -9,8 +11,6 @@ from apps.core.models import OdooReservationModel
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
-from django.test import TestCase
-from dotenv import load_dotenv
 load_dotenv()
 
 
@@ -46,6 +46,7 @@ class OdooTestCase(TestCase):
     reservation_field_list : list
         Liste des noms de champs Odoo
     """
+
     url = os.getenv("ODOO_URL")
     url_json = os.getenv("ODOO_URL_JSON")
     db = os.getenv("ODOO_DB")
@@ -112,8 +113,8 @@ class OdooTestCase(TestCase):
                     "db": self.db,
                     "login": self.login,
                     "password": self.password,
-                }
-            }
+                },
+            },
         ).json()
         uid = auth_response["result"]["uid"]
         assert uid, "Échec authentification"
@@ -160,10 +161,14 @@ class OdooTestCase(TestCase):
         uid = self.test_odoo_auth()
         # Récupération de la réservation par ID
         id_reservation = 1
-        reservation = self.test_query_search_read(uid, self.app_reservation, id_reservation, self.reservation_field_list)
+        reservation = self.test_query_search_read(
+            uid, self.app_reservation, id_reservation, self.reservation_field_list
+        )
         # Récupération de l'ID du client
         id_odoo = reservation["result"][0][OdooReservationModel.email][0]
-        user_data = self.test_query_search_read(uid, self.app_contact, id_odoo, self.contact_field_list)
+        user_data = self.test_query_search_read(
+            uid, self.app_contact, id_odoo, self.contact_field_list
+        )
         # Remplacement des données du client dans la réservation
         reservation["result"][0][OdooReservationModel.email] = user_data["result"][0]
 
@@ -178,8 +183,12 @@ class OdooTestCase(TestCase):
 
         reservation_data = {
             self.reservation_field_dict["x_studio_address_start"]: "Gare de Lyon",
-            self.reservation_field_dict["x_studio_address_end"]: "10 Rue de Paris, Paris",
-            self.reservation_field_dict["x_studio_datetime_start"]: datetime.today().strftime("%d-%m-%Y %H:%M:%S"),
+            self.reservation_field_dict[
+                "x_studio_address_end"
+            ]: "10 Rue de Paris, Paris",
+            self.reservation_field_dict[
+                "x_studio_datetime_start"
+            ]: datetime.today().strftime("%d-%m-%Y %H:%M:%S"),
             self.reservation_field_dict["x_studio_nb_passengers"]: 3,
             self.reservation_field_dict["x_studio_nb_luggages"]: 3,
             self.reservation_field_dict["x_studio_last_name"]: "Dupont",
@@ -245,19 +254,38 @@ class OdooTestCase(TestCase):
 
         record = read_response["result"][0]
         print(record)
-        self.assertEqual(record["x_studio_address_start"], reservation_data["x_studio_address_start"])
-        self.assertEqual(record["x_studio_address_end"], reservation_data["x_studio_address_end"])
-        self.assertEqual(record["x_studio_datetime_start"], reservation_data["x_studio_datetime_start"])
-        self.assertEqual(record["x_studio_nb_passengers"], reservation_data["x_studio_nb_passengers"])
-        self.assertEqual(record["x_studio_nb_luggages"], reservation_data["x_studio_nb_luggages"])
-        self.assertEqual(record["x_studio_last_name"], reservation_data["x_studio_last_name"])
-        self.assertEqual(record["x_studio_first_name"], reservation_data["x_studio_first_name"])
+        self.assertEqual(
+            record["x_studio_address_start"], reservation_data["x_studio_address_start"]
+        )
+        self.assertEqual(
+            record["x_studio_address_end"], reservation_data["x_studio_address_end"]
+        )
+        self.assertEqual(
+            record["x_studio_datetime_start"],
+            reservation_data["x_studio_datetime_start"],
+        )
+        self.assertEqual(
+            record["x_studio_nb_passengers"], reservation_data["x_studio_nb_passengers"]
+        )
+        self.assertEqual(
+            record["x_studio_nb_luggages"], reservation_data["x_studio_nb_luggages"]
+        )
+        self.assertEqual(
+            record["x_studio_last_name"], reservation_data["x_studio_last_name"]
+        )
+        self.assertEqual(
+            record["x_studio_first_name"], reservation_data["x_studio_first_name"]
+        )
         self.assertEqual(record["x_studio_phone"], reservation_data["x_studio_phone"])
         self.assertEqual(record["x_studio_email"], reservation_data["x_studio_email"])
         self.assertEqual(record["x_studio_note"], reservation_data["x_studio_note"])
         self.assertEqual(record["x_studio_price"], reservation_data["x_studio_price"])
-        self.assertEqual(record["x_studio_duration"], reservation_data["x_studio_duration"])
-        self.assertEqual(record["x_studio_distance"], reservation_data["x_studio_distance"])
+        self.assertEqual(
+            record["x_studio_duration"], reservation_data["x_studio_duration"]
+        )
+        self.assertEqual(
+            record["x_studio_distance"], reservation_data["x_studio_distance"]
+        )
         # self.assertEqual(record["x_studio_car_type"], reservation_data["x_studio_car_type"])
         # self.assertEqual(record["x_studio_trip_type"], reservation_data["x_studio_trip_type"])
 
@@ -271,8 +299,12 @@ class OdooTestCase(TestCase):
 
         reservation_data = {
             self.reservation_field_dict["x_studio_address_start"]: "Gare de Lyon",
-            self.reservation_field_dict["x_studio_address_end"]: "10 Rue de Paris, Paris",
-            self.reservation_field_dict["x_studio_datetime_start"]: datetime.today().strftime("%Y-%m-%d %H:%M:%S"),
+            self.reservation_field_dict[
+                "x_studio_address_end"
+            ]: "10 Rue de Paris, Paris",
+            self.reservation_field_dict[
+                "x_studio_datetime_start"
+            ]: datetime.today().strftime("%Y-%m-%d %H:%M:%S"),
             self.reservation_field_dict["x_studio_nb_passengers"]: 3,
             self.reservation_field_dict["x_studio_nb_luggages"]: 3,
             self.reservation_field_dict["x_studio_last_name"]: "Dupont",
@@ -336,7 +368,11 @@ class OdooTestCase(TestCase):
 
         delete_response = requests.post(self.url_json, json=payload_delete).json()
         print("Delete response:", delete_response)
-        self.assertIn("result", delete_response, "Odoo n'a pas renvoyé de confirmation de suppression")
+        self.assertIn(
+            "result",
+            delete_response,
+            "Odoo n'a pas renvoyé de confirmation de suppression",
+        )
         self.assertTrue(delete_response["result"], "La suppression a échoué")
 
         payload_read = {
@@ -361,4 +397,8 @@ class OdooTestCase(TestCase):
         read_response = requests.post(self.url_json, json=payload_read).json()
         print("Read response after delete:", read_response)
         self.assertIn("result", read_response, "Échec lecture Odoo après suppression")
-        self.assertEqual(len(read_response["result"]), 0, "La réservation existe encore après suppression")
+        self.assertEqual(
+            len(read_response["result"]),
+            0,
+            "La réservation existe encore après suppression",
+        )

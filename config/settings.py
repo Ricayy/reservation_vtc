@@ -9,9 +9,11 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+
 load_dotenv()
 
 MAPBOX_API_KEY = os.getenv("MAPBOX_API_KEY")
@@ -82,9 +84,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
         # 'ENGINE': 'django.db.backends.postgresql',
         # 'NAME': os.getenv("DB_NAME"),
         # 'USER': os.getenv("DB_USER"),
@@ -124,15 +126,15 @@ USE_TZ = True
 USE_I18N = True
 USE_L10N = True
 
-LANGUAGE_CODE = 'fr'
+LANGUAGE_CODE = "fr"
 
 LANGUAGES = [
-    ('fr', 'Français'),
-    ('en', 'English'),
+    ("fr", "Français"),
+    ("en", "English"),
 ]
 
 LOCALE_PATHS = [
-    BASE_DIR / 'locale',
+    BASE_DIR / "locale",
 ]
 
 
@@ -140,7 +142,9 @@ LOCALE_PATHS = [
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "static",]
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

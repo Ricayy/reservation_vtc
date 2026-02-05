@@ -56,6 +56,7 @@ def get_user_by_email(email):
     """
     return OdooClient().query_search_read_user_by_email(email)["result"]
 
+
 def get_user_by_id(id_res):
     """
     Fonction d'appel de la requête Odoo de récupération d'un utilisateur par id Odoo
@@ -74,7 +75,10 @@ def get_res_by_email(email):
     :return:
     """
     res_id = OdooClient().query_search_read_res_by_user(email)
-    return OdooClient().query_search_read_res_by_id(res_id["result"][0][OdooContactModel.reservation_id])
+    return OdooClient().query_search_read_res_by_id(
+        res_id["result"][0][OdooContactModel.reservation_id]
+    )
+
 
 def get_res_by_id(id_res):
     """
@@ -108,8 +112,8 @@ class OdooClient:
                     "db": self.db,
                     "login": self.username,
                     "password": self.password,
-                }
-            }
+                },
+            },
         ).json()
         self.uid = auth_response["result"]["uid"]
 
@@ -133,8 +137,8 @@ class OdooClient:
                     self.app_contact,
                     "create",
                     [user_data],
-                ]
-            }
+                ],
+            },
         }
         return requests.post(self.url_json, json=json).json()
 
@@ -166,7 +170,6 @@ class OdooClient:
         }
         return requests.post(self.url_json, json=json).json()
 
-
     def query_search_read_user_by_email(self, email):
         """
 
@@ -187,17 +190,18 @@ class OdooClient:
                     self.app_contact,
                     "search_read",
                     [[[OdooContactModel.email, "in", [email]]]],
-                    {"fields": [
-                        OdooContactModel.email,
-                        OdooContactModel.last_name,
-                        OdooContactModel.first_name,
-                        OdooContactModel.phone
-                    ]},
+                    {
+                        "fields": [
+                            OdooContactModel.email,
+                            OdooContactModel.last_name,
+                            OdooContactModel.first_name,
+                            OdooContactModel.phone,
+                        ]
+                    },
                 ],
             },
         }
         return requests.post(self.url_json, json=json).json()
-
 
     def query_search_read_user_by_id(self, id_res):
         """
@@ -219,12 +223,14 @@ class OdooClient:
                     self.app_contact,
                     "search_read",
                     [[[OdooContactModel.id, "in", [id_res]]]],
-                    {"fields": [
-                        OdooContactModel.email,
-                        OdooContactModel.last_name,
-                        OdooContactModel.first_name,
-                        OdooContactModel.phone
-                    ]},
+                    {
+                        "fields": [
+                            OdooContactModel.email,
+                            OdooContactModel.last_name,
+                            OdooContactModel.first_name,
+                            OdooContactModel.phone,
+                        ]
+                    },
                 ],
             },
         }
@@ -250,8 +256,7 @@ class OdooClient:
                     self.app_contact,
                     "search_read",
                     [[[OdooContactModel.email, "in", [email]]]],
-                    {"fields": [OdooContactModel.reservation_id]
-                     },
+                    {"fields": [OdooContactModel.reservation_id]},
                 ],
             },
         }
@@ -277,19 +282,20 @@ class OdooClient:
                     self.app_reservation,
                     "search_read",
                     [[[OdooReservationModel.id, "in", reservations_id]]],
-                    {"fields": [
-                        OdooReservationModel.email,
-                        OdooReservationModel.address_start,
-                        OdooReservationModel.address_end,
-                        OdooReservationModel.car_type,
-                        OdooReservationModel.trip_type,
-                        OdooReservationModel.datetime_start,
-                        OdooReservationModel.price,
-                        OdooReservationModel.distance,
-                        OdooReservationModel.duration,
-                        OdooReservationModel.note,
-                    ]
-                     },
+                    {
+                        "fields": [
+                            OdooReservationModel.email,
+                            OdooReservationModel.address_start,
+                            OdooReservationModel.address_end,
+                            OdooReservationModel.car_type,
+                            OdooReservationModel.trip_type,
+                            OdooReservationModel.datetime_start,
+                            OdooReservationModel.price,
+                            OdooReservationModel.distance,
+                            OdooReservationModel.duration,
+                            OdooReservationModel.note,
+                        ]
+                    },
                 ],
             },
         }

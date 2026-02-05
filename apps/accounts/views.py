@@ -25,11 +25,7 @@ def login_view(request):
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
 
-            user = authenticate(
-                request,
-                username=email,
-                password=password
-            )
+            user = authenticate(request, username=email, password=password)
 
             if user is not None:
                 login(request, user)
@@ -39,11 +35,8 @@ def login_view(request):
     else:
         form = LoginForm()
 
-    return render(
-        request,
-        "accounts/login.html",
-        {"form": form, "error": error}
-    )
+    return render(request, "accounts/login.html", {"form": form, "error": error})
+
 
 @login_required
 def logout_view(request):

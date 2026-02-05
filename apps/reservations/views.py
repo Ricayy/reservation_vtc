@@ -9,10 +9,17 @@ from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 
 from apps.core.models import OdooReservationModel, OdooContactModel
-from apps.core.odoo_client import get_user_by_email, create_user, create_res, get_res_by_id, get_user_by_id
+from apps.core.odoo_client import (
+    get_user_by_email,
+    create_user,
+    create_res,
+    get_res_by_id,
+    get_user_by_id,
+)
 from apps.website.models import FormField
 
 from django.http import HttpResponse
+
 
 def preview_order_pdf(request, id_res):
     """
@@ -23,8 +30,8 @@ def preview_order_pdf(request, id_res):
     except Exception as e:
         return HttpResponse(f"Erreur génération PDF : {e}")
 
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="order_{id_res}.pdf"'
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="order_{id_res}.pdf"'
     return response
 
 
@@ -65,7 +72,7 @@ def build_email_message(res_data, trip_type):
         "Un chauffeur vous sera attribué prochainement.",
         "",
         "Cordialement,",
-        "L'équipe VTC"
+        "L'équipe VTC",
     ]
 
     return "\n".join(base)
@@ -78,9 +85,15 @@ def build_order_pdf(id_res):
     # Normalisation des données pour l'affichage
     res_data[OdooReservationModel.email] = user_data
     res_data[OdooReservationModel.car_type] = res_data[OdooReservationModel.car_type][1]
-    res_data[OdooReservationModel.trip_type] = res_data[OdooReservationModel.trip_type][1]
-    res_data[OdooReservationModel.datetime_start] = datetime.strptime(res_data[OdooReservationModel.datetime_start], "%Y-%m-%d %H:%M:%S")
-    res_data[OdooReservationModel.datetime_start] = res_data[OdooReservationModel.datetime_start].strftime("%d/%m/%Y - %H:%M")
+    res_data[OdooReservationModel.trip_type] = res_data[OdooReservationModel.trip_type][
+        1
+    ]
+    res_data[OdooReservationModel.datetime_start] = datetime.strptime(
+        res_data[OdooReservationModel.datetime_start], "%Y-%m-%d %H:%M:%S"
+    )
+    res_data[OdooReservationModel.datetime_start] = res_data[
+        OdooReservationModel.datetime_start
+    ].strftime("%d/%m/%Y - %H:%M")
 
     # Rendu HTML
     html_string = render_to_string("reservations/order.html", {"res_data": res_data})
@@ -105,7 +118,7 @@ def gen_mail_and_order_pdf(new_reservation, email_user, id_trip_type, id_res):
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[email_user],
     )
-    mail.attach(f"order_{id_res}.pdf", pdf_file, 'application/pdf')
+    mail.attach(f"order_{id_res}.pdf", pdf_file, "application/pdf")
     mail.send()
 
 
@@ -123,9 +136,12 @@ def validation_reservation(request):
         # String to list
         id_car_type = ast.literal_eval(data[FormField.car_type])[0]
         id_trip_type = ast.literal_eval(data[FormField.trip_type])[0]
-        datetime_start = datetime.strptime(data[FormField.datetime_start], "%d/%m/%Y - %H:%M")
+        datetime_start = datetime.strptime(
+            data[FormField.datetime_start], "%d/%m/%Y - %H:%M"
+        )
         new_reservation = {
-            OdooReservationModel.name: "Reservation " + datetime.strftime(datetime.today(), "%d/%m/%Y %H:%M"),
+            OdooReservationModel.name: "Reservation "
+            + datetime.strftime(datetime.today(), "%d/%m/%Y %H:%M"),
             OdooReservationModel.address_start: data[FormField.address_start],
             OdooReservationModel.address_end: data[FormField.address_end],
             OdooReservationModel.nb_passengers: data[FormField.nb_passengers],
@@ -135,7 +151,9 @@ def validation_reservation(request):
             OdooReservationModel.duration: data[FormField.duration],
             OdooReservationModel.distance: data[FormField.distance],
             OdooReservationModel.car_type: id_car_type,
-            OdooReservationModel.datetime_start: datetime_start.strftime("%Y-%m-%d %H:%M:%S"),
+            OdooReservationModel.datetime_start: datetime_start.strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
             OdooReservationModel.trip_type: id_trip_type,
         }
 
@@ -154,19 +172,30 @@ def validation_reservation(request):
         new_reservation[OdooReservationModel.email] = id_user
         response = create_res(new_reservation)
         if response["result"]:
-            gen_mail_and_order_pdf(new_reservation, user_data[OdooContactModel.email], id_trip_type, response["result"])
+            gen_mail_and_order_pdf(
+                new_reservation,
+                user_data[OdooContactModel.email],
+                id_trip_type,
+                response["result"],
+            )
 
             reservation = {
-               "id": response["result"],
-                FormField.address_start: new_reservation[OdooReservationModel.address_start],
-                FormField.address_end: new_reservation[OdooReservationModel.address_end],
+                "id": response["result"],
+                FormField.address_start: new_reservation[
+                    OdooReservationModel.address_start
+                ],
+                FormField.address_end: new_reservation[
+                    OdooReservationModel.address_end
+                ],
                 FormField.trip_type: new_reservation[OdooReservationModel.trip_type],
                 FormField.duration: int(new_reservation[OdooReservationModel.duration]),
                 FormField.datetime_start: data[FormField.datetime_start],
             }
-            return render(request, "reservations/validation.html", {"reservation": reservation})
+            return render(
+                request, "reservations/validation.html", {"reservation": reservation}
+            )
         else:
             error = response["error"]
-    else :
+    else:
         error = "Requête impossible"
     return render(request, "error.html", context=error)

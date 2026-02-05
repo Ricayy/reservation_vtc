@@ -1,6 +1,7 @@
 from config import settings
 from apps.reservations.models import VehiculeType, TripType, Reservation
 
+
 def reservation_common_context():
     return {
         "VEHICULE_DATA": Reservation.VEHICULE_DATA,
@@ -12,12 +13,10 @@ def reservation_common_context():
             for key, data in Reservation.VEHICULE_DATA.items()
         },
         "vehicule_price_hour": {
-            key: data["price_hour"]
-            for key, data in Reservation.VEHICULE_DATA.items()
+            key: data["price_hour"] for key, data in Reservation.VEHICULE_DATA.items()
         },
         "vehicule_seats": {
-            key: data["max_seats"]
-            for key, data in Reservation.VEHICULE_DATA.items()
+            key: data["max_seats"] for key, data in Reservation.VEHICULE_DATA.items()
         },
         "trip_type": TripType.choices,
     }

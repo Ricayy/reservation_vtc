@@ -20,7 +20,6 @@ class ReservationCreateView(CreateView):
         return context
 
 
-
 def recap_reservation(request):
     # Gestion context pour requête
     form = ReservationForm(request.POST)
@@ -63,13 +62,16 @@ def recap_reservation(request):
         date_obj = datetime.strptime(data[FormField.date_start], "%Y-%m-%d").date()
         time_obj = datetime.strptime(data[FormField.time_start], "%H:%M").time()
         datetime_start = datetime.combine(date_obj, time_obj)
-        new_reservation[FormField.datetime_start] = datetime_start.strftime("%d/%m/%Y - %H:%M")
+        new_reservation[FormField.datetime_start] = datetime_start.strftime(
+            "%d/%m/%Y - %H:%M"
+        )
 
         for key in new_reservation.keys():
             if new_reservation[key] is None:
                 new_reservation[key] = ""
-        return render(request, "reservations/recap.html", {"reservation": new_reservation})
+        return render(
+            request, "reservations/recap.html", {"reservation": new_reservation}
+        )
 
     # GET
     return render(request, "reservations/reservation_form.html", context)
-

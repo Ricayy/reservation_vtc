@@ -3,10 +3,11 @@ from django import forms
 from apps.accounts.models import CustomUser
 from apps.reservations.models import Reservation, VehiculeType, TripType
 
+
 class ReservationForm(forms.ModelForm):
     car_type = forms.ChoiceField(
         choices=VehiculeType.choices,
-        widget=forms.Select(attrs={'id': 'id_car_type'}),
+        widget=forms.Select(attrs={"id": "id_car_type"}),
         required=True,
     )
     trip_type = forms.ChoiceField(
@@ -18,8 +19,8 @@ class ReservationForm(forms.ModelForm):
         model = Reservation
         fields = "__all__"
         widgets = {
-            'date_start': forms.DateInput(attrs={'type': 'date'}),
-            'time_start': forms.TimeInput(attrs={'type': 'time'}),
+            "date_start": forms.DateInput(attrs={"type": "date"}),
+            "time_start": forms.TimeInput(attrs={"type": "time"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -33,13 +34,15 @@ class ReservationForm(forms.ModelForm):
         nb_passengers = cleaned_data.get("nb_passengers")
 
         if car_type and nb_passengers is not None:
-            max_seats = Reservation.VEHICULE_DATA[car_type]['max_seats']
+            max_seats = Reservation.VEHICULE_DATA[car_type]["max_seats"]
             if nb_passengers < 0:
-                self.add_error("nb_passengers", "Le nombre de passagers ne peut pas être négatif.")
+                self.add_error(
+                    "nb_passengers", "Le nombre de passagers ne peut pas être négatif."
+                )
             if nb_passengers > max_seats:
                 self.add_error(
                     "nb_passengers",
-                    f"Le véhicule sélectionné ne permet que {max_seats} places."
+                    f"Le véhicule sélectionné ne permet que {max_seats} places.",
                 )
 
         trip_type = cleaned_data.get("trip_type")
@@ -49,20 +52,16 @@ class ReservationForm(forms.ModelForm):
         if trip_type == TripType.SIMPLE and not address_end:
             self.add_error(
                 "address_end",
-                "L'adresse de destination est obligatoire pour un trajet simple."
+                "L'adresse de destination est obligatoire pour un trajet simple.",
             )
 
         return cleaned_data
 
 
 class RegisterForm(forms.ModelForm):
-    password1 = forms.CharField(
-        label="Mot de passe",
-        widget=forms.PasswordInput
-    )
+    password1 = forms.CharField(label="Mot de passe", widget=forms.PasswordInput)
     password2 = forms.CharField(
-        label="Confirmation du mot de passe",
-        widget=forms.PasswordInput
+        label="Confirmation du mot de passe", widget=forms.PasswordInput
     )
 
     class Meta:
@@ -94,7 +93,4 @@ class RegisterForm(forms.ModelForm):
 
 class LoginForm(forms.Form):
     email = forms.EmailField(label="Email")
-    password = forms.CharField(
-        label="Mot de passe",
-        widget=forms.PasswordInput
-    )
+    password = forms.CharField(label="Mot de passe", widget=forms.PasswordInput)

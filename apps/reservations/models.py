@@ -3,13 +3,13 @@ from django.utils.translation import gettext_lazy as _
 
 
 class VehiculeType(models.TextChoices):
-    CAR = 'car', _('Voiture')
-    VAN = 'van', _('Van')
+    CAR = "car", _("Voiture")
+    VAN = "van", _("Van")
 
 
 class TripType(models.TextChoices):
-    SIMPLE = 'simple', _('Simple')
-    HOURLY = 'hourly', _('Mise à disposition')
+    SIMPLE = "simple", _("Simple")
+    HOURLY = "hourly", _("Mise à disposition")
 
 
 class Reservation(models.Model):
@@ -33,8 +33,18 @@ class Reservation(models.Model):
     date_reservation = models.DateField(null=True, auto_now_add=True)
 
     VEHICULE_DATA = {
-        VehiculeType.CAR: {'id': 1, 'max_seats': 4, 'price_distance': 1.80, 'price_hour': 45.0},
-        VehiculeType.VAN: {'id': 2, 'max_seats': 7, 'price_distance': 2.50, 'price_hour': 60.0},
+        VehiculeType.CAR: {
+            "id": 1,
+            "max_seats": 4,
+            "price_distance": 1.80,
+            "price_hour": 45.0,
+        },
+        VehiculeType.VAN: {
+            "id": 2,
+            "max_seats": 7,
+            "price_distance": 2.50,
+            "price_hour": 60.0,
+        },
     }
     TRIP_DATA = {
         TripType.SIMPLE: {"id": 1},

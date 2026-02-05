@@ -1,5 +1,4 @@
 # A faire :
-- Multilangues
 - Style
 - Notification des courses par email, sms ou autres
 - Email de confirmation depuis serveur
@@ -18,6 +17,7 @@
 - Enregistrement des réservations et info clients dans Odoo
 - Génération d'un bon de commande PDF contenant le récapitulatif de la réservation
 - Envoi d'un email automatique depuis back-end en local
+- Traduction sur toutes les pages 
 
 # Commandes Django
 Création d'un projet Django : 
