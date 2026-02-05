@@ -141,6 +141,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 box.appendChild(div);
             });
         });
+        // Fermeture de la div quand on clique à l'extérieur
+        document.addEventListener("click", (event)=>{
+            if (!box.contains(event.target) && event.target !== input) {
+                box.style.display = "none";
+            }
+        });
+
+        // Empêche le clic à l'intérieur de fermer immédiatement
+        box.addEventListener("click", (event)=>{
+            event.stopPropagation();
+        });
     }
 
     setupAutocomplete("id_address_start", "suggestions_start", "start");
