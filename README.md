@@ -1,12 +1,10 @@
 # A faire :
-- Style
 - Notification des courses par email, sms ou autres
 - Email de confirmation depuis serveur
 - Annulation réservation depuis page profil ou page unique
 - Affichage réservation depuis page unique pour user invité
 - Pages informations, avis, services, ...
 - Footer
-- Ajout auto complete custom POI
 
 # Fait :
 - Formulaire de réservation (adresse, date, véhicule, info clients)

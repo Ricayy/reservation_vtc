@@ -46,9 +46,9 @@
     </div>
 
     <p><strong>{% trans "Départ" %} :</strong> {{ reservation.address_start }}</p>
-    {% if reservation.trip_type == 1 %}
+    {% if reservation.trip_type == "simple" %}
         <p><strong>{% trans "Arrivée" %} :</strong> {{ reservation.address_end }}</p>
-    {% elif reservation.trip_type == 2 %}
+    {% elif reservation.trip_type == "hourly" %}
         <p><strong>{% trans "Durée de mise à disposition" %} :</strong> {{ reservation.duration|minutes_to_hours }}</p>
     {% endif %}
     <p><strong>{% trans "Date et heure de prise en charge" %} :</strong> {{ reservation.datetime_start }}</p>

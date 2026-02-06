@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+{% load duration_filters %}
 {% load i18n %}
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>{% trans "Bon de commande" %} - {{ reservation.id }}</title>
+    <title>{% trans "Bon de commande" %} - {{ res_data.id }}</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 30px; font-size: 12px; }
         h1 { text-align: center; font-size: 18px; }
@@ -18,7 +19,7 @@
 </head>
 <body>
     <h1>{% trans "Bon de commande VTC" %}</h1>
-
+    <br>
     <div class="section">
         <h2>{% trans "Client" %}</h2>
         <p><strong>{% trans "Nom" %} :</strong> {{ res_data.x_studio_email.x_studio_first_name }} {{ res_data.x_studio_email.x_studio_last_name }}</p>
@@ -28,12 +29,13 @@
 
     <div class="section">
         <h2>{% trans "Course" %}</h2>
+        <p><strong>{% trans "Numéro de course" %} :</strong> {{ res_data.id }}</p>
         <p><strong>{% trans "Départ" %} :</strong> {{ res_data.x_studio_address_start }}</p>
-        {% if res_data.trip_type == 1 %}
+        {% if res_data.x_studio_trip_type == "Simple" %}
             <p><strong>{% trans "Arrivée" %} :</strong> {{ res_data.x_studio_address_end }}</p>
             <p><strong>{% trans "Distance" %} :</strong> {{ res_data.x_studio_distance }} km</p>
-        {% elif res_data.trip_type == 2 %}
-            <p><strong>{% trans "Durée" %} :</strong> {{ res_data.x_studio_duration }} {% trans "heures" %}</p>
+        {% elif res_data.x_studio_trip_type == "Mise à disposition" %}
+            <p><strong>{% trans "Durée" %} :</strong> {{ res_data.x_studio_duration|minutes_to_hours }}</p>
         {% endif %}
         <p><strong>{% trans "Type de trajet" %} :</strong> {{ res_data.x_studio_trip_type }}</p>
         <p><strong>{% trans "Date et heure" %} :</strong> {{ res_data.x_studio_datetime_start }}</p>
@@ -51,6 +53,5 @@
     <div class="footer">
         {% trans "Bon généré automatiquement par le système VTC" %}
     </div>
-
 </body>
 </html>

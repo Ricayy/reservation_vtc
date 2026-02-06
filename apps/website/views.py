@@ -34,29 +34,29 @@ def recap_reservation(request):
         new_reservation = {
             FormField.address_start: data[FormField.address_start],
             FormField.address_end: data[FormField.address_end],
-            FormField.nb_passengers: data[FormField.nb_passengers],
-            FormField.nb_luggages: data[FormField.nb_luggages],
+            FormField.nb_passengers: int(data[FormField.nb_passengers]),
+            FormField.nb_luggages: int(data[FormField.nb_luggages]),
             FormField.note: data[FormField.note],
-            FormField.price: data[FormField.price],
-            FormField.duration: data[FormField.duration],
-            FormField.distance: data[FormField.distance],
+            FormField.price: float(data[FormField.price]),
+            FormField.duration: int(data[FormField.duration]),
+            FormField.distance: float(data[FormField.distance]),
             FormField.email: data[FormField.email],
             FormField.last_name: data[FormField.last_name],
             FormField.first_name: data[FormField.first_name],
             FormField.phone: data[FormField.phone],
-            FormField.car_type: [],
-            FormField.trip_type: [],
+            FormField.car_type: {},
+            FormField.trip_type: {},
         }
 
         # Véhicule
-        new_reservation[FormField.car_type].append(data[FormField.vehicule_id])
-        new_reservation[FormField.car_type].append(data[FormField.car_type])
-        new_reservation[FormField.car_type].append(data[FormField.vehicule_label])
+        new_reservation[FormField.car_type][FormField.vehicule_id] = int(data[FormField.vehicule_id])
+        new_reservation[FormField.car_type][FormField.car_type] = data[FormField.car_type]
+        new_reservation[FormField.car_type][FormField.vehicule_label] = data[FormField.vehicule_label]
 
         # Type de trajet
-        new_reservation[FormField.trip_type].append(data[FormField.trip_type_id])
-        new_reservation[FormField.trip_type].append(data[FormField.trip_type])
-        new_reservation[FormField.trip_type].append(data[FormField.trip_type_label])
+        new_reservation[FormField.trip_type][FormField.trip_type_id] = int(data[FormField.trip_type_id])
+        new_reservation[FormField.trip_type][FormField.trip_type] = data[FormField.trip_type]
+        new_reservation[FormField.trip_type][FormField.trip_type_label] = data[FormField.trip_type_label]
 
         # Date et heure
         date_obj = datetime.strptime(data[FormField.date_start], "%Y-%m-%d").date()
@@ -65,13 +65,13 @@ def recap_reservation(request):
         new_reservation[FormField.datetime_start] = datetime_start.strftime(
             "%d/%m/%Y - %H:%M"
         )
-
+        print("new_reservation")
+        print(new_reservation)
         for key in new_reservation.keys():
             if new_reservation[key] is None:
                 new_reservation[key] = ""
         return render(
             request, "reservations/recap.html", {"reservation": new_reservation}
         )
-
     # GET
     return render(request, "reservations/reservation_form.html", context)

@@ -1,55 +1,55 @@
-const VEHICULE_PRICE_KM = JSON.parse(document.getElementById("vehicule-price-km").textContent);
-const VEHICULE_PRICE_HOUR = JSON.parse(document.getElementById("vehicule-price-hour").textContent);
-const VEHICULE_SEATS = JSON.parse(document.getElementById("vehicule-seats").textContent);
-const VEHICULE_DATA = JSON.parse(document.getElementById("vehicule-data").textContent);
-const TRIP_DATA = JSON.parse(document.getElementById("trip-data").textContent);
-
-/* ================= POIS CENTRALISÉS ================= */
-const POIS = {
-    aeroport: {
-        charles_de_gaulle: { label: "Aéroport CDG", address: "Aéroport Charles de Gaulle, Roissy", coords: [2.5479,49.0097] },
-        orly: { label: "Aéroport Orly", address: "Aéroport d'Orly, Orly", coords: [2.3790,48.7262] },
-    },
-    gare: {
-        gare_de_lyon: { label: "Gare de Lyon", address: "Gare de Lyon, Paris", coords: [2.3730,48.8443] },
-        gare_du_nord: { label: "Gare du Nord", address: "Gare du Nord, Paris", coords: [2.3553,48.8809] },
-        gare_montparnasse: { label: "Gare Montparnasse", address: "Gare Montparnasse, Paris, France", coords: [2.3200, 48.8409] },
-        gare_saint_lazare: { label: "Gare Saint-Lazare", address: "Gare Saint-Lazare, Paris, France", coords: [2.3253, 48.8773] },
-        gare_de_bercy: { label: "Gare de Bercy", address: "Gare de Bercy, Paris, France", coords: [2.3828, 48.8393] },
-        gare_austerlitz: { label: "Gare d'Austerlitz", address: "Gare d'Austerlitz, Paris, France", coords: [2.3663, 48.8426] },
-        gare_de_l_est: { label: "Gare de l'Est", address: "Gare de l'Est, Paris, France", coords: [2.3590, 48.8769] },
-        gare_de_chatelet_les_halles: { label: "Gare de Châtelet Les Halles", address: "Gare de Châtelet Les Halles, Paris, France", coords: [2.3470, 48.8620] },
-    },
-    loisir: {
-        disney: { label: "Disneyland Paris", address: "Disneyland Paris, Chessy", coords: [2.7836,48.8676] },
-        asterix: { label: "Parc Astérix", address: "Parc Astérix, Plailly", coords: [2.5712,49.1343] },
-        versailles: { label: "Château de Versailles", address: "Place d'Armes, 78000 Versailles, France", coords: [2.1204, 48.8049] },
-        jardins_du_luxembourg: { label: "Jardins du Luxembourg", address: "Jardin du Luxembourg, Paris, France", coords: [2.3372, 48.8462] },
-        bois_de_boulogne: { label: "Bois de Boulogne", address: "Bois de Boulogne, Paris, France", coords: [2.2530, 48.8630] },
-        parc_des_expositions: { label: "Parc des Expositions de Villepinte", address: "Parc des Expositions, Villepinte, France", coords: [2.52074, 48.97111] },
-        louvre: { label: "Musée du Louvre", address: "Musée du Louvre, Paris, France", coords: [2.3375, 48.8609] },
-        notre_dame: { label: "Cathédrale Notre-Dame de Paris", address: "Cathédrale Notre-Dame, Paris, France", coords: [2.3497, 48.8532] },
-        orsay: { label: "Musée d’Orsay", address: "Musée d’Orsay, Paris, France", coords: [2.3265, 48.8603] },
-        arc_triomphe: { label: "Arc de Triomphe", address: "Arc de Triomphe, Paris, France", coords: [2.2949, 48.8740] },
-    },
-    mise_dis: {
-        1: { label: "1 heure", value: 1},
-        2: { label: "2 heures", value: 2},
-        3: { label: "3 heures", value: 3},
-        4: { label: "4 heures", value: 4},
-        5: { label: "5 heures", value: 5},
-        6: { label: "6 heures", value: 6},
-        7: { label: "7 heures", value: 7},
-        8: { label: "8 heures", value: 8},
-        9: { label: "9 heures", value: 9},
-        10: { label: "10 heures", value: 10},
-        11: { label: "11 heures", value: 11},
-        12: { label: "12 heures", value: 12},
-    },
-};
-
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
+    const VEHICULE_PRICE_KM = JSON.parse(document.getElementById("vehicule-price-km").textContent);
+    const VEHICULE_PRICE_HOUR = JSON.parse(document.getElementById("vehicule-price-hour").textContent);
+    const VEHICULE_SEATS = JSON.parse(document.getElementById("vehicule-seats").textContent);
+    const VEHICULE_DATA = JSON.parse(document.getElementById("vehicule-data").textContent);
+    const TRIP_DATA = JSON.parse(document.getElementById("trip-data").textContent);
+
+    /* ================= POIS CENTRALISÉS ================= */
+    const POIS = {
+        aeroport: {
+            charles_de_gaulle: { label: "Aéroport CDG", address: "Aéroport Charles de Gaulle, Roissy", coords: [2.5479,49.0097] },
+            orly: { label: "Aéroport Orly", address: "Aéroport d'Orly, Orly", coords: [2.3790,48.7262] },
+        },
+        gare: {
+            gare_de_lyon: { label: "Gare de Lyon", address: "Gare de Lyon, Paris", coords: [2.3730,48.8443] },
+            gare_du_nord: { label: "Gare du Nord", address: "Gare du Nord, Paris", coords: [2.3553,48.8809] },
+            gare_montparnasse: { label: "Gare Montparnasse", address: "Gare Montparnasse, Paris, France", coords: [2.3200, 48.8409] },
+            gare_saint_lazare: { label: "Gare Saint-Lazare", address: "Gare Saint-Lazare, Paris, France", coords: [2.3253, 48.8773] },
+            gare_de_bercy: { label: "Gare de Bercy", address: "Gare de Bercy, Paris, France", coords: [2.3828, 48.8393] },
+            gare_austerlitz: { label: "Gare d'Austerlitz", address: "Gare d'Austerlitz, Paris, France", coords: [2.3663, 48.8426] },
+            gare_de_l_est: { label: "Gare de l'Est", address: "Gare de l'Est, Paris, France", coords: [2.3590, 48.8769] },
+            gare_de_chatelet_les_halles: { label: "Gare de Châtelet Les Halles", address: "Gare de Châtelet Les Halles, Paris, France", coords: [2.3470, 48.8620] },
+        },
+        loisir: {
+            disney: { label: "Disneyland Paris", address: "Disneyland Paris, Chessy", coords: [2.7836,48.8676] },
+            asterix: { label: "Parc Astérix", address: "Parc Astérix, Plailly", coords: [2.5712,49.1343] },
+            versailles: { label: "Château de Versailles", address: "Place d'Armes, 78000 Versailles, France", coords: [2.1204, 48.8049] },
+            jardins_du_luxembourg: { label: "Jardins du Luxembourg", address: "Jardin du Luxembourg, Paris, France", coords: [2.3372, 48.8462] },
+            bois_de_boulogne: { label: "Bois de Boulogne", address: "Bois de Boulogne, Paris, France", coords: [2.2530, 48.8630] },
+            parc_des_expositions: { label: "Parc des Expositions de Villepinte", address: "Parc des Expositions, Villepinte, France", coords: [2.52074, 48.97111] },
+            louvre: { label: "Musée du Louvre", address: "Musée du Louvre, Paris, France", coords: [2.3375, 48.8609] },
+            notre_dame: { label: "Cathédrale Notre-Dame de Paris", address: "Cathédrale Notre-Dame, Paris, France", coords: [2.3497, 48.8532] },
+            orsay: { label: "Musée d’Orsay", address: "Musée d’Orsay, Paris, France", coords: [2.3265, 48.8603] },
+            arc_triomphe: { label: "Arc de Triomphe", address: "Arc de Triomphe, Paris, France", coords: [2.2949, 48.8740] },
+        },
+        mise_dis: {
+            1: { label: "1 heure", value: 1},
+            2: { label: "2 heures", value: 2},
+            3: { label: "3 heures", value: 3},
+            4: { label: "4 heures", value: 4},
+            5: { label: "5 heures", value: 5},
+            6: { label: "6 heures", value: 6},
+            7: { label: "7 heures", value: 7},
+            8: { label: "8 heures", value: 8},
+            9: { label: "9 heures", value: 9},
+            10: { label: "10 heures", value: 10},
+            11: { label: "11 heures", value: 11},
+            12: { label: "12 heures", value: 12},
+        },
+    };
+
     let mapLoaded = false;
     let isMiseDis = false;
     let startCoords = null, endCoords = null, currentDistanceKm = 0;
@@ -59,6 +59,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("distance").value = 0;
     document.getElementById("price").value = 0;
     let initialMiseDisDuration = null;
+
+    //Initialisation route
+    const routeInfo = document.getElementById("route-info");
+    const distanceInput = document.getElementById("distance");
+    const durationInput = document.getElementById("duration");
 
     // Initialisation véhicules
     const carSelect = document.getElementById("id_car_type");
@@ -121,11 +126,19 @@ document.addEventListener("DOMContentLoaded", () => {
     setupAutocomplete("id_address_start", "suggestions_start", "start");
     setupAutocomplete("id_address_end", "suggestions_end", "end");
 
+    function debounce(fn, delay = 300) {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fn(...args), delay);
+        };
+    }
+
     function setupAutocomplete(inputId, suggestionsId, type){
         const input = document.getElementById(inputId);
         const box = document.getElementById(suggestionsId);
 
-        input.addEventListener("input", async ()=>{
+        input.addEventListener("input", debounce(async () => {
             if(input.value.length < 3){
                 box.style.display = "none";
                 return;
@@ -148,29 +161,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if(type === "start") startCoords = f.geometry.coordinates;
                     else endCoords = f.geometry.coordinates;
+                    hasFittedBounds = false;
 
                     refreshMarkers();
 
                     if (!isMiseDis && type === "end") setTripType("simple");
 
-                    if (!isMiseDis) {
-                        drawRoute();
-                    } else {
-                        updatePrice();
-                    }
+                    if (!isMiseDis) drawRoute();
+                    else updatePrice();
                 };
                 box.appendChild(div);
             });
-        });
+        }, 300));
 
-        // Fermeture de la div quand on clique à l'extérieur
         document.addEventListener("click", (event)=>{
             if (!box.contains(event.target) && event.target !== input) {
                 box.style.display = "none";
             }
         });
 
-        // Empêche le clic à l'intérieur de fermer immédiatement
         box.addEventListener("click", (event)=>{
             event.stopPropagation();
         });
@@ -188,8 +197,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!poi) return;
 
             const addressInput = document.getElementById(`id_address_${type}`);
-            const durationInput = document.getElementById("duration");
-            const distanceInput = document.getElementById("distance");
 
             /* ================= MISE À DISPOSITION ================= */
             if (cat === "mise_dis") {
@@ -198,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 startCoords = startCoords || null;
                 endCoords = null;
+                hasFittedBounds = false;
 
                 if (!addressInput.value) addressInput.value = poi.value;
 
@@ -231,6 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 endCoords = poi.coords;
             }
+            hasFittedBounds = false;
 
             addressInput.value = poi.address;
             currentDistanceKm = 0;
@@ -240,28 +249,29 @@ document.addEventListener("DOMContentLoaded", () => {
             refreshMarkers();
         });
     }
-    ["id_address_start", "id_address_end"].forEach(id=>{
+    ["id_address_start", "id_address_end"].forEach(id => {
         const el = document.getElementById(id);
-        if(el){
-            el.addEventListener("input", () => {
-                if (isMiseDis) {
-                    // En mode mise à disposition, juste recalculer le prix
-                    updatePrice();
-                    return;
-                }
-                // Trajet classique
-                setTripType("simple");
-                drawRoute();
-            });
-            el.addEventListener("change", () => {
-                if (isMiseDis) {
-                    updatePrice();
-                    return;
-                }
-                setTripType("simple");
-                drawRoute();
-            });
-        }
+        if (!el) return;
+
+        el.addEventListener("input", () => {
+            if (isMiseDis) {
+                updatePrice();
+                return;
+            }
+            hasFittedBounds = false;
+            setTripType("simple");
+            drawRoute();
+        });
+
+        el.addEventListener("change", () => {
+            if (isMiseDis) {
+                updatePrice();
+                return;
+            }
+            hasFittedBounds = false;
+            setTripType("simple");
+            drawRoute();
+        });
     });
 
     ["start","end"].forEach(prefix=>{
@@ -283,9 +293,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isMiseDis) return;
         isMiseDis = false;
         initialMiseDisDuration = null;
-        document.getElementById("duration").value = 0;
-        document.getElementById("distance").value = 0;
+        durationInput.value = 0;
+        distanceInput.value = 0;
         currentDistanceKm = 0;
+        hasFittedBounds = false;
         setTripType("simple");
     }
 
@@ -323,26 +334,12 @@ document.addEventListener("DOMContentLoaded", () => {
         tripIdInput.value = TRIP_DATA[value]?.id || "";
         tripLabelInput.value = window.TRIP_LABELS[value] || "";
     }
-    document.getElementById("id_address_start").addEventListener("input", () => {
-        if (isMiseDis) {
-            updatePrice();
-            return;
-        }
-        setTripType("simple");
-        drawRoute();
-    });
-
-    document.getElementById("id_address_end").addEventListener("input", () => {
-        exitMiseDisMode();
-        setTripType("simple");
-        drawRoute();
-    });
 
 
     /* ================= ROUTE ================= */
-    async function drawRoute(){
-        if(isMiseDis || !startCoords || !endCoords) return;
-        if(!mapLoaded) return;
+    let hasFittedBounds = false;
+    async function drawRoute() {
+        if (isMiseDis || !startCoords || !endCoords || !mapLoaded) return;
 
         const url =
             `https://api.mapbox.com/directions/v5/mapbox/driving/` +
@@ -350,38 +347,40 @@ document.addEventListener("DOMContentLoaded", () => {
             `?geometries=geojson&overview=full` +
             `&access_token=${mapboxgl.accessToken}`;
 
-        try{
+        try {
             const res = await fetch(url);
             const json = await res.json();
-            if(!json.routes?.length) return;
+            if (!json.routes || !json.routes.length) return;
 
             const route = json.routes[0];
-            currentDistanceKm = route.distance / 1000;
-            document.getElementById("distance").value = currentDistanceKm.toFixed(2);
-            document.getElementById("duration").value = Math.round(route.duration / 60);
 
-            map.getSource("route").setData({
-                type:"FeatureCollection",
-                features:[{
-                    type:"Feature",
+            currentDistanceKm = route.distance / 1000;
+            distanceInput.value = currentDistanceKm.toFixed(2);
+            durationInput.value = Math.round(route.duration / 60);
+
+            const routeSource = map.getSource("route");
+            if (!routeSource) return;
+
+            routeSource.setData({
+                type: "FeatureCollection",
+                features: [{
+                    type: "Feature",
                     geometry: route.geometry
                 }]
             });
 
-            map.fitBounds([startCoords,endCoords],{padding:60});
+            if (!hasFittedBounds) {
+                map.fitBounds([startCoords, endCoords], { padding: 60 });
+                hasFittedBounds = true;
+            }
+
             refreshMarkers();
             updatePrice();
 
-        }catch(err){
-            console.error(err);
-        }
+        } catch (err) {
+            // error.msg drawRoute
     }
-
-    function updateRouteInfoVisibility(){
-        const info = document.getElementById("route-info");
-
-        info.dataset.visible = info.innerHTML.trim() !== "";
-    }
+}
 
     document.getElementById("id_date_start").addEventListener("change", () => {
         if (isMiseDis) return;
@@ -426,15 +425,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updatePrice(){
-        console.log("=== updatePrice called ===");
-        console.log("isMiseDis:", isMiseDis);
-        console.log("initialMiseDisDuration:", initialMiseDisDuration);
-        console.log("startCoords:", startCoords);
-        console.log("endCoords:", endCoords);
-        console.log("duration input:", document.getElementById("duration").value);
-
         const opt = carSelect.selectedOptions[0];
-        if(!opt) return;
+        if (!opt || !opt.dataset) return;
 
         if (!isMiseDis && (!startCoords || !endCoords || currentDistanceKm <= 0)) {
             return;
@@ -449,9 +441,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const hours = durationMinutes / 60;
             price = hours * parseFloat(opt.dataset.priceHour || 0);
 
-            document.getElementById("route-info").innerHTML =
+            routeInfo.innerHTML =
                 `Mise à disposition à : ${price.toFixed(2)} €`;
-            document.getElementById("route-info").dataset.visible = "true";
+            routeInfo.dataset.visible = "true";
             document.getElementById("price").value = price.toFixed(2);
 
             // Sortir immédiatement pour ne jamais toucher au trajet classique
@@ -459,16 +451,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // TRAJET CLASSIQUE
-        const duration = parseInt(document.getElementById("duration").value || 0);
+        const duration = parseInt(durationInput.value || 0);
         price = currentDistanceKm * parseFloat(opt.dataset.priceKm || 0);
 
         if (canShowRouteInfo()) {
-            document.getElementById("route-info").innerHTML =
+            routeInfo.innerHTML =
                 `${window.TRANSLATIONS.duration_calcul} : ${formatMinutes(duration)} — ${window.TRANSLATIONS.price_calcul} : ${price.toFixed(2)} €`;
-            document.getElementById("route-info").dataset.visible = "true";
+            routeInfo.dataset.visible = "true";
         } else {
-            document.getElementById("route-info").innerHTML = "";
-            document.getElementById("route-info").dataset.visible = "false";
+            routeInfo.innerHTML = "";
+            routeInfo.dataset.visible = "false";
         }
 
         document.getElementById("price").value = price.toFixed(2);
@@ -505,4 +497,50 @@ document.addEventListener("DOMContentLoaded", () => {
         validateLuggages();
         updatePrice();
     });
+
+    /* ================= VALIDATION DATE & HEURE ================= */
+    const dateInput = document.getElementById("id_date_start");
+    const timeInput = document.getElementById("id_time_start");
+    const submitBtn = document.querySelector("form button[type='submit']");
+    const error = document.getElementById("datetime-error");
+    const form = document.querySelector("form");
+
+    // Transforme date + heure en Date locale
+    function getLocalDateTime(dateStr, timeStr) {
+        if (!dateStr || !timeStr) return null;
+        const [year, month, day] = dateStr.split("-").map(Number);
+        const [hours, minutes] = timeStr.split(":").map(Number);
+        return new Date(year, month - 1, day, hours, minutes);
+    }
+
+    // Validation live
+    function validateDateTime() {
+        if (!dateInput.value || !timeInput.value) {
+            error.style.display = "none";
+            submitBtn.disabled = false;
+            return true;
+        }
+
+        const selectedDateTime = getLocalDateTime(dateInput.value, timeInput.value);
+        const nowWithDelay = new Date(Date.now() + 15 * 60 * 1000);
+
+        const isValid = selectedDateTime && selectedDateTime > nowWithDelay;
+
+        error.style.display = isValid ? "none" : "block";
+        submitBtn.disabled = !isValid;
+
+        return isValid;
+    }
+
+    dateInput.addEventListener("change", validateDateTime);
+    timeInput.addEventListener("change", validateDateTime);
+
+    // Validation au submit
+    form.addEventListener("submit", (e) => {
+        if (!validateDateTime()) {
+            e.preventDefault();
+            alert("La date et l’heure doivent être au moins 15 minutes dans le futur.");
+        }
+    });
+    validateDateTime();
 });
