@@ -53,7 +53,7 @@
     {% endif %}
     <p><strong>{% trans "Date et heure de prise en charge" %} :</strong> {{ reservation.datetime_start }}</p>
 
-    <a href="{% url 'order' reservation.id %}" target="_blank">{% trans "Voir le PDF" %}</a>
+    <a href="{% url 'order' reservation.id %}" target="_blank">{% trans "Télécharger le bon de commande" %}</a>
 
     <div class="validation-success">
         {% trans "Un chauffeur va au plus vite prendre contact avec vous" %}

@@ -7,16 +7,30 @@ const TRIP_DATA = JSON.parse(document.getElementById("trip-data").textContent);
 /* ================= POIS CENTRALISÉS ================= */
 const POIS = {
     aeroport: {
-        cdg: { label: "Aéroport CDG", address: "Aéroport Charles de Gaulle, Roissy", coords: [2.5479,49.0097] },
-        orly: { label: "Aéroport Orly", address: "Aéroport d'Orly, Orly", coords: [2.3790,48.7262] }
+        charles_de_gaulle: { label: "Aéroport CDG", address: "Aéroport Charles de Gaulle, Roissy", coords: [2.5479,49.0097] },
+        orly: { label: "Aéroport Orly", address: "Aéroport d'Orly, Orly", coords: [2.3790,48.7262] },
     },
     gare: {
-        gdl: { label: "Gare de Lyon", address: "Gare de Lyon, Paris", coords: [2.3730,48.8443] },
-        gdn: { label: "Gare du Nord", address: "Gare du Nord, Paris", coords: [2.3553,48.8809] }
+        gare_de_lyon: { label: "Gare de Lyon", address: "Gare de Lyon, Paris", coords: [2.3730,48.8443] },
+        gare_du_nord: { label: "Gare du Nord", address: "Gare du Nord, Paris", coords: [2.3553,48.8809] },
+        gare_montparnasse: { label: "Gare Montparnasse", address: "Gare Montparnasse, Paris, France", coords: [2.3200, 48.8409] },
+        gare_saint_lazare: { label: "Gare Saint-Lazare", address: "Gare Saint-Lazare, Paris, France", coords: [2.3253, 48.8773] },
+        gare_de_bercy: { label: "Gare de Bercy", address: "Gare de Bercy, Paris, France", coords: [2.3828, 48.8393] },
+        gare_austerlitz: { label: "Gare d'Austerlitz", address: "Gare d'Austerlitz, Paris, France", coords: [2.3663, 48.8426] },
+        gare_de_l_est: { label: "Gare de l'Est", address: "Gare de l'Est, Paris, France", coords: [2.3590, 48.8769] },
+        gare_de_chatelet_les_halles: { label: "Gare de Châtelet Les Halles", address: "Gare de Châtelet Les Halles, Paris, France", coords: [2.3470, 48.8620] },
     },
     loisir: {
-        disney: { label: "Disneyland Paris", address: "Disneyland Paris, Chessy", coords: [2.7840,48.8708] },
-        asterix: { label: "Parc Astérix", address: "Parc Astérix, Plailly", coords: [2.5961,49.1341] }
+        disney: { label: "Disneyland Paris", address: "Disneyland Paris, Chessy", coords: [2.7836,48.8676] },
+        asterix: { label: "Parc Astérix", address: "Parc Astérix, Plailly", coords: [2.5712,49.1343] },
+        versailles: { label: "Château de Versailles", address: "Place d'Armes, 78000 Versailles, France", coords: [2.1204, 48.8049] },
+        jardins_du_luxembourg: { label: "Jardins du Luxembourg", address: "Jardin du Luxembourg, Paris, France", coords: [2.3372, 48.8462] },
+        bois_de_boulogne: { label: "Bois de Boulogne", address: "Bois de Boulogne, Paris, France", coords: [2.2530, 48.8630] },
+        parc_des_expositions: { label: "Parc des Expositions de Villepinte", address: "Parc des Expositions, Villepinte, France", coords: [2.52074, 48.97111] },
+        louvre: { label: "Musée du Louvre", address: "Musée du Louvre, Paris, France", coords: [2.3375, 48.8609] },
+        notre_dame: { label: "Cathédrale Notre-Dame de Paris", address: "Cathédrale Notre-Dame, Paris, France", coords: [2.3497, 48.8532] },
+        orsay: { label: "Musée d’Orsay", address: "Musée d’Orsay, Paris, France", coords: [2.3265, 48.8603] },
+        arc_triomphe: { label: "Arc de Triomphe", address: "Arc de Triomphe, Paris, France", coords: [2.2949, 48.8740] },
     },
     mise_dis: {
         1: { label: "1 heure", value: 1},
@@ -44,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialisation distance et prix
     document.getElementById("distance").value = 0;
     document.getElementById("price").value = 0;
+    let initialMiseDisDuration = null;
 
     // Initialisation véhicules
     const carSelect = document.getElementById("id_car_type");
@@ -103,12 +118,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ================= AUTOCOMPLETE ================= */
+    setupAutocomplete("id_address_start", "suggestions_start", "start");
+    setupAutocomplete("id_address_end", "suggestions_end", "end");
+
     function setupAutocomplete(inputId, suggestionsId, type){
         const input = document.getElementById(inputId);
         const box = document.getElementById(suggestionsId);
 
         input.addEventListener("input", async ()=>{
-            if(input.value.length<3){ box.style.display="none"; return; }
+            if(input.value.length < 3){
+                box.style.display = "none";
+                return;
+            }
+
             const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(input.value)}.json?autocomplete=true&limit=5&language=fr&country=fr&access_token=${mapboxgl.accessToken}`;
             const res = await fetch(url);
             const data = await res.json();
@@ -120,27 +142,27 @@ document.addEventListener("DOMContentLoaded", () => {
             data.features.forEach(f=>{
                 const div = document.createElement("div");
                 div.textContent = f.place_name;
-                div.onclick = ()=>{
+                div.onclick = () => {
                     input.value = f.place_name;
                     box.style.display = "none";
 
-                    if(type==="start") startCoords = f.geometry.coordinates;
+                    if(type === "start") startCoords = f.geometry.coordinates;
                     else endCoords = f.geometry.coordinates;
 
-                    isMiseDis = false;
-                    if (type === "end") {
-                        if (cat === "mise_dis") {
-                            setTripType("hourly");
-                        } else {
-                            setTripType("simple");
-                        }
-                    }
                     refreshMarkers();
-                    drawRoute();
+
+                    if (!isMiseDis && type === "end") setTripType("simple");
+
+                    if (!isMiseDis) {
+                        drawRoute();
+                    } else {
+                        updatePrice();
+                    }
                 };
                 box.appendChild(div);
             });
         });
+
         // Fermeture de la div quand on clique à l'extérieur
         document.addEventListener("click", (event)=>{
             if (!box.contains(event.target) && event.target !== input) {
@@ -154,8 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    setupAutocomplete("id_address_start", "suggestions_start", "start");
-    setupAutocomplete("id_address_end", "suggestions_end", "end");
 
     /* ================= POI SELECT ================= */
     function setupPoi(selectId, type) {
@@ -163,26 +183,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const cat = select.dataset.category;
 
         select.addEventListener("change", () => {
+            resetOtherPoiSelects(type, cat);
             const poi = POIS[cat][select.value];
             if (!poi) return;
 
             const addressInput = document.getElementById(`id_address_${type}`);
             const durationInput = document.getElementById("duration");
             const distanceInput = document.getElementById("distance");
-            const infoDiv = document.getElementById("route-info");
 
             /* ================= MISE À DISPOSITION ================= */
             if (cat === "mise_dis") {
                 isMiseDis = true;
                 setTripType("hourly");
 
-                // reset trajet
-                addressInput.value = "";
-                durationInput.value = poi.value * 60;
-                currentDistanceKm = 0;
-                distanceInput.value = 0;
+                startCoords = startCoords || null;
                 endCoords = null;
 
+                if (!addressInput.value) addressInput.value = poi.value;
+
+                // durée selon le choix
+                initialMiseDisDuration = poi.value * 60;
+                durationInput.value = initialMiseDisDuration;
+                distanceInput.value = 0;
+
+                // effacer la route classique sur la carte
                 if (map.getSource("route")) {
                     map.getSource("route").setData({
                         type: "FeatureCollection",
@@ -191,22 +215,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 refreshMarkers();
-                updatePrice();
+                updatePrice(); // prix mis à jour selon la durée
                 return;
             }
 
-            /* ================= TRAJET CLASSIQUE ================= */
-            isMiseDis = false;
-
-            addressInput.value = poi.address;
+            /* ================= POI CLASSIQUE ================= */
+            // ⚠️ SI on définit une adresse d'arrivée → on quitte la mise à disposition
+            if (type === "end") {
+                exitMiseDisMode();
+                setTripType("simple");
+            }
 
             if (type === "start") {
                 startCoords = poi.coords;
             } else {
                 endCoords = poi.coords;
-                setTripType("simple");
             }
 
+            addressInput.value = poi.address;
             currentDistanceKm = 0;
             distanceInput.value = 0;
 
@@ -214,7 +240,29 @@ document.addEventListener("DOMContentLoaded", () => {
             refreshMarkers();
         });
     }
-
+    ["id_address_start", "id_address_end"].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){
+            el.addEventListener("input", () => {
+                if (isMiseDis) {
+                    // En mode mise à disposition, juste recalculer le prix
+                    updatePrice();
+                    return;
+                }
+                // Trajet classique
+                setTripType("simple");
+                drawRoute();
+            });
+            el.addEventListener("change", () => {
+                if (isMiseDis) {
+                    updatePrice();
+                    return;
+                }
+                setTripType("simple");
+                drawRoute();
+            });
+        }
+    });
 
     ["start","end"].forEach(prefix=>{
         ["aeroport","gare","loisir","mise_dis"].forEach(cat=>{
@@ -231,6 +279,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    function exitMiseDisMode() {
+        if (!isMiseDis) return;
+        isMiseDis = false;
+        initialMiseDisDuration = null;
+        document.getElementById("duration").value = 0;
+        document.getElementById("distance").value = 0;
+        currentDistanceKm = 0;
+        setTripType("simple");
+    }
+
     /* ================= TOGGLE UI ================= */
     document.querySelectorAll(".address-toggle button").forEach(btn=>{
         btn.addEventListener("click", ()=>{
@@ -245,6 +303,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    function resetOtherPoiSelects(prefix, currentCategory) {
+        ["aeroport", "gare", "loisir", "mise_dis"].forEach(cat => {
+            if (cat === currentCategory) return;
+
+            const select = document.getElementById(`${prefix}_${cat}`);
+            if (select) {
+                select.selectedIndex = 0; // reset visuel
+            }
+        });
+    }
+
     function setTripType(value) {
         const tripInput = document.getElementById("trip_type");
         const tripIdInput = document.getElementById("trip_type_id");
@@ -254,10 +323,19 @@ document.addEventListener("DOMContentLoaded", () => {
         tripIdInput.value = TRIP_DATA[value]?.id || "";
         tripLabelInput.value = window.TRIP_LABELS[value] || "";
     }
-    document.getElementById("id_address_end").addEventListener("input", () => {
-        if (!isMiseDis) {
-            setTripType("simple");
+    document.getElementById("id_address_start").addEventListener("input", () => {
+        if (isMiseDis) {
+            updatePrice();
+            return;
         }
+        setTripType("simple");
+        drawRoute();
+    });
+
+    document.getElementById("id_address_end").addEventListener("input", () => {
+        exitMiseDisMode();
+        setTripType("simple");
+        drawRoute();
     });
 
 
@@ -306,14 +384,34 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.getElementById("id_date_start").addEventListener("change", () => {
+        if (isMiseDis) return;
         drawRoute();
     });
 
     document.getElementById("id_time_start").addEventListener("change", () => {
+        if (isMiseDis) return;
         drawRoute();
     });
 
+    function canShowRouteInfo() {
+        const carValue = carSelect.value;
 
+        if (isMiseDis) {
+            return carValue !== "";
+        }
+        // Pour un trajet classique
+        const startFilled = document.getElementById("id_address_start").value.trim() !== "" ||
+                            document.getElementById("start_gare").value !== "" ||
+                            document.getElementById("start_loisir").value !== "" ||
+                            document.getElementById("start_aeroport").value !== "";
+
+        const endFilled = document.getElementById("id_address_end").value.trim() !== "" ||
+                          document.getElementById("end_gare").value !== "" ||
+                          document.getElementById("end_loisir").value !== "" ||
+                          document.getElementById("end_aeroport").value !== "";
+
+        return startFilled && endFilled && carValue !== "";
+    }
 
     /* ================= PRIX ================= */
     function formatMinutes(minutes) {
@@ -328,30 +426,54 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updatePrice(){
+        console.log("=== updatePrice called ===");
+        console.log("isMiseDis:", isMiseDis);
+        console.log("initialMiseDisDuration:", initialMiseDisDuration);
+        console.log("startCoords:", startCoords);
+        console.log("endCoords:", endCoords);
+        console.log("duration input:", document.getElementById("duration").value);
+
         const opt = carSelect.selectedOptions[0];
         if(!opt) return;
 
-        // Transmet l'id et le label au formulaire
+        if (!isMiseDis && (!startCoords || !endCoords || currentDistanceKm <= 0)) {
+            return;
+        }
         vehiculeIdInput.value = opt.dataset.id;
         vehiculeLabelInput.value = opt.dataset.label;
 
         let price = 0;
-        const duration = parseInt(document.getElementById("duration").value || 0);
 
         if (isMiseDis) {
-            const hours = parseInt(document.getElementById("end_mise_dis")?.value || 1);
+            const durationMinutes = initialMiseDisDuration || 60;
+            const hours = durationMinutes / 60;
             price = hours * parseFloat(opt.dataset.priceHour || 0);
+
             document.getElementById("route-info").innerHTML =
-                `${window.TRANSLATIONS.available_calcul} : ${price.toFixed(2)} €`;
-        } else {
-            price = currentDistanceKm * parseFloat(opt.dataset.priceKm || 0);
+                `Mise à disposition à : ${price.toFixed(2)} €`;
+            document.getElementById("route-info").dataset.visible = "true";
+            document.getElementById("price").value = price.toFixed(2);
+
+            // Sortir immédiatement pour ne jamais toucher au trajet classique
+            return;
+        }
+
+        // TRAJET CLASSIQUE
+        const duration = parseInt(document.getElementById("duration").value || 0);
+        price = currentDistanceKm * parseFloat(opt.dataset.priceKm || 0);
+
+        if (canShowRouteInfo()) {
             document.getElementById("route-info").innerHTML =
                 `${window.TRANSLATIONS.duration_calcul} : ${formatMinutes(duration)} — ${window.TRANSLATIONS.price_calcul} : ${price.toFixed(2)} €`;
+            document.getElementById("route-info").dataset.visible = "true";
+        } else {
+            document.getElementById("route-info").innerHTML = "";
+            document.getElementById("route-info").dataset.visible = "false";
         }
 
         document.getElementById("price").value = price.toFixed(2);
-        document.getElementById("route-info").dataset.visible = "true";
     }
+
 
     carSelect.addEventListener("change", updatePrice);
 
