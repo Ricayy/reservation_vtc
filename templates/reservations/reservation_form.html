@@ -56,11 +56,15 @@ td {
 }
 
 .section-title th {
-    font-size: 20px;
+    font-size: 26px;
     font-weight: 700;
     color: #2f5bea;
     padding-bottom: 12px;
     text-align: center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .form-section.two-columns {
@@ -267,7 +271,7 @@ input[type="checkbox"] {
                             <button type="button" data-target="start" data-mode="loisir">{% trans "Loisirs" %}</button>
                         </div>
 
-                        <input id="id_address_start" name="address_start" placeholder="Adresse de départ" required>
+                        <input id="id_address_start" name="address_start" required>
                         <div id="suggestions_start" class="suggestions"></div>
 
                         <select id="start_aeroport" class="poi-select" hidden>
@@ -297,7 +301,7 @@ input[type="checkbox"] {
                             <button type="button" data-target="end" data-mode="mise_dis">{% trans "Mise à disposition" %}</button>
                         </div>
 
-                        <input id="id_address_end" name="address_end" placeholder="Adresse d’arrivée">
+                        <input id="id_address_end" name="address_end">
                         <div id="suggestions_end" class="suggestions"></div>
 
                         <select id="end_aeroport" class="poi-select" hidden>
@@ -330,8 +334,19 @@ input[type="checkbox"] {
                 <tr class="section-title">
                     <th colspan="2">{% trans "Date et heure de prise en charge" %}</th>
                 </tr>
-                <tr><th>{% trans "Date" %}</th><td>{{ form.date_start }}</td></tr>
-                <tr><th>{% trans "Heure" %}</th><td>{{ form.time_start }}</td></tr>
+                <tr>
+                    <th>{% trans "Date" %}</th>
+                    <td style="position: relative;">
+                        {{ form.date_start }}
+                        <span id="datetime-error" style="color:red; display:none; font-size:14px; position:absolute;">
+                            La date et l’heure doivent être au moins 15 minutes dans le futur.
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>{% trans "Heure" %}</th>
+                    <td style="position: relative;">{{ form.time_start }}</td>
+                </tr>
             </tbody>
             <tbody class="form-section two-columns">
                 <tr class="section-title">
@@ -369,7 +384,7 @@ input[type="checkbox"] {
         <input type="hidden" id="vehicule_label" name="vehicule_label">
 
 
-        <button type="submit">{% trans "Valider" %}</button>
+        <button type="submit" id="submit-btn">{% trans "Valider" %}</button>
     </form>
 </div>
 
