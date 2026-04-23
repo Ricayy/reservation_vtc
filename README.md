@@ -9,7 +9,8 @@
 # Fait :
 - Formulaire de réservation (adresse, date, véhicule, info clients)
 - Auto suggestions/complétions sur les champs d'adresses
-- Prévisualisation du trajet et calcul de la distance et du prix en fonction du véhicule
+- Prévisualisation du trajet, de la distance et du prix en fonction du véhicule
+- Calcul du prix du trajet depuis le back-end
 - Option de trajet (course simple ou mise à disposition)
 - Authentification pour clients -> liste des courses réservée
 - Enregistrement des réservations et info clients dans Odoo

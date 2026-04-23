@@ -138,13 +138,18 @@ def validation_reservation(request):
         print("data")
         print(data)
 
-        id_car_type = int(ast.literal_eval(data[FormField.car_type])[FormField.vehicule_id])
-        id_trip_type = int(ast.literal_eval(data[FormField.trip_type])[FormField.trip_type_id])
+        id_car_type = int(
+            ast.literal_eval(data[FormField.car_type])[FormField.vehicule_id]
+        )
+        id_trip_type = int(
+            ast.literal_eval(data[FormField.trip_type])[FormField.trip_type_id]
+        )
         datetime_start = datetime.strptime(
             data[FormField.datetime_start], "%d/%m/%Y - %H:%M"
         )
         new_reservation = {
-            OdooReservationModel.name: "Reservation "+ datetime.strftime(datetime.today(), "%d/%m/%Y %H:%M"),
+            OdooReservationModel.name: "Reservation "
+            + datetime.strftime(datetime.today(), "%d/%m/%Y %H:%M"),
             OdooReservationModel.address_start: data[FormField.address_start],
             OdooReservationModel.address_end: data[FormField.address_end],
             OdooReservationModel.nb_passengers: data[FormField.nb_passengers],
@@ -154,7 +159,9 @@ def validation_reservation(request):
             OdooReservationModel.duration: int(data[FormField.duration]),
             OdooReservationModel.distance: float(data[FormField.distance].replace(",", ".")),
             OdooReservationModel.car_type: id_car_type,
-            OdooReservationModel.datetime_start: datetime_start.strftime("%Y-%m-%d %H:%M:%S"),
+            OdooReservationModel.datetime_start: datetime_start.strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
             OdooReservationModel.trip_type: id_trip_type,
         }
 

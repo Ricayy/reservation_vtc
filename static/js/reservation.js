@@ -9,8 +9,33 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ================= POIS CENTRALISÉS ================= */
     const POIS = {
         aeroport: {
-            charles_de_gaulle: { label: "Aéroport CDG", address: "Aéroport Charles de Gaulle, Roissy", coords: [2.5479,49.0097] },
-            orly: { label: "Aéroport Orly", address: "Aéroport d'Orly, Orly", coords: [2.3790,48.7262] },
+            charles_de_gaulle: {
+                label: "Aéroport CDG",
+                address: "Aéroport Charles de Gaulle, Roissy",
+                coords: [2.5479,49.0097],
+                terminals: [
+                    { value: "T1",   label: "Terminal 1" },
+                    { value: "T2A",  label: "Terminal 2A" },
+                    { value: "T2B",  label: "Terminal 2B" },
+                    { value: "T2C",  label: "Terminal 2C" },
+                    { value: "T2D",  label: "Terminal 2D" },
+                    { value: "T2E",  label: "Terminal 2E" },
+                    { value: "T2F",  label: "Terminal 2F" },
+                    { value: "T2G",  label: "Terminal 2G" },
+                    { value: "T3",   label: "Terminal 3" },
+                ]
+            },
+            orly: {
+                label: "Aéroport Orly",
+                address: "Aéroport d'Orly, Orly",
+                coords: [2.3790,48.7262],
+                terminals: [
+                    { value: "ORL1", label: "Orly 1" },
+                    { value: "ORL2", label: "Orly 2" },
+                    { value: "ORL3", label: "Orly 3" },
+                    { value: "ORL4", label: "Orly 4" },
+                ]
+            },
         },
         gare: {
             gare_de_lyon: { label: "Gare de Lyon", address: "Gare de Lyon, Paris", coords: [2.3730,48.8443] },
@@ -161,6 +186,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if(type === "start") startCoords = f.geometry.coordinates;
                     else endCoords = f.geometry.coordinates;
+                    document.getElementById("start_coords").value = JSON.stringify(startCoords);
+                    document.getElementById("end_coords").value   = JSON.stringify(endCoords);
                     hasFittedBounds = false;
 
                     refreshMarkers();
@@ -206,6 +233,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 startCoords = startCoords || null;
                 endCoords = null;
                 hasFittedBounds = false;
+                document.getElementById("start_coords").value = JSON.stringify(startCoords);
+                document.getElementById("end_coords").value   = JSON.stringify(endCoords);
 
                 if (!addressInput.value) addressInput.value = poi.value;
 
@@ -239,9 +268,34 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 endCoords = poi.coords;
             }
+            document.getElementById("start_coords").value = JSON.stringify(startCoords);
+            document.getElementById("end_coords").value   = JSON.stringify(endCoords);
             hasFittedBounds = false;
 
             addressInput.value = poi.address;
+            const terminalSelect = document.getElementById(`${type}_terminal`);
+            if (cat === "aeroport" && poi.terminals?.length) {
+                // Reconstruire les options
+                const defaultText = terminalSelect.options[0].text; // récupère le texte déjà traduit par Django
+                terminalSelect.innerHTML = '';
+                const defaultOpt = document.createElement("option");
+                defaultOpt.value = "";
+                defaultOpt.textContent = defaultText;
+                terminalSelect.appendChild(defaultOpt);
+                poi.terminals.forEach(({ value, label }) => {
+                    const opt = document.createElement("option");
+                    opt.value = value;
+                    opt.textContent = label;
+                    terminalSelect.appendChild(opt);
+                });
+                terminalSelect.hidden = false;
+                terminalSelect.required = true;
+            } else {
+                // Masquer si on n'est pas sur un aéroport avec terminaux
+                terminalSelect.hidden = true;
+                terminalSelect.required = false;
+                terminalSelect.value = "";
+            }
             currentDistanceKm = 0;
             distanceInput.value = 0;
 
@@ -311,6 +365,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 const s = document.getElementById(`${target}_${c}`);
                 if(s) s.hidden = (mode!==c);
             });
+
+            // Masquer le terminal si on quitte le mode aéroport
+            if (mode !== "aeroport") {
+                const terminalSelect = document.getElementById(`${target}_terminal`);
+                if (terminalSelect) {
+                    terminalSelect.hidden = true;
+                    terminalSelect.required = false;
+                    terminalSelect.value = "";
+                }
+            }
         });
     });
 
@@ -424,6 +488,59 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${hours} h ${remaining} min`;
     }
 
+    /* ================= PRIX MINIMUM VAN ================= */
+    const COORDS_CDG = [2.5479, 49.0097];
+    const COORDS_ORLY = [2.3790, 48.7262];
+    const COORDS_DISNEY = [2.7836, 48.8676];
+
+    function coordsMatch(a, b) {
+        return a && b && a[0] === b[0] && a[1] === b[1];
+    }
+
+    function isParis(coords, addressValue) {
+        // POI gare parisienne ou adresse contenant "Paris"
+        if (addressValue && addressValue.includes("Paris")) return true;
+        // Vérifier si coords correspondent à une gare parisienne
+        for (const key in POIS.gare) {
+            if (coordsMatch(coords, POIS.gare[key].coords)) return true;
+        }
+        // POI loisir parisien (coords dans Paris intra-muros ~bbox)
+        if (coords) {
+            const [lng, lat] = coords;
+            if (lat >= 48.815 && lat <= 48.905 && lng >= 2.224 && lng <= 2.470) return true;
+        }
+        return false;
+    }
+
+    function getPriceMinimum(startCoords, endCoords, startAddress, endAddress, isVan) {
+        const startCDG    = coordsMatch(startCoords, COORDS_CDG);
+        const endCDG      = coordsMatch(endCoords,   COORDS_CDG);
+        const startOrly   = coordsMatch(startCoords, COORDS_ORLY);
+        const endOrly     = coordsMatch(endCoords,   COORDS_ORLY);
+        const startDisney = coordsMatch(startCoords, COORDS_DISNEY);
+        const endDisney   = coordsMatch(endCoords,   COORDS_DISNEY);
+        const startParis  = isParis(startCoords, startAddress);
+        const endParis    = isParis(endCoords,   endAddress);
+
+        // CDG ↔ Orly
+        if ((startCDG && endOrly) || (startOrly && endCDG)) return isVan ? 100 : 70;
+
+        // Paris ↔ CDG
+        if ((startParis && endCDG) || (startCDG && endParis)) return isVan ? 80 : 50;
+
+        // Paris ↔ Orly
+        if ((startParis && endOrly) || (startOrly && endParis)) return isVan ? 70 : 40;
+
+        // Paris ↔ Disney
+        if ((startParis && endDisney) || (startDisney && endParis)) return isVan ? 100 : 70;
+
+        // Intra Paris
+        if (startParis && endParis) return isVan ? 50 : 30;
+
+        return 0;
+    }
+
+    /* ================= CALCUL PRIX COURSE ================= */
     function updatePrice(){
         const opt = carSelect.selectedOptions[0];
         if (!opt || !opt.dataset) return;
@@ -453,6 +570,15 @@ document.addEventListener("DOMContentLoaded", () => {
         // TRAJET CLASSIQUE
         const duration = parseInt(durationInput.value || 0);
         price = currentDistanceKm * parseFloat(opt.dataset.priceKm || 0);
+        const startAddress = document.getElementById("id_address_start").value; // ← ajouter
+        const endAddress   = document.getElementById("id_address_end").value;   // ← ajouter
+
+        // Appliquer le minimum van si applicable
+        const isVan = opt.dataset.id === "2"; // 2 = van id dans VEHICULE_DATA
+        const minimum = getPriceMinimum(startCoords, endCoords, startAddress, endAddress, isVan);
+        if (minimum > 0 && price < minimum) {
+            price = minimum;
+        }
 
         if (canShowRouteInfo()) {
             routeInfo.innerHTML =
@@ -502,7 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dateInput = document.getElementById("id_date_start");
     const timeInput = document.getElementById("id_time_start");
     const submitBtn = document.querySelector("form button[type='submit']");
-    const error = document.getElementById("datetime-error");
+    const error = document.getElementById("datetime-error-row");
     const form = document.querySelector("form");
 
     // Transforme date + heure en Date locale
@@ -526,7 +652,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const isValid = selectedDateTime && selectedDateTime > nowWithDelay;
 
-        error.style.display = isValid ? "none" : "block";
+        error.style.display = isValid ? "none" : "flex";
         submitBtn.disabled = !isValid;
 
         return isValid;

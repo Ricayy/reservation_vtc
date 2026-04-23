@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-06 17:54+0100\n"
+"POT-Creation-Date: 2026-04-23 15:41+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,13 +27,13 @@ msgid "Van"
 msgstr "Van"
 
 #: .\apps\reservations\models.py:11
-#: .\templates\reservations\reservation_form.html:407
+#: .\templates\reservations\reservation_form.html:413
 msgid "Simple"
 msgstr "Simple"
 
 #: .\apps\reservations\models.py:12
-#: .\templates\reservations\reservation_form.html:301
-#: .\templates\reservations\reservation_form.html:408
+#: .\templates\reservations\reservation_form.html:304
+#: .\templates\reservations\reservation_form.html:414
 msgid "Mise à disposition"
 msgstr "Hourly car service"
 
@@ -69,7 +69,7 @@ msgstr "Date and time of departure"
 
 #: .\templates\accounts\profile.html:67 .\templates\reservations\order.html:42
 #: .\templates\reservations\recap.html:46
-#: .\templates\reservations\reservation_form.html:321
+#: .\templates\reservations\reservation_form.html:327
 msgid "Véhicule"
 msgstr "Vehicle"
 
@@ -108,19 +108,19 @@ msgstr "Client"
 
 #: .\templates\reservations\order.html:25
 #: .\templates\reservations\recap.html:59
-#: .\templates\reservations\reservation_form.html:363
+#: .\templates\reservations\reservation_form.html:369
 msgid "Nom"
 msgstr "Last name"
 
 #: .\templates\reservations\order.html:26
 #: .\templates\reservations\recap.html:61
-#: .\templates\reservations\reservation_form.html:365
+#: .\templates\reservations\reservation_form.html:371
 msgid "Téléphone"
 msgstr "Phone"
 
 #: .\templates\reservations\order.html:27
 #: .\templates\reservations\recap.html:62
-#: .\templates\reservations\reservation_form.html:366
+#: .\templates\reservations\reservation_form.html:372
 msgid "Email"
 msgstr "Email"
 
@@ -141,7 +141,7 @@ msgstr "Departure"
 
 #: .\templates\reservations\order.html:35
 #: .\templates\reservations\recap.html:40
-#: .\templates\reservations\reservation_form.html:294
+#: .\templates\reservations\reservation_form.html:297
 #: .\templates\reservations\validation.html:50
 msgid "Arrivée"
 msgstr "Arrival"
@@ -186,18 +186,18 @@ msgid "Durée estimé"
 msgstr "Estimated duration"
 
 #: .\templates\reservations\recap.html:50
-#: .\templates\reservations\reservation_form.html:403
+#: .\templates\reservations\reservation_form.html:409
 msgid "Prix estimé"
 msgstr "Estimated price"
 
 #: .\templates\reservations\recap.html:53
 #: .\templates\reservations\recap.html:54
-#: .\templates\reservations\reservation_form.html:355
+#: .\templates\reservations\reservation_form.html:361
 msgid "Passagers"
 msgstr "Passengers"
 
 #: .\templates\reservations\recap.html:55
-#: .\templates\reservations\reservation_form.html:356
+#: .\templates\reservations\reservation_form.html:362
 msgid "Bagages"
 msgstr "Luggages"
 
@@ -206,12 +206,12 @@ msgid "Coordonnées"
 msgstr "Contact details"
 
 #: .\templates\reservations\recap.html:60
-#: .\templates\reservations\reservation_form.html:364
+#: .\templates\reservations\reservation_form.html:370
 msgid "Prénom"
 msgstr "First name"
 
 #: .\templates\reservations\recap.html:64
-#: .\templates\reservations\reservation_form.html:367
+#: .\templates\reservations\reservation_form.html:373
 msgid "Commentaires"
 msgstr "Commentary"
 
@@ -224,67 +224,72 @@ msgid "Réservation VTC"
 msgstr "Book a ride"
 
 #: .\templates\reservations\reservation_form.html:268
-#: .\templates\reservations\reservation_form.html:297
+#: .\templates\reservations\reservation_form.html:300
 msgid "Adresse"
 msgstr "Address"
 
 #: .\templates\reservations\reservation_form.html:269
-#: .\templates\reservations\reservation_form.html:298
+#: .\templates\reservations\reservation_form.html:301
 msgid "Aéroport"
 msgstr "Airport"
 
 #: .\templates\reservations\reservation_form.html:270
-#: .\templates\reservations\reservation_form.html:299
+#: .\templates\reservations\reservation_form.html:302
 msgid "Gare"
 msgstr "Train station"
 
 #: .\templates\reservations\reservation_form.html:271
-#: .\templates\reservations\reservation_form.html:300
+#: .\templates\reservations\reservation_form.html:303
 msgid "Loisirs"
 msgstr "Activities"
 
 #: .\templates\reservations\reservation_form.html:278
-#: .\templates\reservations\reservation_form.html:308
+#: .\templates\reservations\reservation_form.html:311
 msgid "Choisir un aéroport"
 msgstr "Choose an airport"
 
 #: .\templates\reservations\reservation_form.html:281
-#: .\templates\reservations\reservation_form.html:311
+#: .\templates\reservations\reservation_form.html:314
+msgid "Choisir un terminal"
+msgstr "Choose a terminal"
+
+#: .\templates\reservations\reservation_form.html:284
+#: .\templates\reservations\reservation_form.html:317
 msgid "Choisir une gare"
 msgstr "Choose a train station"
 
-#: .\templates\reservations\reservation_form.html:284
-#: .\templates\reservations\reservation_form.html:314
+#: .\templates\reservations\reservation_form.html:287
+#: .\templates\reservations\reservation_form.html:320
 msgid "Choisir un lieu de loisir"
 msgstr "Choose an activity location"
 
-#: .\templates\reservations\reservation_form.html:287
-#: .\templates\reservations\reservation_form.html:317
+#: .\templates\reservations\reservation_form.html:290
+#: .\templates\reservations\reservation_form.html:323
 msgid "Choisir une durée"
 msgstr "Choose a duration"
 
-#: .\templates\reservations\reservation_form.html:335
+#: .\templates\reservations\reservation_form.html:341
 #: .\templates\reservations\validation.html:54
 msgid "Date et heure de prise en charge"
 msgstr "Date and time of pickup"
 
-#: .\templates\reservations\reservation_form.html:338
+#: .\templates\reservations\reservation_form.html:344
 msgid "Date"
 msgstr "Date"
 
-#: .\templates\reservations\reservation_form.html:347
+#: .\templates\reservations\reservation_form.html:353
 msgid "Heure"
 msgstr "Hour"
 
-#: .\templates\reservations\reservation_form.html:353
+#: .\templates\reservations\reservation_form.html:359
 msgid "Nombre de passagers et de bagages"
 msgstr "Number of passengers and luggage"
 
-#: .\templates\reservations\reservation_form.html:360
+#: .\templates\reservations\reservation_form.html:366
 msgid "Contact"
 msgstr "Contact"
 
-#: .\templates\reservations\reservation_form.html:372
+#: .\templates\reservations\reservation_form.html:378
 msgid ""
 "En cochant cette case, vous acceptez que vos données fournies soient "
 "utilisées pour le traitement de votre demande."
@@ -292,15 +297,15 @@ msgstr ""
 "By checking this box, you agree that the information you provide may be used "
 "to process your request."
 
-#: .\templates\reservations\reservation_form.html:387
+#: .\templates\reservations\reservation_form.html:393
 msgid "Valider"
 msgstr "Submit"
 
-#: .\templates\reservations\reservation_form.html:402
+#: .\templates\reservations\reservation_form.html:408
 msgid "Durée estimée"
 msgstr "Estimated duration"
 
-#: .\templates\reservations\reservation_form.html:404
+#: .\templates\reservations\reservation_form.html:410
 msgid "Mise à disposition à"
 msgstr "Hourly car service from"
 

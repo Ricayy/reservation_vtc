@@ -50,7 +50,7 @@ class ReservationForm(forms.ModelForm):
             if selected_dt <= min_dt:
                 self.add_error(
                     "date_start",
-                    "La date et l’heure doivent être au moins 15 minutes dans le futur."
+                    "La date et l’heure doivent être au moins 15 minutes dans le futur.",
                 )
 
         # Passagers
@@ -62,14 +62,13 @@ class ReservationForm(forms.ModelForm):
 
             if nb_passengers < 1:
                 self.add_error(
-                    "nb_passengers",
-                    "Le nombre de passagers doit être au minimum 1."
+                    "nb_passengers", "Le nombre de passagers doit être au minimum 1."
                 )
 
             if nb_passengers > max_seats:
                 self.add_error(
                     "nb_passengers",
-                    f"Le véhicule sélectionné ne permet que {max_seats} places."
+                    f"Le véhicule sélectionné ne permet que {max_seats} places.",
                 )
 
         # Trajet simple -> adresse d’arrivée obligatoire
@@ -79,7 +78,7 @@ class ReservationForm(forms.ModelForm):
         if trip_type == TripType.SIMPLE and not address_end:
             self.add_error(
                 "address_end",
-                "L'adresse de destination est obligatoire pour un trajet simple."
+                "L'adresse de destination est obligatoire pour un trajet simple.",
             )
 
         return cleaned_data

@@ -9,6 +9,8 @@ class FormField:
 
     address_start = "address_start"
     address_end = "address_end"
+    terminal_start = "terminal_start"
+    terminal_end = "terminal_end"
     datetime_start = "datetime_start"
     date_start = "date_start"
     time_start = "time_start"
