@@ -1,10 +1,22 @@
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-    const VEHICULE_PRICE_KM = JSON.parse(document.getElementById("vehicule-price-km").textContent);
+    const VEHICULE_PRICE_KM   = JSON.parse(document.getElementById("vehicule-price-km").textContent);
     const VEHICULE_PRICE_HOUR = JSON.parse(document.getElementById("vehicule-price-hour").textContent);
-    const VEHICULE_SEATS = JSON.parse(document.getElementById("vehicule-seats").textContent);
-    const VEHICULE_DATA = JSON.parse(document.getElementById("vehicule-data").textContent);
-    const TRIP_DATA = JSON.parse(document.getElementById("trip-data").textContent);
+    const VEHICULE_SEATS      = JSON.parse(document.getElementById("vehicule-seats").textContent);
+    const VEHICULE_DATA       = JSON.parse(document.getElementById("vehicule-data").textContent);
+    const TRIP_DATA           = JSON.parse(document.getElementById("trip-data").textContent);
+
+    // ── Source de vérité unique injectée par Django ──────────────────
+    // Toutes les constantes de tarification viennent du back.
+    // Ne jamais écrire de valeurs numériques de prix/coords ici.
+    const PRICING = JSON.parse(document.getElementById("pricing-config").textContent);
+    const PRICE_KM    = PRICING.price_km;    // { car, van }
+    const PRICE_HOUR  = PRICING.price_hour;  // { car, van }
+    const MINIMUMS    = PRICING.minimums;    // { cdg_orly, paris_cdg, ... }
+    const COORDS_CDG    = PRICING.coords.cdg;
+    const COORDS_ORLY   = PRICING.coords.orly;
+    const COORDS_DISNEY = PRICING.coords.disney;
+    const PARIS_BBOX    = PRICING.paris_bbox; // { lat_min, lat_max, lng_min, lng_max }
 
     /* ================= POIS CENTRALISÉS ================= */
     const POIS = {
@@ -487,31 +499,28 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${hours} h ${remaining} min`;
     }
 
-    /* ================= PRIX MINIMUM VAN ================= */
-    const COORDS_CDG = [2.5479, 49.0097];
-    const COORDS_ORLY = [2.3790, 48.7262];
-    const COORDS_DISNEY = [2.7836, 48.8676];
-
+    /* ================= PRIX MINIMUM ================= */
     function coordsMatch(a, b) {
         return a && b && a[0] === b[0] && a[1] === b[1];
     }
 
     function isParis(coords, addressValue) {
-        // POI gare parisienne ou adresse contenant "Paris"
         if (addressValue && addressValue.includes("Paris")) return true;
-        // Vérifier si coords correspondent à une gare parisienne
         for (const key in POIS.gare) {
             if (coordsMatch(coords, POIS.gare[key].coords)) return true;
         }
-        // POI loisir parisien (coords dans Paris intra-muros ~bbox)
         if (coords) {
             const [lng, lat] = coords;
-            if (lat >= 48.815 && lat <= 48.905 && lng >= 2.224 && lng <= 2.470) return true;
+            const b = PARIS_BBOX;
+            if (lat >= b.lat_min && lat <= b.lat_max && lng >= b.lng_min && lng <= b.lng_max) return true;
         }
         return false;
     }
 
-    function getPriceMinimum(startCoords, endCoords, startAddress, endAddress, isVan) {
+    function getPriceMinimum(startCoords, endCoords, startAddress, endAddress, vehicleKey) {
+        const m = MINIMUMS;
+        const v = vehicleKey; // "car" ou "van"
+
         const startCDG    = coordsMatch(startCoords, COORDS_CDG);
         const endCDG      = coordsMatch(endCoords,   COORDS_CDG);
         const startOrly   = coordsMatch(startCoords, COORDS_ORLY);
@@ -521,20 +530,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const startParis  = isParis(startCoords, startAddress);
         const endParis    = isParis(endCoords,   endAddress);
 
-        // CDG ↔ Orly
-        if ((startCDG && endOrly) || (startOrly && endCDG)) return isVan ? 100 : 70;
-
-        // Paris ↔ CDG
-        if ((startParis && endCDG) || (startCDG && endParis)) return isVan ? 80 : 50;
-
-        // Paris ↔ Orly
-        if ((startParis && endOrly) || (startOrly && endParis)) return isVan ? 70 : 40;
-
-        // Paris ↔ Disney
-        if ((startParis && endDisney) || (startDisney && endParis)) return isVan ? 100 : 70;
-
-        // Intra Paris
-        if (startParis && endParis) return isVan ? 50 : 30;
+        if ((startCDG && endOrly)    || (startOrly && endCDG))    return m.cdg_orly[v];
+        if ((startParis && endCDG)   || (startCDG && endParis))   return m.paris_cdg[v];
+        if ((startParis && endOrly)  || (startOrly && endParis))  return m.paris_orly[v];
+        if ((startParis && endDisney)|| (startDisney && endParis)) return m.paris_disney[v];
+        if (startParis && endParis)                                return m.intra_paris[v];
 
         return 0;
     }
@@ -547,34 +547,33 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isMiseDis && (!startCoords || !endCoords || currentDistanceKm <= 0)) {
             return;
         }
-        vehiculeIdInput.value = opt.dataset.id;
+        vehiculeIdInput.value   = opt.dataset.id;
         vehiculeLabelInput.value = opt.dataset.label;
+
+        // Clé véhicule ("car" ou "van") pour accéder aux constantes PRICING
+        const vehicleKey = opt.value; // la valeur du select Django est "car" ou "van"
 
         let price = 0;
 
         if (isMiseDis) {
             const durationMinutes = initialMiseDisDuration || 60;
             const hours = durationMinutes / 60;
-            price = hours * parseFloat(opt.dataset.priceHour || 0);
+            price = hours * PRICE_HOUR[vehicleKey];
 
-            routeInfo.innerHTML =
-                `Mise à disposition à : ${price.toFixed(2)} €`;
+            routeInfo.innerHTML = `${window.TRANSLATIONS.available_calcul} : ${price.toFixed(2)} €`;
             routeInfo.dataset.visible = "true";
             document.getElementById("price").value = price.toFixed(2);
-
-            // Sortir immédiatement pour ne jamais toucher au trajet classique
             return;
         }
 
         // TRAJET CLASSIQUE
-        const duration = parseInt(durationInput.value || 0);
-        price = currentDistanceKm * parseFloat(opt.dataset.priceKm || 0);
-        const startAddress = document.getElementById("id_address_start").value; // ← ajouter
-        const endAddress   = document.getElementById("id_address_end").value;   // ← ajouter
+        const duration     = parseInt(durationInput.value || 0);
+        const startAddress = document.getElementById("id_address_start").value;
+        const endAddress   = document.getElementById("id_address_end").value;
 
-        // Appliquer le minimum van si applicable
-        const isVan = opt.dataset.id === "2"; // 2 = van id dans VEHICULE_DATA
-        const minimum = getPriceMinimum(startCoords, endCoords, startAddress, endAddress, isVan);
+        price = currentDistanceKm * PRICE_KM[vehicleKey];
+
+        const minimum = getPriceMinimum(startCoords, endCoords, startAddress, endAddress, vehicleKey);
         if (minimum > 0 && price < minimum) {
             price = minimum;
         }

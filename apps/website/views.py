@@ -18,6 +18,7 @@ class ReservationCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(reservation_common_context())
+        context["PRICING_CONFIG"] = PRICING_CONFIG  # injecté ici pour la CBV
         return context
 
 
@@ -25,14 +26,13 @@ def recap_reservation(request):
     form = ReservationForm(request.POST)
     context = reservation_common_context()
     context["form"] = form
+    context["PRICING_CONFIG"] = PRICING_CONFIG  # injecté pour la vue fonctionnelle
 
     if request.method == "POST":
         if not form.is_valid():
             return render(request, "reservations/reservation_form.html", context)
 
         data = request.POST.dict()
-        print("data")
-        print(data)
 
         # ── Adresses (terminal optionnel) ──────────────────────────────
         address_start = data[FormField.address_start]
@@ -44,23 +44,23 @@ def recap_reservation(request):
             address_end += ", " + data[FormField.terminal_end]
 
         # ── Type de trajet ─────────────────────────────────────────────
-        trip_type = data[FormField.trip_type]  # "simple" ou "hourly"
-        vehicle_type = data[FormField.car_type]  # "car" ou "van"
-        is_hourly = trip_type == "hourly"
+        trip_type    = data[FormField.trip_type]    # "simple" ou "hourly"
+        vehicle_type = data[FormField.car_type]     # "car" ou "van"
+        is_hourly    = trip_type == "hourly"
 
         # ── Distance : vide ou absent pour une mise à disposition ──────
         raw_distance = data.get(FormField.distance, "").strip()
-        distance_km = float(raw_distance) if raw_distance else 0.0
+        distance_km  = float(raw_distance) if raw_distance else 0.0
 
         # ── Durée : minutes sélectionnées dans le select mise à dispo ──
         # Le champ caché #duration est rempli par reservation.js dans les
         # deux cas (trajet classique = durée Mapbox, hourly = durée choisie).
-        raw_duration = data.get(FormField.duration, "").strip()
-        duration_min = int(raw_duration) if raw_duration else 0
+        raw_duration  = data.get(FormField.duration, "").strip()
+        duration_min  = int(raw_duration) if raw_duration else 0
 
         # ── Coordonnées (peuvent être null côté JS pour mise à dispo) ──
         start_coords = json.loads(data.get("start_coords", "null"))
-        end_coords = json.loads(data.get("end_coords", "null"))
+        end_coords   = json.loads(data.get("end_coords",   "null"))
 
         # ── Validation métier supplémentaire ───────────────────────────
         if not is_hourly and distance_km <= 0:
@@ -71,7 +71,9 @@ def recap_reservation(request):
             return render(request, "reservations/reservation_form.html", context)
 
         if is_hourly and duration_min <= 0:
-            context["error"] = "Veuillez sélectionner une durée de mise à disposition."
+            context["error"] = (
+                "Veuillez sélectionner une durée de mise à disposition."
+            )
             return render(request, "reservations/reservation_form.html", context)
 
         # ── Calcul du prix vérifié côté serveur ────────────────────────
@@ -88,73 +90,61 @@ def recap_reservation(request):
 
         # ── Construction du récapitulatif ──────────────────────────────
         new_reservation = {
-            FormField.address_start: address_start,
-            FormField.address_end: address_end,
-            FormField.nb_passengers: int(data[FormField.nb_passengers]),
-            FormField.nb_luggages: int(data[FormField.nb_luggages]),
-            FormField.note: data.get(FormField.note, ""),
-            FormField.price: verified_price,
-            FormField.duration: duration_min,
-            FormField.distance: distance_km,
-            FormField.email: data[FormField.email],
-            FormField.last_name: data[FormField.last_name],
-            FormField.first_name: data[FormField.first_name],
-            FormField.phone: data[FormField.phone],
-            FormField.car_type: {},
-            FormField.trip_type: {},
+            FormField.address_start:  address_start,
+            FormField.address_end:    address_end,
+            FormField.nb_passengers:  int(data[FormField.nb_passengers]),
+            FormField.nb_luggages:    int(data[FormField.nb_luggages]),
+            FormField.note:           data.get(FormField.note, ""),
+            FormField.price:          verified_price,
+            FormField.duration:       duration_min,
+            FormField.distance:       distance_km,
+            FormField.email:          data[FormField.email],
+            FormField.last_name:      data[FormField.last_name],
+            FormField.first_name:     data[FormField.first_name],
+            FormField.phone:          data[FormField.phone],
+            FormField.car_type:       {},
+            FormField.trip_type:      {},
         }
 
         # Véhicule
-        new_reservation[FormField.car_type][FormField.vehicule_id] = int(
-            data[FormField.vehicule_id]
-        )
-        new_reservation[FormField.car_type][FormField.car_type] = data[
-            FormField.car_type
-        ]
-        new_reservation[FormField.car_type][FormField.vehicule_label] = data[
-            FormField.vehicule_label
-        ]
+        new_reservation[FormField.car_type][FormField.vehicule_id]    = int(data[FormField.vehicule_id])
+        new_reservation[FormField.car_type][FormField.car_type]       = data[FormField.car_type]
+        new_reservation[FormField.car_type][FormField.vehicule_label] = data[FormField.vehicule_label]
 
         # Type de trajet
-        new_reservation[FormField.trip_type][FormField.trip_type_id] = int(
-            data[FormField.trip_type_id]
-        )
-        new_reservation[FormField.trip_type][FormField.trip_type] = data[
-            FormField.trip_type
-        ]
-        new_reservation[FormField.trip_type][FormField.trip_type_label] = data[
-            FormField.trip_type_label
-        ]
+        new_reservation[FormField.trip_type][FormField.trip_type_id]    = int(data[FormField.trip_type_id])
+        new_reservation[FormField.trip_type][FormField.trip_type]       = data[FormField.trip_type]
+        new_reservation[FormField.trip_type][FormField.trip_type_label] = data[FormField.trip_type_label]
 
         # Date et heure
-        date_obj = datetime.strptime(data[FormField.date_start], "%Y-%m-%d").date()
-        time_obj = datetime.strptime(data[FormField.time_start], "%H:%M").time()
+        date_obj       = datetime.strptime(data[FormField.date_start], "%Y-%m-%d").date()
+        time_obj       = datetime.strptime(data[FormField.time_start], "%H:%M").time()
         datetime_start = datetime.combine(date_obj, time_obj)
-        new_reservation[FormField.datetime_start] = datetime_start.strftime(
-            "%d/%m/%Y - %H:%M"
-        )
+        new_reservation[FormField.datetime_start] = datetime_start.strftime("%d/%m/%Y - %H:%M")
 
         # Remplacer les None résiduels par ""
         for key in new_reservation:
             if new_reservation[key] is None:
                 new_reservation[key] = ""
 
-        return render(
-            request, "reservations/recap.html", {"reservation": new_reservation}
-        )
+        return render(request, "reservations/recap.html", {"reservation": new_reservation})
 
     # GET
     return render(request, "reservations/reservation_form.html", context)
 
 
 # ══════════════════════════════════════════════════════════════════
-# LOGIQUE DE PRIX
+# LOGIQUE DE PRIX — source de vérité unique
+# Toutes ces constantes sont injectées dans le template via
+# json_script et lues par reservation.js.
+# Modifier ici suffit : front et back restent automatiquement alignés.
 # ══════════════════════════════════════════════════════════════════
 
 PARIS_KEYWORDS = ["Paris", "paris"]
 
-COORDS_CDG = [2.5479, 49.0097]
-COORDS_ORLY = [2.3790, 48.7262]
+# Coordonnées POIs [lng, lat]
+COORDS_CDG    = [2.5479, 49.0097]
+COORDS_ORLY   = [2.3790, 48.7262]
 COORDS_DISNEY = [2.7836, 48.8676]
 
 PARIS_BBOX = {"lat_min": 48.815, "lat_max": 48.905, "lng_min": 2.224, "lng_max": 2.470}
@@ -168,11 +158,25 @@ PRICE_HOUR = {
     "van": 60.0,
 }
 MINIMUMS = {
-    "cdg_orly": {"car": 70, "van": 100},
-    "paris_cdg": {"car": 50, "van": 80},
-    "paris_orly": {"car": 40, "van": 70},
-    "paris_disney": {"car": 70, "van": 100},
-    "intra_paris": {"car": 30, "van": 50},
+    "cdg_orly":     {"car": 70,  "van": 100},
+    "paris_cdg":    {"car": 50,  "van": 80},
+    "paris_orly":   {"car": 40,  "van": 70},
+    "paris_disney": {"car": 70,  "van": 100},
+    "intra_paris":  {"car": 30,  "van": 50},
+}
+
+# Dictionnaire unique exposé au front via json_script.
+# reservation.js le lit depuis l'élément #pricing-config.
+PRICING_CONFIG = {
+    "price_km":   PRICE_KM,
+    "price_hour": PRICE_HOUR,
+    "minimums":   MINIMUMS,
+    "coords": {
+        "cdg":    COORDS_CDG,
+        "orly":   COORDS_ORLY,
+        "disney": COORDS_DISNEY,
+    },
+    "paris_bbox": PARIS_BBOX,
 }
 
 
@@ -196,14 +200,14 @@ def is_paris(coords, address):
 def get_minimum(start_coords, end_coords, start_address, end_address, vehicle_type):
     vtype = "van" if vehicle_type == "van" else "car"
 
-    start_cdg = coords_match(start_coords, COORDS_CDG)
-    end_cdg = coords_match(end_coords, COORDS_CDG)
-    start_orly = coords_match(start_coords, COORDS_ORLY)
-    end_orly = coords_match(end_coords, COORDS_ORLY)
+    start_cdg    = coords_match(start_coords, COORDS_CDG)
+    end_cdg      = coords_match(end_coords,   COORDS_CDG)
+    start_orly   = coords_match(start_coords, COORDS_ORLY)
+    end_orly     = coords_match(end_coords,   COORDS_ORLY)
     start_disney = coords_match(start_coords, COORDS_DISNEY)
-    end_disney = coords_match(end_coords, COORDS_DISNEY)
-    start_paris = is_paris(start_coords, start_address)
-    end_paris = is_paris(end_coords, end_address)
+    end_disney   = coords_match(end_coords,   COORDS_DISNEY)
+    start_paris  = is_paris(start_coords, start_address)
+    end_paris    = is_paris(end_coords,   end_address)
 
     if (start_cdg and end_orly) or (start_orly and end_cdg):
         return MINIMUMS["cdg_orly"][vtype]
@@ -219,16 +223,8 @@ def get_minimum(start_coords, end_coords, start_address, end_address, vehicle_ty
     return 0
 
 
-def calculate_price(
-    trip_type,
-    vehicle_type,
-    distance_km,
-    duration_minutes,
-    start_coords,
-    end_coords,
-    start_address,
-    end_address,
-):
+def calculate_price(trip_type, vehicle_type, distance_km, duration_minutes,
+                    start_coords, end_coords, start_address, end_address):
     """
     Recalcule le prix côté serveur — source de vérité unique.
 
@@ -249,7 +245,7 @@ def calculate_price(
         return round(hours * PRICE_HOUR[vtype], 2)
 
     # ── Trajet classique : tarif kilométrique + minimums ─────────────
-    price = distance_km * PRICE_KM[vtype]
+    price   = distance_km * PRICE_KM[vtype]
     minimum = get_minimum(start_coords, end_coords, start_address, end_address, vtype)
     if minimum > 0 and price < minimum:
         price = minimum

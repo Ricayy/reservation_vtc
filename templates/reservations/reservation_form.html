@@ -481,6 +481,10 @@
 {{ VEHICULE_DATA|json_script:"vehicule-data" }}
 {{ TRIP_DATA|json_script:"trip-data" }}
 
+{# Source de vérité unique : tarifs, minimums, coordonnées POIs, bbox Paris #}
+{# Le JS lit cet élément — ne jamais dupliquer ces valeurs côté JS         #}
+{{ PRICING_CONFIG|json_script:"pricing-config" }}
+
 <script>
     window.TRANSLATIONS = {
         "duration_calcul": "{% trans 'Durée estimée'|escapejs %}",
