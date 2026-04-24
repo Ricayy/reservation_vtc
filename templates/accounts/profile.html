@@ -1,91 +1,305 @@
 {% extends "website/master.html" %}
 {% load i18n %}
+
+{% block title %}{% trans "Mon profil" %}{% endblock %}
+
 {% block extra_css %}
 <style>
+/* ══════════════════════════════════════════════════
+   PAGE PROFIL / DASHBOARD
+══════════════════════════════════════════════════ */
 .profile-card {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 24px;
-    border: 1px solid #dcdfe6;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    max-width: 960px;
+    margin-inline: auto;
 }
 
-.profile-card h1,
-.profile-card h3 {
-    text-align: center;
+/* ── En-tête utilisateur ── */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 28px;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 32px;
+}
+
+.profile-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--gold);
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: .02em;
+}
+
+.profile-header__info h1 {
+    font-size: 1.3rem;
+    margin: 0 0 4px;
+    text-align: left;
+}
+
+.profile-header__email {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.profile-header__actions {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* ── Section heading ── */
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin-bottom: 20px;
-    font-weight: 600;
 }
 
-.profile-card table {
+.section-heading__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+}
+
+.section-heading h2 {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ── Badge compteur ── */
+.badge-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding-inline: 6px;
+    background: var(--gold-pale);
+    color: var(--gold);
+    border: 0.5px solid rgba(200,169,81,.3);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+}
+
+/* ══════════════════════════════════════════════════
+   TABLE HISTORIQUE
+══════════════════════════════════════════════════ */
+.history-table-wrapper {
+    overflow-x: auto;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.history-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    min-width: 640px;
 }
 
-.profile-card th,
-.profile-card td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #dcdfe6;
+/* En-tête */
+.history-table thead tr {
+    background: var(--off-white);
+    border-bottom: 0.5px solid var(--border);
 }
 
-.profile-card thead {
-    background-color: #f5f5f5;
+.history-table thead td,
+.history-table thead th {
+    padding: 12px 16px;
+    font-size: 11px;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-muted);
+    text-align: left;
+    white-space: nowrap;
 }
 
-.profile-card tbody tr:nth-child(even) {
-    background-color: #fafafa;
+/* Lignes */
+.history-table tbody tr {
+    border-bottom: 0.5px solid var(--border);
+    transition: background var(--transition);
 }
 
-.profile-card tbody tr:hover {
-    background-color: #f0f4ff;
+.history-table tbody tr:last-child {
+    border-bottom: none;
 }
 
-.profile-card td[colspan] {
+.history-table tbody tr:hover {
+    background: var(--off-white);
+}
+
+.history-table tbody td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--text-mid);
+    vertical-align: middle;
+}
+
+/* Cellule adresse — tronquée si trop longue */
+.history-table .td-address {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--navy);
+    font-weight: 500;
+}
+
+/* Cellule date */
+.history-table .td-date {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Prix mis en avant */
+.history-table .td-price {
+    font-weight: 600;
+    color: var(--navy);
+    white-space: nowrap;
+}
+
+/* Badge véhicule */
+.vehicle-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    background: var(--off-white);
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-mid);
+    white-space: nowrap;
+}
+
+/* État vide */
+.history-empty {
     text-align: center;
-    color: #6b7280; /* gris doux pour message "Aucune réservation" */
-    font-style: italic;
+    padding: 48px 24px;
+}
+
+.history-empty__icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: .4;
+}
+
+.history-empty p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+    .profile-header {
+        flex-wrap: wrap;
+    }
+
+    .profile-header__actions {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .profile-header__actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="card profile-card">
-    <h1>{% trans "Profil de" %} {{ user.email }}</h1>
 
-    <h3>{% trans "Historique des réservations" %}</h3>
-    <table>
-        <thead>
-            <tr>
-                <td>{% trans "Adresse de départ" %}</td>
-                <td>{% trans "Adresse d'arrivée" %}</td>
-                <td>{% trans "Date et heure de départ" %}</td>
-                <td>{% trans "Véhicule" %}</td>
-                <td>{% trans "Distance" %}</td>
-                <td>{% trans "Prix" %}</td>
-            </tr>
-        </thead>
-        <tbody>
-            {% for res in res_list %}
+    <!-- En-tête -->
+    <div class="profile-header">
+        <div class="profile-avatar" aria-hidden="true">
+            {{ user.email|first|upper }}
+        </div>
+        <div class="profile-header__info">
+            <h1>{% trans "Mon espace" %}</h1>
+            <span class="profile-header__email">{{ user.email }}</span>
+        </div>
+        <div class="profile-header__actions">
+            <a href="{% url 'reservation_add' %}" class="btn">+ {% trans "Nouvelle réservation" %}</a>
+            <a href="{% url 'logout' %}" class="btn btn-outline">{% trans "Déconnexion" %}</a>
+        </div>
+    </div>
+
+    <!-- Historique -->
+    <div class="section-heading">
+        <div class="section-heading__dot"></div>
+        <h2>
+            {% trans "Historique des réservations" %}
+            {% if res_list %}
+                <span class="badge-count">{{ res_list|length }}</span>
+            {% endif %}
+        </h2>
+    </div>
+
+    <div class="history-table-wrapper">
+        <table class="history-table">
+            <thead>
                 <tr>
-                    <td>{{ res.x_studio_address_start }}</td>
-                    <td>{{ res.x_studio_address_end }}</td>
-                    <td>{{ res.x_studio_datetime_start }}</td>
-                    <td>{{ res.x_studio_car_type.1 }}</td>
-                    <td>{{ res.x_studio_distance }} km</td>
-                    <td>{{ res.x_studio_price }} €</td>
+                    <td>{% trans "Départ" %}</td>
+                    <td>{% trans "Arrivée" %}</td>
+                    <td>{% trans "Date et heure" %}</td>
+                    <td>{% trans "Véhicule" %}</td>
+                    <td>{% trans "Distance" %}</td>
+                    <td>{% trans "Prix" %}</td>
                 </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="6">{% trans "Aucune réservation pour le moment." %}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for res in res_list %}
+                    <tr>
+                        <td class="td-address" title="{{ res.x_studio_address_start }}">
+                            {{ res.x_studio_address_start }}
+                        </td>
+                        <td class="td-address" title="{{ res.x_studio_address_end }}">
+                            {{ res.x_studio_address_end }}
+                        </td>
+                        <td class="td-date">{{ res.x_studio_datetime_start }}</td>
+                        <td>
+                            <span class="vehicle-badge">{{ res.x_studio_car_type.1 }}</span>
+                        </td>
+                        <td>{{ res.x_studio_distance }}&thinsp;km</td>
+                        <td class="td-price">{{ res.x_studio_price }}&thinsp;€</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="history-empty">
+                                <div class="history-empty__icon">🚗</div>
+                                <p>{% trans "Aucune réservation pour le moment." %}</p>
+                                <a href="{% url 'reservation_add' %}" class="btn">{% trans "Réserver maintenant" %}</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </div>
-
 {% endblock %}

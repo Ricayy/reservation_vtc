@@ -6,7 +6,7 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from django.shortcuts import render
 from django.template.loader import render_to_string
-from xhtml2pdf import pisa
+from weasyprint import HTML
 
 from apps.core.models import OdooReservationModel, OdooContactModel
 from apps.core.odoo_client import (
@@ -19,6 +19,9 @@ from apps.core.odoo_client import (
 from apps.website.models import FormField
 
 from django.http import HttpResponse
+import os
+
+os.add_dll_directory(r"C:\Program Files\GTK3-Runtime Win64\bin")
 
 
 def preview_order_pdf(request, id_res):
@@ -82,33 +85,25 @@ def build_order_pdf(id_res):
     # Récupération donnée réservation
     res_data = get_res_by_id(id_res)[0]
     user_data = get_user_by_id(res_data[OdooReservationModel.email][0])[0]
-    # Normalisation des données pour l'affichage
+
+    # Normalisation
     res_data[OdooReservationModel.email] = user_data
     res_data[OdooReservationModel.car_type] = res_data[OdooReservationModel.car_type][1]
     res_data[OdooReservationModel.trip_type] = res_data[OdooReservationModel.trip_type][
         1
     ]
+
     res_data[OdooReservationModel.datetime_start] = datetime.strptime(
         res_data[OdooReservationModel.datetime_start], "%Y-%m-%d %H:%M:%S"
-    )
-    res_data[OdooReservationModel.datetime_start] = res_data[
-        OdooReservationModel.datetime_start
-    ].strftime("%d/%m/%Y - %H:%M")
+    ).strftime("%d/%m/%Y - %H:%M")
 
-    print("res_data")
-    print(res_data)
     # Rendu HTML
     html_string = render_to_string("reservations/order.html", {"res_data": res_data})
 
-    # Génération PDF en mémoire
-    pdf_file = io.BytesIO()
-    pisa_status = pisa.CreatePDF(io.StringIO(html_string), dest=pdf_file)
+    # Génération PDF avec WeasyPrint
+    pdf_file = HTML(string=html_string).write_pdf()
 
-    if pisa_status.err:
-        raise Exception("Erreur lors de la génération du PDF")
-
-    pdf_file.seek(0)
-    return pdf_file.read()
+    return pdf_file
 
 
 def gen_mail_and_order_pdf(new_reservation, email_user, trip_type, id_res):
@@ -157,7 +152,9 @@ def validation_reservation(request):
             OdooReservationModel.note: data[FormField.note],
             OdooReservationModel.price: float(data[FormField.price].replace(",", ".")),
             OdooReservationModel.duration: int(data[FormField.duration]),
-            OdooReservationModel.distance: float(data[FormField.distance].replace(",", ".")),
+            OdooReservationModel.distance: float(
+                data[FormField.distance].replace(",", ".")
+            ),
             OdooReservationModel.car_type: id_car_type,
             OdooReservationModel.datetime_start: datetime_start.strftime(
                 "%Y-%m-%d %H:%M:%S"

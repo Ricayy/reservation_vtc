@@ -52,7 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
             asterix: { label: "Parc Astérix", address: "Parc Astérix, Plailly", coords: [2.5712,49.1343] },
             versailles: { label: "Château de Versailles", address: "Place d'Armes, 78000 Versailles, France", coords: [2.1204, 48.8049] },
             jardins_du_luxembourg: { label: "Jardins du Luxembourg", address: "Jardin du Luxembourg, Paris, France", coords: [2.3372, 48.8462] },
-            bois_de_boulogne: { label: "Bois de Boulogne", address: "Bois de Boulogne, Paris, France", coords: [2.2530, 48.8630] },
             parc_des_expositions: { label: "Parc des Expositions de Villepinte", address: "Parc des Expositions, Villepinte, France", coords: [2.52074, 48.97111] },
             louvre: { label: "Musée du Louvre", address: "Musée du Louvre, Paris, France", coords: [2.3375, 48.8609] },
             notre_dame: { label: "Cathédrale Notre-Dame de Paris", address: "Cathédrale Notre-Dame, Paris, France", coords: [2.3497, 48.8532] },

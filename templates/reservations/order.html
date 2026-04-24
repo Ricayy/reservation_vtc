@@ -4,54 +4,418 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>{% trans "Bon de commande" %} - {{ res_data.id }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Bon de commande" %} — {{ res_data.id }}</title>
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 30px; font-size: 12px; }
-        h1 { text-align: center; font-size: 18px; }
-        .section { margin-bottom: 20px; }
-        .section h2 { font-size: 14px; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        th, td { padding: 5px; border: 1px solid #000; text-align: left; font-size: 12px; }
-        .footer { margin-top: 20px; font-size: 10px; color: #000; text-align: center; }
-        p { margin: 3px 0; }
-        strong { font-weight: bold; }
+        /* ══════════════════════════════════════════════════
+           BON DE COMMANDE — style print-first
+           Fonctionne à l'écran ET à l'impression (@media print)
+        ══════════════════════════════════════════════════ */
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        :root {
+            --navy:       #0D1F3C;
+            --navy-mid:   #1A3560;
+            --gold:       #C8A951;
+            --gold-pale:  rgba(200,169,81,.10);
+            --off-white:  #F7F6F2;
+            --border:     #D8D6CE;
+            --text:       #0D1F3C;
+            --text-mid:   #4A5568;
+            --text-muted: #8C8C8C;
+            --success:    #1D6A4A;
+            --success-bg: #EAF5EE;
+
+            --font: 'Arial', sans-serif;
+            --radius: 6px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font);
+            font-size: 12px;
+            color: var(--text);
+            background: #f0eeea;
+            line-height: 1.6;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* ── Page / conteneur ── */
+        .page {
+            width: 100%;
+            max-width: 720px;
+            margin: 32px auto;
+            background: #fff;
+            border: 0.5px solid #D8D6CE;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(13,31,60,.10);
+        }
+
+        /* ── En-tête ── */
+        .doc-header {
+            background: var(--navy);
+            padding: 28px 32px 24px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .doc-header__brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .doc-header__logo {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .doc-header__mark {
+            width: 28px;
+            height: 28px;
+            background: var(--gold);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .doc-header__mark svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--navy);
+        }
+
+        .doc-header__name {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: .04em;
+        }
+
+        .doc-header__sub {
+            color: rgba(255,255,255,.45);
+            font-size: 10px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            margin-left: 37px;
+            margin-top: 2px;
+        }
+
+        .doc-header__meta {
+            text-align: right;
+        }
+
+        .doc-header__title {
+            color: var(--gold);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+        }
+
+        .doc-header__id {
+            color: rgba(255,255,255,.6);
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .doc-header__date {
+            color: rgba(255,255,255,.45);
+            font-size: 10px;
+            margin-top: 2px;
+        }
+
+        /* ── Corps du document ── */
+        .doc-body {
+            padding: 32px;
+        }
+
+        /* ── Sections ── */
+        .doc-section {
+            margin-bottom: 28px;
+        }
+
+        .doc-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .doc-section__title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: var(--text-muted);
+            padding-bottom: 8px;
+            border-bottom: 0.5px solid #D8D6CE;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .doc-section__title::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--gold);
+            flex-shrink: 0;
+        }
+
+        /* ── Grille de champs ── */
+        .doc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 32px;
+        }
+
+        .doc-grid--single {
+            grid-template-columns: 1fr;
+        }
+
+        .doc-field {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .doc-field__label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .doc-field__value {
+            font-size: 13px;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        /* ── Bloc prix ── */
+        .doc-price-block {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--gold-pale);
+            border: 0.5px solid rgba(200,169,81,.3);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-top: 20px;
+        }
+
+        .doc-price-block__label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--text-muted);
+        }
+
+        .doc-price-block__value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        /* ── Note complémentaire ── */
+        .doc-note {
+            background: var(--off-white);
+            border: 0.5px solid #D8D6CE;
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--text-mid);
+            line-height: 1.6;
+        }
+
+        /* ── Pied de page ── */
+        .doc-footer {
+            border-top: 0.5px solid #D8D6CE;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: var(--off-white);
+        }
+
+        .doc-footer__text {
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: .04em;
+        }
+
+        /* ── Bouton impression (écran uniquement) ── */
+        .print-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--navy);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            padding: 8px 18px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .04em;
+            cursor: pointer;
+            transition: background 150ms ease;
+        }
+
+        .print-btn:hover { background: var(--navy-mid, #1A3560); }
+
+        /* ══════════════════════════════════════════════════
+           PRINT
+        ══════════════════════════════════════════════════ */
+        @media print {
+            body { background: #fff; font-size: 11px; }
+            .page { margin: 0; max-width: 100%; box-shadow: none; border: none; border-radius: 0; }
+            .print-btn { display: none; }
+            .doc-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+
+        @media (max-width: 600px) {
+            .doc-header { flex-direction: column; gap: 12px; }
+            .doc-header__meta { text-align: left; }
+            .doc-body { padding: 20px; }
+            .doc-grid { grid-template-columns: 1fr; }
+            .doc-footer { flex-direction: column; align-items: flex-start; gap: 10px; }
+        }
     </style>
 </head>
 <body>
-    <h1>{% trans "Bon de commande VTC" %}</h1>
-    <br>
-    <div class="section">
-        <h2>{% trans "Client" %}</h2>
-        <p><strong>{% trans "Nom" %} :</strong> {{ res_data.x_studio_email.x_studio_first_name }} {{ res_data.x_studio_email.x_studio_last_name }}</p>
-        <p><strong>{% trans "Téléphone" %} :</strong> {{ res_data.x_studio_email.x_studio_phone }}</p>
-        <p><strong>{% trans "Email" %} :</strong> {{ res_data.x_studio_email.x_name }}</p>
+
+<div class="page">
+
+    <!-- EN-TÊTE -->
+    <div class="doc-header">
+        <div class="doc-header__brand">
+            <div class="doc-header__logo">
+                <div class="doc-header__mark" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 1L2 5v6l6 4 6-4V5L8 1zm0 2.2l4 2.7v4.2L8 12.6l-4-2.5V5.9l4-2.7z"/>
+                    </svg>
+                </div>
+                <span class="doc-header__name">MonSiteVTC</span>
+            </div>
+            <span class="doc-header__sub">{% trans "Transport professionnel" %}</span>
+        </div>
+
+        <div class="doc-header__meta">
+            <div class="doc-header__title">{% trans "Bon de commande" %}</div>
+            <div class="doc-header__id">N° {{ res_data.id }}</div>
+            <div class="doc-header__date">{{ res_data.x_studio_datetime_start }}</div>
+        </div>
     </div>
 
-    <div class="section">
-        <h2>{% trans "Course" %}</h2>
-        <p><strong>{% trans "Numéro de course" %} :</strong> {{ res_data.id }}</p>
-        <p><strong>{% trans "Départ" %} :</strong> {{ res_data.x_studio_address_start }}</p>
-        {% if res_data.x_studio_trip_type == "Simple" %}
-            <p><strong>{% trans "Arrivée" %} :</strong> {{ res_data.x_studio_address_end }}</p>
-            <p><strong>{% trans "Distance" %} :</strong> {{ res_data.x_studio_distance }} km</p>
-        {% elif res_data.x_studio_trip_type == "Mise à disposition" %}
-            <p><strong>{% trans "Durée" %} :</strong> {{ res_data.x_studio_duration|minutes_to_hours }}</p>
+    <!-- CORPS -->
+    <div class="doc-body">
+
+        <!-- CLIENT -->
+        <div class="doc-section">
+            <div class="doc-section__title">{% trans "Client" %}</div>
+            <div class="doc-grid">
+                <div class="doc-field">
+                    <span class="doc-field__label">{% trans "Nom complet" %}</span>
+                    <span class="doc-field__value">
+                        {{ res_data.x_studio_email.x_studio_first_name }}
+                        {{ res_data.x_studio_email.x_studio_last_name }}
+                    </span>
+                </div>
+                <div class="doc-field">
+                    <span class="doc-field__label">{% trans "Email" %}</span>
+                    <span class="doc-field__value">{{ res_data.x_studio_email.x_name }}</span>
+                </div>
+                <div class="doc-field">
+                    <span class="doc-field__label">{% trans "Téléphone" %}</span>
+                    <span class="doc-field__value">{{ res_data.x_studio_email.x_studio_phone }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- COURSE -->
+        <div class="doc-section">
+            <div class="doc-section__title">{% trans "Détails de la course" %}</div>
+            <div class="doc-grid">
+                <div class="doc-field">
+                    <span class="doc-field__label">{% trans "N° de course" %}</span>
+                    <span class="doc-field__value">{{ res_data.id }}</span>
+                </div>
+                <div class="doc-field">
+                    <span class="doc-field__label">{% trans "Type de trajet" %}</span>
+                    <span class="doc-field__value">{{ res_data.x_studio_trip_type }}</span>
+                </div>
+                <div class="doc-field">
+                    <span class="doc-field__label">{% trans "Date et heure" %}</span>
+                    <span class="doc-field__value">{{ res_data.x_studio_datetime_start }}</span>
+                </div>
+                <div class="doc-field">
+                    <span class="doc-field__label">{% trans "Véhicule" %}</span>
+                    <span class="doc-field__value">{{ res_data.x_studio_car_type }}</span>
+                </div>
+                <div class="doc-field">
+                    <span class="doc-field__label">{% trans "Départ" %}</span>
+                    <span class="doc-field__value">{{ res_data.x_studio_address_start }}</span>
+                </div>
+
+                {% if res_data.x_studio_trip_type == "Simple" %}
+                    <div class="doc-field">
+                        <span class="doc-field__label">{% trans "Arrivée" %}</span>
+                        <span class="doc-field__value">{{ res_data.x_studio_address_end }}</span>
+                    </div>
+                    <div class="doc-field">
+                        <span class="doc-field__label">{% trans "Distance" %}</span>
+                        <span class="doc-field__value">{{ res_data.x_studio_distance }} km</span>
+                    </div>
+                {% elif res_data.x_studio_trip_type == "Mise à disposition" %}
+                    <div class="doc-field">
+                        <span class="doc-field__label">{% trans "Durée" %}</span>
+                        <span class="doc-field__value">{{ res_data.x_studio_duration|minutes_to_hours }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Prix -->
+            <div class="doc-price-block">
+                <span class="doc-price-block__label">{% trans "Montant total estimé" %}</span>
+                <span class="doc-price-block__value">{{ res_data.x_studio_price }} €</span>
+            </div>
+        </div>
+
+        <!-- NOTE COMPLÉMENTAIRE -->
+        {% if res_data.x_studio_note %}
+        <div class="doc-section">
+            <div class="doc-section__title">{% trans "Informations complémentaires" %}</div>
+            <div class="doc-note">{{ res_data.x_studio_note }}</div>
+        </div>
         {% endif %}
-        <p><strong>{% trans "Type de trajet" %} :</strong> {{ res_data.x_studio_trip_type }}</p>
-        <p><strong>{% trans "Date et heure" %} :</strong> {{ res_data.x_studio_datetime_start }}</p>
-        <p><strong>{% trans "Véhicule" %} :</strong> {{ res_data.x_studio_car_type }}</p>
-        <p><strong>{% trans "Prix" %} :</strong> {{ res_data.x_studio_price }} €</p>
+
+    </div><!-- /doc-body -->
+
+    <!-- PIED DE PAGE -->
+    <div class="doc-footer">
+        <span class="doc-footer__text">
+            {% trans "Bon généré automatiquement par le système" %}
+        </span>
+        <button class="print-btn" onclick="window.print()" aria-label="{% trans 'Télécharger le bon de commande' %}">
+            ⎙ {% trans "Télécharger" %}
+        </button>
     </div>
 
-    {% if res_data.x_studio_note != "" %}
-    <div class="section">
-        <h2>{% trans "Informations complémentaires" %}</h2>
-        <p>{{ res_data.x_studio_note }}</p>
-    </div>
-    {% endif %}
+</div><!-- /page -->
 
-    <div class="footer">
-        {% trans "Bon généré automatiquement par le système VTC" %}
-    </div>
 </body>
 </html>

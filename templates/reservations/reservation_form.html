@@ -1,72 +1,138 @@
 {% extends "website/master.html" %}
 {% load static %}
 {% load i18n %}
-{% block title %}
-    reservation_form.html
-{% endblock %}
+
+{% block title %}{% trans "Réservation VTC" %}{% endblock %}
 
 {% block extra_css %}
 <style>
-/* === FORM LAYOUT === */
-
-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 28px;
-}
-
-tr {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-tr:not(:last-child) {
-    margin-bottom: 20px;
-}
-
-/* LABEL */
-th {
-    width: 100%;
-    text-align: left;
-    font-weight: 600;
-    font-size: 16px;
-    color: #374151;
-    padding: 0;
-}
-
-/* FIELD */
-td {
-    width: 100%;
-    position: relative;
-    padding: 0;
-}
-
-/* === FORM SECTIONS === */
-
+/* ══════════════════════════════════════════════════
+   SECTIONS DU FORMULAIRE
+══════════════════════════════════════════════════ */
 .form-section {
-    display: block;
-    padding: 24px 0;
+    padding-block: 28px;
 }
 
 .form-section + .form-section {
-    border-top: 1px solid #e5e7eb;
-    margin-top: 32px;
-    padding-top: 32px;
+    border-top: 0.5px solid var(--border);
 }
 
-.section-title th {
-    font-size: 26px;
-    font-weight: 700;
-    color: #2f5bea;
-    padding-bottom: 12px;
-    text-align: center;
-    width: 100%;
+.section-heading {
     display: flex;
-    justify-content: center;
     align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
 }
 
+.section-heading__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+}
+
+.section-heading h2 {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ══════════════════════════════════════════════════
+   GRILLES
+══════════════════════════════════════════════════ */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-grid--single { grid-template-columns: 1fr; }
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-group--full { grid-column: 1 / -1; }
+
+.form-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--navy);
+}
+
+/* ══════════════════════════════════════════════════
+   TABLE (layout Django hérité — rendu sobre)
+   On garde la structure table du form Django mais
+   on écrase son rendu visuel
+══════════════════════════════════════════════════ */
+.reservation-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.reservation-table tr {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-bottom: 20px;
+}
+
+.reservation-table tr:last-child { margin-bottom: 0; }
+
+.reservation-table th {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--navy);
+    text-align: left;
+    padding: 0;
+    width: 100%;
+}
+
+.reservation-table td {
+    width: 100%;
+    padding: 0;
+    position: relative;
+}
+
+/* Section title dans la table */
+.reservation-table tr.section-title th {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text-muted);
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reservation-table tr.section-title th::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════
+   DEUX COLONNES (sections date, passagers, contact)
+══════════════════════════════════════════════════ */
 .form-section.two-columns {
     display: flex;
     flex-wrap: wrap;
@@ -78,180 +144,177 @@ td {
 }
 
 .form-section.two-columns tr {
-    display: flex;
-    flex-direction: column;
     flex: 1 1 45%;
     min-width: 200px;
-    margin-bottom: 20px;
 }
 
-.form-section.two-columns th {
-    margin-bottom: 8px;
-    text-align: left;
-}
-
-.form-section.two-columns td {
-    width: 100%;
-}
-
-@media (max-width: 480px) {
-    .form-section.two-columns {
-        flex-direction: column;
-    }
-
-    .form-section.two-columns tr {
-        flex: 1 1 100%;
-    }
-}
-
-/* === INPUTS === */
-
-input,
-select,
-textarea {
-    width: 100%;
-    height: 44px;
-    padding: 10px 12px;
-    border: 1px solid #dcdfe6;
-    border-radius: 6px;
-    font-size: 15px;
-    background: #fff;
-}
-
-textarea {
-    min-height: 90px;
-    resize: vertical;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
-    border-color: #2f5bea;
-}
-
-input[type="number"] {
-    text-align: center;
-}
-
-input[type="radio"],
-input[type="checkbox"] {
-    width: auto;
-    height: auto;
-}
-
-/* === MAP === */
-
-#map {
-    width: 100%;
-    height: clamp(260px, 40vw, 380px);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-/* === ROUTE INFO === */
-
-#route-info {
-    background: #f1f4ff;
-    border: 1px solid #dcdfe6;
-    border-radius: 6px;
-    padding: 12px 16px;
-    color: #2f5bea;
-    font-weight: 600;
-    margin-bottom: 10px;
-    display: none;
-    text-align: center;
-}
-
-#route-info[data-visible="true"] {
-    display: block;
-}
-
-/* === SUGGESTIONS === */
-
-.suggestions {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    width: 100%;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 6px 18px rgba(0,0,0,.08);
-}
-
-.suggestions div {
-    padding: 10px 12px;
-    cursor: pointer;
-}
-
-.suggestions div:hover {
-    background: #f3f4f6;
-}
-
-.suggestions:empty {
-    display: none;
-}
-
-/* === ADDRESS BUTTON === */
+/* ══════════════════════════════════════════════════
+   BOUTONS DE MODE (adresse / aéroport / gare / loisirs)
+══════════════════════════════════════════════════ */
 .address-toggle {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 10px;
 }
 
 .address-toggle button {
     flex: 1 1 auto;
-    min-width: 120px;
-    padding: 10px 14px;
-    font-size: 14px;
-    border-radius: 6px;
-    white-space: nowrap;
-    background: #2f5bea;
+    min-width: 100px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    background: var(--off-white);
+    color: var(--text-mid);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition);
 }
 
-/* === ERROR MESSAGE === */
+.address-toggle button:hover {
+    background: var(--surface);
+    border-color: var(--navy);
+    color: var(--navy);
+}
+
+.address-toggle button.active,
+.address-toggle button[data-active="true"] {
+    background: var(--navy);
+    color: var(--white);
+    border-color: var(--navy);
+}
+
+/* ══════════════════════════════════════════════════
+   SUGGESTIONS AUTOCOMPLETE
+══════════════════════════════════════════════════ */
+.suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    background: var(--white);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: var(--shadow-lg);
+}
+
+.suggestions div {
+    padding: 10px 13px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-mid);
+    border-bottom: 0.5px solid var(--border);
+    transition: background var(--transition);
+}
+
+.suggestions div:last-child { border-bottom: none; }
+.suggestions div:hover { background: var(--off-white); color: var(--navy); }
+.suggestions:empty { display: none; }
+
+/* ══════════════════════════════════════════════════
+   CARTE MAPBOX
+══════════════════════════════════════════════════ */
+#map {
+    width: 100%;
+    height: clamp(240px, 35vw, 360px);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+    margin-top: 4px;
+}
+
+/* ══════════════════════════════════════════════════
+   ROUTE INFO
+══════════════════════════════════════════════════ */
+#route-info {
+    background: var(--gold-pale);
+    border: 0.5px solid rgba(200,169,81,.35);
+    border-radius: var(--radius-md);
+    padding: 11px 16px;
+    color: var(--navy);
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: none;
+    text-align: center;
+    letter-spacing: .02em;
+}
+
+#route-info[data-visible="true"] { display: block; }
+
+/* ══════════════════════════════════════════════════
+   ERREUR DATETIME
+══════════════════════════════════════════════════ */
 #datetime-error-row td {
-    flex-basis: 100%;
     text-align: center;
 }
 
-
-/* === MOBILE === */
-
-@media (max-width: 768px) {
-    tr {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
-
-    th, td {
-        width: 100%;
-    }
+#datetime-error-row span {
+    display: inline-block;
+    background: var(--error-bg);
+    color: var(--error);
+    border: 0.5px solid var(--error-border);
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
 }
-@media (max-width: 480px) {
-    .address-toggle {
-        gap: 6px;
+
+/* ══════════════════════════════════════════════════
+   CHECKBOX CGU
+══════════════════════════════════════════════════ */
+.cgu-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px;
+    background: var(--off-white);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-top: 4px;
+}
+
+.cgu-row input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.cgu-row label {
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════════
+   BOUTON SUBMIT
+══════════════════════════════════════════════════ */
+#submit-btn {
+    padding: 14px 48px;
+    font-size: 15px;
+    letter-spacing: .04em;
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+    .form-section.two-columns tr {
+        flex: 1 1 100%;
     }
 
     .address-toggle button {
         flex: 1 1 48%;
-        font-size: 13px;
-        padding: 10px;
     }
 }
 
-@media (max-width: 360px) {
-    .address-toggle button {
-        flex: 1 1 100%;
-    }
+@media (max-width: 380px) {
+    .address-toggle button { flex: 1 1 100%; }
 }
-
 </style>
 {% endblock %}
 
@@ -262,12 +325,13 @@ input[type="checkbox"] {
     <form method="post" action="{% url 'confirm_reservation' %}">
         {% csrf_token %}
 
-        <table>
+        <table class="reservation-table">
             <tbody class="form-section">
                 <tr class="section-title">
                     <th colspan="2">{% trans "Trajet" %}</th>
                 </tr>
-                <!-- ================= DÉPART ================= -->
+
+                <!-- DÉPART -->
                 <tr>
                     <th>{% trans "Départ" %}</th>
                     <td>
@@ -278,28 +342,18 @@ input[type="checkbox"] {
                             <button type="button" data-target="start" data-mode="loisir">{% trans "Loisirs" %}</button>
                         </div>
 
-                        <input id="id_address_start" name="address_start" required>
+                        <input id="id_address_start" name="address_start" placeholder="{% trans 'Adresse de départ' %}" required>
                         <div id="suggestions_start" class="suggestions"></div>
 
-                        <select id="start_aeroport" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un aéroport" %}</option>
-                        </select>
-                        <select id="start_terminal" name="terminal_start" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un terminal" %}</option>
-                        </select>
-                        <select id="start_gare" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir une gare" %}</option>
-                        </select>
-                        <select id="start_loisir" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un lieu de loisir" %}</option>
-                        </select>
-                        <select id="start_mise_dis" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir une durée" %}</option>
-                        </select>
+                        <select id="start_aeroport" class="poi-select" hidden><option value="">{% trans "Choisir un aéroport" %}</option></select>
+                        <select id="start_terminal" name="terminal_start" class="poi-select" hidden><option value="">{% trans "Choisir un terminal" %}</option></select>
+                        <select id="start_gare"     class="poi-select" hidden><option value="">{% trans "Choisir une gare" %}</option></select>
+                        <select id="start_loisir"   class="poi-select" hidden><option value="">{% trans "Choisir un lieu de loisir" %}</option></select>
+                        <select id="start_mise_dis" class="poi-select" hidden><option value="">{% trans "Choisir une durée" %}</option></select>
                     </td>
                 </tr>
 
-                <!-- ================= ARRIVÉE ================= -->
+                <!-- ARRIVÉE -->
                 <tr>
                     <th>{% trans "Arrivée" %}</th>
                     <td>
@@ -311,29 +365,24 @@ input[type="checkbox"] {
                             <button type="button" data-target="end" data-mode="mise_dis">{% trans "Mise à disposition" %}</button>
                         </div>
 
-                        <input id="id_address_end" name="address_end">
+                        <input id="id_address_end" name="address_end" placeholder="{% trans 'Adresse de destination' %}">
                         <div id="suggestions_end" class="suggestions"></div>
 
-                        <select id="end_aeroport" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un aéroport" %}</option>
-                        </select>
-                        <select id="end_terminal" name="terminal_end" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un terminal" %}</option>
-                        </select>
-                        <select id="end_gare" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir une gare" %}</option>
-                        </select>
-                        <select id="end_loisir" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un lieu de loisir" %}</option>
-                        </select>
-                        <select id="end_mise_dis" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir une durée" %}</option>
-                        </select>
+                        <select id="end_aeroport" class="poi-select" hidden><option value="">{% trans "Choisir un aéroport" %}</option></select>
+                        <select id="end_terminal" name="terminal_end" class="poi-select" hidden><option value="">{% trans "Choisir un terminal" %}</option></select>
+                        <select id="end_gare"     class="poi-select" hidden><option value="">{% trans "Choisir une gare" %}</option></select>
+                        <select id="end_loisir"   class="poi-select" hidden><option value="">{% trans "Choisir un lieu de loisir" %}</option></select>
+                        <select id="end_mise_dis" class="poi-select" hidden><option value="">{% trans "Choisir une durée" %}</option></select>
                     </td>
                 </tr>
-                <tr><th>{% trans "Véhicule" %}</th><td>{{ form.car_type }}</td></tr>
 
-                <!-- ================= MAP & INFOS ================= -->
+                <!-- VÉHICULE -->
+                <tr>
+                    <th>{% trans "Véhicule" %}</th>
+                    <td>{{ form.car_type }}</td>
+                </tr>
+
+                <!-- MAP & ROUTE INFO -->
                 <tr>
                     <th>
                         <div id="route-info"></div>
@@ -343,6 +392,7 @@ input[type="checkbox"] {
                     </td>
                 </tr>
             </tbody>
+
             <tbody class="form-section two-columns">
                 <tr class="section-title">
                     <th colspan="2">{% trans "Date et heure de prise en charge" %}</th>
@@ -356,55 +406,72 @@ input[type="checkbox"] {
                     <td>{{ form.time_start }}</td>
                 </tr>
                 <tr id="datetime-error-row" style="display:none;">
-                    <td colspan="2" style="flex-basis:100%; text-align:center;">
-                        <span style="color:red; font-size:14px;">
-                            {% trans "La date et l'heure doivent être au moins 15 minutes dans le futur." %}
-                        </span>
+                    <td colspan="2" style="flex-basis:100%;">
+                        <span>{% trans "La date et l'heure doivent être au moins 15 minutes dans le futur." %}</span>
                     </td>
                 </tr>
             </tbody>
+
             <tbody class="form-section two-columns">
                 <tr class="section-title">
                     <th colspan="2">{% trans "Nombre de passagers et de bagages" %}</th>
                 </tr>
-                <tr><th>{% trans "Passagers" %}</th><td>{{ form.nb_passengers }}</td></tr>
-                <tr><th>{% trans "Bagages" %}</th><td>{{ form.nb_luggages }}</td></tr>
+                <tr>
+                    <th>{% trans "Passagers" %}</th>
+                    <td>{{ form.nb_passengers }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans "Bagages" %}</th>
+                    <td>{{ form.nb_luggages }}</td>
+                </tr>
             </tbody>
+
             <tbody class="form-section two-columns">
                 <tr class="section-title">
                     <th colspan="2">{% trans "Contact" %}</th>
                 </tr>
-
                 <tr><th>{% trans "Nom" %}</th><td>{{ form.last_name }}</td></tr>
                 <tr><th>{% trans "Prénom" %}</th><td>{{ form.first_name }}</td></tr>
                 <tr><th>{% trans "Téléphone" %}</th><td>{{ form.phone }}</td></tr>
                 <tr><th>{% trans "Email" %}</th><td>{{ form.email }}</td></tr>
-                <tr><th>{% trans "Commentaires" %}</th><td>{{ form.note }}</td></tr>
+                <tr style="flex:1 1 100%;">
+                    <th>{% trans "Commentaires" %}</th>
+                    <td>{{ form.note }}</td>
+                </tr>
             </tbody>
-            <tr>
-                <td>
-                    <input type="checkbox" id="data_agreement" name="data_agreement" value="check">
-                    <label for="data_agreement">{% trans "En cochant cette case, vous acceptez que vos données fournies soient utilisées pour le traitement de votre demande." %}</label>
-                </td>
-            </tr>
+
+            <!-- CGU -->
+            <tbody class="form-section">
+                <tr>
+                    <td colspan="2">
+                        <div class="cgu-row">
+                            <input type="checkbox" id="data_agreement" name="data_agreement" value="check">
+                            <label for="data_agreement">
+                                {% trans "En cochant cette case, vous acceptez que vos données fournies soient utilisées pour le traitement de votre demande." %}
+                            </label>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
         </table>
 
-        <input type="hidden" id="distance" name="distance" required>
-        <input type="hidden" id="trip_type" name="trip_type" required>
-        <input type="hidden" id="trip_type_id" name="trip_type_id">
-        <input type="hidden" id="trip_type_label" name="trip_type_label">
-        <input type="hidden" id="duration" name="duration" required>
-        <input type="hidden" id="price" name="price" required>
-        <input type="hidden" id="vehicule_id" name="vehicule_id">
-        <input type="hidden" id="vehicule_label" name="vehicule_label">
-        <input type="hidden" id="start_coords" name="start_coords" value="null">
-        <input type="hidden" id="end_coords"   name="end_coords"   value="null">
+        <!-- Champs cachés — logique métier inchangée -->
+        <input type="hidden" id="distance"        name="distance"        required>
+        <input type="hidden" id="trip_type"        name="trip_type"        required>
+        <input type="hidden" id="trip_type_id"     name="trip_type_id">
+        <input type="hidden" id="trip_type_label"  name="trip_type_label">
+        <input type="hidden" id="duration"         name="duration"         required>
+        <input type="hidden" id="price"            name="price"            required>
+        <input type="hidden" id="vehicule_id"      name="vehicule_id">
+        <input type="hidden" id="vehicule_label"   name="vehicule_label">
+        <input type="hidden" id="start_coords"     name="start_coords"     value="null">
+        <input type="hidden" id="end_coords"       name="end_coords"       value="null">
 
-
-        <button type="submit" id="submit-btn">{% trans "Valider" %}</button>
+        <button type="submit" id="submit-btn">{% trans "Valider" %} →</button>
     </form>
 </div>
 
+<!-- Mapbox & données véhicules — inchangés -->
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
 
@@ -417,8 +484,8 @@ input[type="checkbox"] {
 <script>
     window.TRANSLATIONS = {
         "duration_calcul": "{% trans 'Durée estimée'|escapejs %}",
-        "price_calcul": "{% trans 'Prix estimé'|escapejs %}",
-        "available_calcul": "{% trans 'Mise à disposition à'|escapejs %}",
+        "price_calcul":    "{% trans 'Prix estimé'|escapejs %}",
+        "available_calcul":"{% trans 'Mise à disposition à'|escapejs %}",
     };
     window.TRIP_LABELS = {
         simple: "{% trans 'Simple' %}",
