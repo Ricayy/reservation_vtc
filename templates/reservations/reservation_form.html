@@ -1,393 +1,912 @@
 {% extends "website/master.html" %}
 {% load static %}
 {% load i18n %}
-{% block title %}
-    reservation_form.html
-{% endblock %}
+
+{% block title %}{% trans "Réservation VTC" %}{% endblock %}
 
 {% block extra_css %}
-<style>
-/* === FORM LAYOUT === */
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 
-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 28px;
+<style>
+/* ══════════════════════════════════════════════════════════════
+   PAGE D'ACCUEIL — RÉSERVATION VTC
+   Direction : luxe nocturne — navy profond, or, typographie
+   display Cormorant, formulaire flottant sur hero plein écran.
+══════════════════════════════════════════════════════════════ */
+
+/* ── Override master : pas de padding sur main ───────────────── */
+main {
+    padding: 0 !important;
+    display: block !important;
+    min-height: 0 !important;
+    background: var(--navy) !important;
 }
 
-tr {
+/* ══════════════════════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════════════════════ */
+.hero {
+    position: relative;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+}
+
+/* ── Fond photo gauche ───────────────────────────────────────── */
+.hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.hero__bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+    display: block;
+}
+
+/* Gradient qui va de transparent (gauche) à navy (droite) */
+.hero__bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        105deg,
+        rgba(13, 31, 60, 0.55) 0%,
+        rgba(13, 31, 60, 0.75) 45%,
+        rgba(13, 31, 60, 0.97) 70%,
+        #0D1F3C 100%
+    );
+}
+
+/* ── Côté gauche : texte ─────────────────────────────────────── */
+.hero__copy {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-tr:not(:last-child) {
-    margin-bottom: 20px;
-}
-
-/* LABEL */
-th {
-    width: 100%;
-    text-align: left;
-    font-weight: 600;
-    font-size: 16px;
-    color: #374151;
-    padding: 0;
-}
-
-/* FIELD */
-td {
-    width: 100%;
-    position: relative;
-    padding: 0;
-}
-
-/* === FORM SECTIONS === */
-
-.form-section {
-    display: block;
-    padding: 24px 0;
-}
-
-.form-section + .form-section {
-    border-top: 1px solid #e5e7eb;
-    margin-top: 32px;
-    padding-top: 32px;
-}
-
-.section-title th {
-    font-size: 26px;
-    font-weight: 700;
-    color: #2f5bea;
-    padding-bottom: 12px;
-    text-align: center;
-    width: 100%;
-    display: flex;
     justify-content: center;
-    align-items: center;
+    padding: 80px 64px 80px 56px;
+    animation: fadeUp 0.9s cubic-bezier(.22,.68,0,1.2) both;
 }
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.hero__tag-line {
+    width: 36px;
+    height: 1px;
+    background: var(--gold);
+    flex-shrink: 0;
+}
+
+.hero__tag-text {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+}
+
+.hero__title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(3rem, 5.5vw, 5.2rem);
+    font-weight: 300;
+    line-height: 1.05;
+    color: #fff;
+    margin-bottom: 24px;
+    letter-spacing: -.01em;
+}
+
+.hero__title em {
+    font-style: italic;
+    color: var(--gold-light);
+    display: block;
+}
+
+.hero__subtitle {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 300;
+    color: rgba(255,255,255,.55);
+    line-height: 1.8;
+    max-width: 360px;
+    margin-bottom: 48px;
+}
+
+/* Statistiques */
+.hero__stats {
+    display: flex;
+    gap: 40px;
+    padding-top: 40px;
+    border-top: 0.5px solid rgba(255,255,255,.1);
+}
+
+.hero__stat-value {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--gold);
+    line-height: 1;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.hero__stat-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+}
+
+/* ── Côté droit : formulaire ─────────────────────────────────── */
+.hero__form-col {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 48px 40px 24px;
+    animation: fadeUp 0.9s 0.15s cubic-bezier(.22,.68,0,1.2) both;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORMULAIRE FLOTTANT
+══════════════════════════════════════════════════════════════ */
+.form-panel {
+    width: 100%;
+    max-width: 520px;
+    background: rgba(255, 255, 255, 0.035);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    border: 0.5px solid rgba(255,255,255,.1);
+    border-radius: 16px;
+    padding: 40px 36px;
+    box-shadow:
+        0 32px 80px rgba(0,0,0,.5),
+        inset 0 0.5px 0 rgba(255,255,255,.12);
+}
+
+.form-panel__header {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 0.5px solid rgba(255,255,255,.08);
+}
+
+.form-panel__eyebrow {
+    font-family: var(--font-body);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-panel__eyebrow::before {
+    content: '';
+    width: 20px;
+    height: 1px;
+    background: var(--gold);
+    flex-shrink: 0;
+}
+
+.form-panel__title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.7rem;
+    font-weight: 400;
+    color: #fff;
+    line-height: 1.2;
+}
+
+/* ── Surcharge des styles du master pour le contexte dark ────── */
+.form-panel .reservation-table th {
+    color: rgba(255,255,255,.5);
+    font-size: 10px;
+    letter-spacing: .1em;
+}
+
+.form-panel .reservation-table tr.section-title th {
+    color: rgba(255,255,255,.3);
+    border-bottom-color: rgba(255,255,255,.06);
+    font-size: 10px;
+    letter-spacing: .14em;
+}
+
+.form-panel .reservation-table tr.section-title th::before {
+    background: var(--gold);
+}
+
+.form-panel input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]),
+.form-panel select,
+.form-panel textarea {
+    background: rgba(255,255,255,.06);
+    border-color: rgba(255,255,255,.12);
+    color: #fff;
+    border-radius: 8px;
+}
+
+.form-panel input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"])::placeholder {
+    color: rgba(255,255,255,.25);
+}
+
+.form-panel input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):focus,
+.form-panel select:focus,
+.form-panel textarea:focus {
+    border-color: rgba(200,169,81,.5);
+    box-shadow: 0 0 0 3px rgba(200,169,81,.08);
+    background: rgba(255,255,255,.09);
+    outline: none;
+}
+
+/* Select arrow blanc sur fond sombre */
+.form-panel select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    color-scheme: dark;
+}
+
+/* Options du select lisibles */
+.form-panel select option {
+    background: #1A3560;
+    color: #fff;
+}
+
+/* Boutons de mode adresse */
+.form-panel .address-toggle button {
+    background: rgba(255,255,255,.05);
+    border-color: rgba(255,255,255,.1);
+    color: rgba(255,255,255,.5);
+    font-size: 11px;
+    padding: 7px 12px;
+}
+
+.form-panel .address-toggle button:hover {
+    background: rgba(255,255,255,.1);
+    border-color: rgba(255,255,255,.2);
+    color: #fff;
+}
+
+.form-panel .address-toggle button.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--navy);
+    font-weight: 600;
+}
+
+/* Suggestions autocomplete */
+.form-panel .suggestions {
+    background: #0f2444;
+    border-color: rgba(255,255,255,.1);
+}
+
+.form-panel .suggestions div {
+    color: rgba(255,255,255,.7);
+    border-bottom-color: rgba(255,255,255,.06);
+}
+
+.form-panel .suggestions div:hover {
+    background: rgba(255,255,255,.06);
+    color: #fff;
+}
+
+/* Route info */
+.form-panel #route-info {
+    background: rgba(200,169,81,.1);
+    border-color: rgba(200,169,81,.25);
+    color: var(--gold-light);
+    font-size: 13px;
+}
+
+/* Map */
+.form-panel #map {
+    border-color: rgba(255,255,255,.08);
+    border-radius: 10px;
+    height: clamp(180px, 22vw, 260px);
+}
+
+/* CGU */
+.form-panel .cgu-row {
+    background: rgba(255,255,255,.04);
+    border-color: rgba(255,255,255,.08);
+}
+
+.form-panel .cgu-row label {
+    color: rgba(255,255,255,.4);
+    font-size: 12px;
+}
+
+/* Erreur datetime */
+.form-panel #datetime-error-row span {
+    background: rgba(163,45,45,.15);
+    border-color: rgba(163,45,45,.3);
+    color: #f09595;
+    font-size: 12px;
+}
+
+/* Form section separators */
+.form-panel .form-section + .form-section {
+    border-top-color: rgba(255,255,255,.06);
+}
+
+/* ── Bouton submit ────────────────────────────────────────────── */
+.form-panel #submit-btn {
+    width: 100%;
+    padding: 15px 24px;
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 200ms ease;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-panel #submit-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 200ms ease;
+}
+
+.form-panel #submit-btn:hover::before {
+    background: rgba(255,255,255,.12);
+}
+
+.form-panel #submit-btn:active {
+    transform: scale(.98);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION GARANTIES (sous le hero)
+══════════════════════════════════════════════════════════════ */
+.guarantees {
+    background: #0a1828;
+    border-top: 0.5px solid rgba(255,255,255,.06);
+    padding: 32px 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+}
+
+.guarantee-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.guarantee-item__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(200,169,81,.1);
+    border: 0.5px solid rgba(200,169,81,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.guarantee-item__text strong {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,.8);
+    line-height: 1.2;
+}
+
+.guarantee-item__text span {
+    font-size: 11px;
+    color: rgba(255,255,255,.35);
+    letter-spacing: .04em;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STYLES COMMUNS AU FORMULAIRE (repris du fichier original)
+══════════════════════════════════════════════════════════════ */
+.reservation-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.reservation-table tr {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.reservation-table tr:last-child { margin-bottom: 0; }
+
+.reservation-table th {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--navy);
+    text-align: left;
+    padding: 0;
+    width: 100%;
+}
+
+.reservation-table td {
+    width: 100%;
+    padding: 0;
+    position: relative;
+}
+
+.reservation-table tr.section-title th {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: var(--text-muted);
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reservation-table tr.section-title th::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+}
+
+.form-section { padding-block: 20px; }
+.form-section + .form-section { border-top: 0.5px solid var(--border); }
 
 .form-section.two-columns {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 16px;
 }
 
-.form-section.two-columns .section-title {
-    flex-basis: 100%;
-}
+.form-section.two-columns .section-title { flex-basis: 100%; }
+.form-section.two-columns tr { flex: 1 1 45%; min-width: 180px; }
 
-.form-section.two-columns tr {
+.address-toggle {
     display: flex;
-    flex-direction: column;
-    flex: 1 1 45%;
-    min-width: 200px;
-    margin-bottom: 20px;
-}
-
-.form-section.two-columns th {
+    flex-wrap: wrap;
+    gap: 5px;
     margin-bottom: 8px;
-    text-align: left;
 }
 
-.form-section.two-columns td {
-    width: 100%;
+.address-toggle button {
+    flex: 1 1 auto;
+    min-width: 80px;
+    padding: 7px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    background: var(--off-white);
+    color: var(--text-mid);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition);
+    cursor: pointer;
 }
 
-@media (max-width: 480px) {
-    .form-section.two-columns {
-        flex-direction: column;
-    }
-
-    .form-section.two-columns tr {
-        flex: 1 1 100%;
-    }
+.address-toggle button:hover {
+    background: var(--surface);
+    border-color: var(--navy);
+    color: var(--navy);
 }
 
-/* === INPUTS === */
-
-input,
-select,
-textarea {
-    width: 100%;
-    height: 44px;
-    padding: 10px 12px;
-    border: 1px solid #dcdfe6;
-    border-radius: 6px;
-    font-size: 15px;
-    background: #fff;
+.address-toggle button.active {
+    background: var(--navy);
+    color: var(--white);
+    border-color: var(--navy);
 }
-
-textarea {
-    min-height: 90px;
-    resize: vertical;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
-    border-color: #2f5bea;
-}
-
-input[type="number"] {
-    text-align: center;
-}
-
-input[type="radio"],
-input[type="checkbox"] {
-    width: auto;
-    height: auto;
-}
-
-/* === MAP === */
-
-#map {
-    width: 100%;
-    height: clamp(260px, 40vw, 380px);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-/* === ROUTE INFO === */
-
-#route-info {
-    background: #f1f4ff;
-    border: 1px solid #dcdfe6;
-    border-radius: 6px;
-    padding: 12px 16px;
-    color: #2f5bea;
-    font-weight: 600;
-    margin-bottom: 10px;
-    display: none;
-    text-align: center;
-}
-
-#route-info[data-visible="true"] {
-    display: block;
-}
-
-/* === SUGGESTIONS === */
 
 .suggestions {
     position: absolute;
     top: calc(100% + 4px);
     left: 0;
     width: 100%;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    max-height: 200px;
+    background: var(--white);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    max-height: 180px;
     overflow-y: auto;
     z-index: 1000;
-    box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    box-shadow: var(--shadow-lg);
 }
 
 .suggestions div {
-    padding: 10px 12px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-mid);
+    border-bottom: 0.5px solid var(--border);
+    transition: background var(--transition);
+}
+
+.suggestions div:last-child { border-bottom: none; }
+.suggestions div:hover { background: var(--off-white); color: var(--navy); }
+.suggestions:empty { display: none; }
+
+#map {
+    width: 100%;
+    height: clamp(180px, 22vw, 260px);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+    margin-top: 4px;
+}
+
+#route-info {
+    background: var(--gold-pale);
+    border: 0.5px solid rgba(200,169,81,.35);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    color: var(--navy);
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: none;
+    text-align: center;
+}
+
+#route-info[data-visible="true"] { display: block; }
+
+#datetime-error-row td { text-align: center; }
+
+#datetime-error-row span {
+    display: inline-block;
+    background: var(--error-bg);
+    color: var(--error);
+    border: 0.5px solid var(--error-border);
+    border-radius: var(--radius-md);
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.cgu-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+    background: var(--off-white);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-top: 4px;
+}
+
+.cgu-row input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
+
+.cgu-row label {
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.5;
     cursor: pointer;
 }
 
-.suggestions div:hover {
-    background: #f3f4f6;
-}
-
-.suggestions:empty {
-    display: none;
-}
-
-/* === ADDRESS BUTTON === */
-.address-toggle {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.address-toggle button {
-    flex: 1 1 auto;
-    min-width: 120px;
-    padding: 10px 14px;
-    font-size: 14px;
-    border-radius: 6px;
-    white-space: nowrap;
-    background: #2f5bea;
-}
-
-/* === MOBILE === */
-
-@media (max-width: 768px) {
-    tr {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
     }
 
-    th, td {
-        width: 100%;
-    }
-}
-@media (max-width: 480px) {
-    .address-toggle {
-        gap: 6px;
+    .hero__bg::after {
+        background: linear-gradient(
+            180deg,
+            rgba(13,31,60,.6) 0%,
+            rgba(13,31,60,.95) 60%,
+            #0D1F3C 100%
+        );
     }
 
-    .address-toggle button {
-        flex: 1 1 48%;
-        font-size: 13px;
-        padding: 10px;
+    .hero__copy {
+        padding: 80px 32px 40px;
+        text-align: center;
+        align-items: center;
     }
+
+    .hero__subtitle { max-width: 480px; }
+
+    .hero__stats { justify-content: center; }
+
+    .hero__form-col {
+        padding: 0 24px 60px;
+    }
+
+    .form-panel { max-width: 600px; }
 }
 
-@media (max-width: 360px) {
-    .address-toggle button {
-        flex: 1 1 100%;
-    }
+@media (max-width: 640px) {
+    .hero__copy { padding: 60px 20px 32px; }
+
+    .hero__title { font-size: 2.6rem; }
+
+    .hero__stats { gap: 28px; }
+
+    .hero__form-col { padding: 0 16px 48px; }
+
+    .form-panel { padding: 28px 20px; }
+
+    .form-section.two-columns tr { flex: 1 1 100%; }
+
+    .address-toggle button { flex: 1 1 48%; }
+
+    .guarantees { padding: 24px 20px; gap: 24px; }
 }
 
+@media (max-width: 380px) {
+    .address-toggle button { flex: 1 1 100%; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="card">
-    <h1>{% trans "Réservation VTC" %}</h1>
 
-    <form method="post" action="{% url 'confirm_reservation' %}">
-        {% csrf_token %}
+{# ── HERO ───────────────────────────────────────────────────── #}
+<section class="hero" aria-labelledby="hero-title">
 
-        <table>
-            <tbody class="form-section">
-                <tr class="section-title">
-                    <th colspan="2">{% trans "Trajet" %}</th>
-                </tr>
-                <!-- ================= DÉPART ================= -->
-                <tr>
-                    <th>{% trans "Départ" %}</th>
-                    <td>
-                        <div class="address-toggle">
-                            <button type="button" data-target="start" data-mode="address">{% trans "Adresse" %}</button>
-                            <button type="button" data-target="start" data-mode="aeroport">{% trans "Aéroport" %}</button>
-                            <button type="button" data-target="start" data-mode="gare">{% trans "Gare" %}</button>
-                            <button type="button" data-target="start" data-mode="loisir">{% trans "Loisirs" %}</button>
-                        </div>
+    {# Fond photographique — remplacer src par votre image #}
+    <div class="hero__bg" aria-hidden="true">
+        <img src="{% static 'images/background.jpg' %}"
+             alt=""
+             loading="eager"
+             fetchpriority="high">
+    </div>
 
-                        <input id="id_address_start" name="address_start" required>
-                        <div id="suggestions_start" class="suggestions"></div>
+    {# Colonne gauche : texte éditorial #}
+    <div class="hero__copy">
+        <div class="hero__tag" aria-hidden="true">
+            <div class="hero__tag-line"></div>
+            <span class="hero__tag-text">{% trans "Service disponible 24h / 7j" %}</span>
+        </div>
 
-                        <select id="start_aeroport" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un aéroport" %}</option>
-                        </select>
-                        <select id="start_gare" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir une gare" %}</option>
-                        </select>
-                        <select id="start_loisir" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un lieu de loisir" %}</option>
-                        </select>
-                        <select id="start_mise_dis" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir une durée" %}</option>
-                        </select>
-                    </td>
-                </tr>
+        <h1 class="hero__title" id="hero-title">
+            {% trans "Voyagez" %}
+            <em>{% trans "autrement." %}</em>
+        </h1>
 
-                <!-- ================= ARRIVÉE ================= -->
-                <tr>
-                    <th>{% trans "Arrivée" %}</th>
-                    <td>
-                        <div class="address-toggle">
-                            <button type="button" data-target="end" data-mode="address">{% trans "Adresse" %}</button>
-                            <button type="button" data-target="end" data-mode="aeroport">{% trans "Aéroport" %}</button>
-                            <button type="button" data-target="end" data-mode="gare">{% trans "Gare" %}</button>
-                            <button type="button" data-target="end" data-mode="loisir">{% trans "Loisirs" %}</button>
-                            <button type="button" data-target="end" data-mode="mise_dis">{% trans "Mise à disposition" %}</button>
-                        </div>
+        <p class="hero__subtitle">
+            {% trans "Des chauffeurs professionnels, des véhicules haut de gamme. Réservez en deux minutes — aujourd'hui, demain ou à l'avance." %}
+        </p>
 
-                        <input id="id_address_end" name="address_end">
-                        <div id="suggestions_end" class="suggestions"></div>
+        <div class="hero__stats" aria-label="{% trans 'Chiffres clés' %}">
+            <div>
+                <span class="hero__stat-value">15 k+</span>
+                <span class="hero__stat-label">{% trans "Trajets réalisés" %}</span>
+            </div>
+            <div>
+                <span class="hero__stat-value">4,9</span>
+                <span class="hero__stat-label">{% trans "Note client" %}</span>
+            </div>
+            <div>
+                <span class="hero__stat-value">&lt; 2'</span>
+                <span class="hero__stat-label">{% trans "Réservation" %}</span>
+            </div>
+        </div>
+    </div>
 
-                        <select id="end_aeroport" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un aéroport" %}</option>
-                        </select>
-                        <select id="end_gare" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir une gare" %}</option>
-                        </select>
-                        <select id="end_loisir" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir un lieu de loisir" %}</option>
-                        </select>
-                        <select id="end_mise_dis" class="poi-select" hidden>
-                            <option value="">{% trans "Choisir une durée" %}</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr><th>{% trans "Véhicule" %}</th><td>{{ form.car_type }}</td></tr>
+    {# Colonne droite : formulaire glassmorphism #}
+    <div class="hero__form-col">
+        <div class="form-panel">
+            <div class="form-panel__header">
+                <div class="form-panel__eyebrow">{% trans "Réservation immédiate" %}</div>
+                <h2 class="form-panel__title">{% trans "Votre trajet" %}</h2>
+            </div>
 
-                <!-- ================= MAP & INFOS ================= -->
-                <tr>
-                    <th>
-                        <div id="route-info"></div>
-                    </th>
-                    <td>
-                        <div id="map" data-mapbox-token="{{ mapbox_token }}"></div>
-                    </td>
-                </tr>
-            </tbody>
-            <tbody class="form-section two-columns">
-                <tr class="section-title">
-                    <th colspan="2">{% trans "Date et heure de prise en charge" %}</th>
-                </tr>
-                <tr>
-                    <th>{% trans "Date" %}</th>
-                    <td style="position: relative;">
-                        {{ form.date_start }}
-                        <span id="datetime-error" style="color:red; display:none; font-size:14px; position:absolute;">
-                            La date et l’heure doivent être au moins 15 minutes dans le futur.
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <th>{% trans "Heure" %}</th>
-                    <td style="position: relative;">{{ form.time_start }}</td>
-                </tr>
-            </tbody>
-            <tbody class="form-section two-columns">
-                <tr class="section-title">
-                    <th colspan="2">{% trans "Nombre de passagers et de bagages" %}</th>
-                </tr>
-                <tr><th>{% trans "Passagers" %}</th><td>{{ form.nb_passengers }}</td></tr>
-                <tr><th>{% trans "Bagages" %}</th><td>{{ form.nb_luggages }}</td></tr>
-            </tbody>
-            <tbody class="form-section two-columns">
-                <tr class="section-title">
-                    <th colspan="2">{% trans "Contact" %}</th>
-                </tr>
+            <form method="post" action="{% url 'confirm_reservation' %}" novalidate>
+                {% csrf_token %}
 
-                <tr><th>{% trans "Nom" %}</th><td>{{ form.last_name }}</td></tr>
-                <tr><th>{% trans "Prénom" %}</th><td>{{ form.first_name }}</td></tr>
-                <tr><th>{% trans "Téléphone" %}</th><td>{{ form.phone }}</td></tr>
-                <tr><th>{% trans "Email" %}</th><td>{{ form.email }}</td></tr>
-                <tr><th>{% trans "Commentaires" %}</th><td>{{ form.note }}</td></tr>
-            </tbody>
-            <tr>
-                <td>
-                    <input type="checkbox" id="data_agreement" name="data_agreement" value="check">
-                    <label for="data_agreement">{% trans "En cochant cette case, vous acceptez que vos données fournies soient utilisées pour le traitement de votre demande." %}</label>
-                </td>
-            </tr>
-        </table>
+                <table class="reservation-table">
+                    <tbody class="form-section">
+                        <tr class="section-title">
+                            <th colspan="2">{% trans "Trajet" %}</th>
+                        </tr>
 
-        <input type="hidden" id="distance" name="distance" required>
-        <input type="hidden" id="trip_type" name="trip_type" required>
-        <input type="hidden" id="trip_type_id" name="trip_type_id">
-        <input type="hidden" id="trip_type_label" name="trip_type_label">
-        <input type="hidden" id="duration" name="duration" required>
-        <input type="hidden" id="price" name="price" required>
-        <input type="hidden" id="vehicule_id" name="vehicule_id">
-        <input type="hidden" id="vehicule_label" name="vehicule_label">
+                        {# DÉPART #}
+                        <tr>
+                            <th>{% trans "Départ" %}</th>
+                            <td>
+                                <div class="address-toggle">
+                                    <button type="button" data-target="start" data-mode="address">{% trans "Adresse" %}</button>
+                                    <button type="button" data-target="start" data-mode="aeroport">{% trans "Aéroport" %}</button>
+                                    <button type="button" data-target="start" data-mode="gare">{% trans "Gare" %}</button>
+                                    <button type="button" data-target="start" data-mode="loisir">{% trans "Loisirs" %}</button>
+                                </div>
+                                <input id="id_address_start" name="address_start" placeholder="{% trans 'Adresse de départ' %}">
+                                <div id="suggestions_start" class="suggestions"></div>
+                                <select id="start_aeroport" class="poi-select" hidden><option value="">{% trans "Choisir un aéroport" %}</option></select>
+                                <select id="start_terminal" name="terminal_start" class="poi-select" hidden><option value="">{% trans "Choisir un terminal" %}</option></select>
+                                <select id="start_gare"     class="poi-select" hidden><option value="">{% trans "Choisir une gare" %}</option></select>
+                                <select id="start_loisir"   class="poi-select" hidden><option value="">{% trans "Choisir un lieu de loisir" %}</option></select>
+                                <select id="start_mise_dis" class="poi-select" hidden><option value="">{% trans "Choisir une durée" %}</option></select>
+                            </td>
+                        </tr>
 
+                        {# ARRIVÉE #}
+                        <tr>
+                            <th>{% trans "Arrivée" %}</th>
+                            <td>
+                                <div class="address-toggle">
+                                    <button type="button" data-target="end" data-mode="address">{% trans "Adresse" %}</button>
+                                    <button type="button" data-target="end" data-mode="aeroport">{% trans "Aéroport" %}</button>
+                                    <button type="button" data-target="end" data-mode="gare">{% trans "Gare" %}</button>
+                                    <button type="button" data-target="end" data-mode="loisir">{% trans "Loisirs" %}</button>
+                                    <button type="button" data-target="end" data-mode="mise_dis">{% trans "Mise à disposition" %}</button>
+                                </div>
+                                <input id="id_address_end" name="address_end" placeholder="{% trans 'Adresse de destination' %}">
+                                <div id="suggestions_end" class="suggestions"></div>
+                                <select id="end_aeroport" class="poi-select" hidden><option value="">{% trans "Choisir un aéroport" %}</option></select>
+                                <select id="end_terminal" name="terminal_end" class="poi-select" hidden><option value="">{% trans "Choisir un terminal" %}</option></select>
+                                <select id="end_gare"     class="poi-select" hidden><option value="">{% trans "Choisir une gare" %}</option></select>
+                                <select id="end_loisir"   class="poi-select" hidden><option value="">{% trans "Choisir un lieu de loisir" %}</option></select>
+                                <select id="end_mise_dis" class="poi-select" hidden><option value="">{% trans "Choisir une durée" %}</option></select>
+                            </td>
+                        </tr>
 
-        <button type="submit" id="submit-btn">{% trans "Valider" %}</button>
-    </form>
+                        {# VÉHICULE #}
+                        <tr>
+                            <th>{% trans "Véhicule" %}</th>
+                            <td>{{ form.car_type }}</td>
+                        </tr>
+
+                        {# CARTE #}
+                        <tr>
+                            <th><div id="route-info"></div></th>
+                            <td><div id="map" data-mapbox-token="{{ mapbox_token }}"></div></td>
+                        </tr>
+                    </tbody>
+
+                    <tbody class="form-section two-columns">
+                        <tr class="section-title">
+                            <th colspan="2">{% trans "Date et heure" %}</th>
+                        </tr>
+                        <tr>
+                            <th>{% trans "Date" %}</th>
+                            <td>{{ form.date_start }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans "Heure" %}</th>
+                            <td>{{ form.time_start }}</td>
+                        </tr>
+                        <tr id="datetime-error-row" style="display:none;">
+                            <td colspan="2" style="flex-basis:100%;">
+                                <span>{% trans "La date et l'heure doivent être au moins 15 minutes dans le futur." %}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                    <tbody class="form-section two-columns">
+                        <tr class="section-title">
+                            <th colspan="2">{% trans "Passagers & bagages" %}</th>
+                        </tr>
+                        <tr>
+                            <th>{% trans "Passagers" %}</th>
+                            <td>{{ form.nb_passengers }}</td>
+                        </tr>
+                        <tr>
+                            <th>{% trans "Bagages" %}</th>
+                            <td>{{ form.nb_luggages }}</td>
+                        </tr>
+                    </tbody>
+
+                    <tbody class="form-section two-columns">
+                        <tr class="section-title">
+                            <th colspan="2">{% trans "Contact" %}</th>
+                        </tr>
+                        <tr><th>{% trans "Nom" %}</th><td>{{ form.last_name }}</td></tr>
+                        <tr><th>{% trans "Prénom" %}</th><td>{{ form.first_name }}</td></tr>
+                        <tr><th>{% trans "Téléphone" %}</th><td>{{ form.phone }}</td></tr>
+                        <tr><th>{% trans "Email" %}</th><td>{{ form.email }}</td></tr>
+                        <tr style="flex:1 1 100%;">
+                            <th>{% trans "Commentaires" %}</th>
+                            <td>{{ form.note }}</td>
+                        </tr>
+                    </tbody>
+
+                    <tbody class="form-section">
+                        <tr>
+                            <td colspan="2">
+                                <div class="cgu-row">
+                                    <input type="checkbox" id="data_agreement" name="data_agreement" value="check">
+                                    <label for="data_agreement">
+                                        {% trans "En cochant cette case, vous acceptez que vos données soient utilisées pour le traitement de votre demande." %}
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                {# Champs cachés — logique métier inchangée #}
+                <input type="hidden" id="distance"       name="distance">
+                <input type="hidden" id="trip_type"      name="trip_type">
+                <input type="hidden" id="trip_type_id"   name="trip_type_id">
+                <input type="hidden" id="trip_type_label" name="trip_type_label">
+                <input type="hidden" id="duration"       name="duration">
+                <input type="hidden" id="price"          name="price">
+                <input type="hidden" id="vehicule_id"    name="vehicule_id">
+                <input type="hidden" id="vehicule_label" name="vehicule_label">
+                <input type="hidden" id="start_coords"   name="start_coords" value="null">
+                <input type="hidden" id="end_coords"     name="end_coords"   value="null">
+
+                <button type="submit" id="submit-btn">{% trans "Confirmer la réservation" %} →</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+{# ── BARRE DE GARANTIES ─────────────────────────────────────── #}
+<div class="guarantees" aria-label="{% trans 'Nos engagements' %}">
+    <div class="guarantee-item">
+        <div class="guarantee-item__icon" aria-hidden="true">🛡</div>
+        <div class="guarantee-item__text">
+            <strong>{% trans "Chauffeurs certifiés" %}</strong>
+            <span>{% trans "Carte professionnelle VTC" %}</span>
+        </div>
+    </div>
+    <div class="guarantee-item">
+        <div class="guarantee-item__icon" aria-hidden="true">💳</div>
+        <div class="guarantee-item__text">
+            <strong>{% trans "Paiement sécurisé" %}</strong>
+            <span>{% trans "Directement avec le chauffeur" %}</span>
+        </div>
+    </div>
+    <div class="guarantee-item">
+        <div class="guarantee-item__icon" aria-hidden="true">✈️</div>
+        <div class="guarantee-item__text">
+            <strong>{% trans "Suivi des vols" %}</strong>
+            <span>{% trans "Attente gratuite si retard" %}</span>
+        </div>
+    </div>
+    <div class="guarantee-item">
+        <div class="guarantee-item__icon" aria-hidden="true">📍</div>
+        <div class="guarantee-item__text">
+            <strong>{% trans "Prix fixe garanti" %}</strong>
+            <span>{% trans "Affiché avant confirmation" %}</span>
+        </div>
+    </div>
 </div>
 
+{# ── SCRIPTS — logique métier 100% inchangée ────────────────── #}
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
 
@@ -397,11 +916,14 @@ input[type="checkbox"] {
 {{ VEHICULE_DATA|json_script:"vehicule-data" }}
 {{ TRIP_DATA|json_script:"trip-data" }}
 
+{# Source de vérité unique : tarifs, minimums, coordonnées POIs, bbox Paris #}
+{{ PRICING_CONFIG|json_script:"pricing-config" }}
+
 <script>
     window.TRANSLATIONS = {
         "duration_calcul": "{% trans 'Durée estimée'|escapejs %}",
-        "price_calcul": "{% trans 'Prix estimé'|escapejs %}",
-        "available_calcul": "{% trans 'Mise à disposition à'|escapejs %}",
+        "price_calcul":    "{% trans 'Prix estimé'|escapejs %}",
+        "available_calcul":"{% trans 'Mise à disposition à'|escapejs %}",
     };
     window.TRIP_LABELS = {
         simple: "{% trans 'Simple' %}",

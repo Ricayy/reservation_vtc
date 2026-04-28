@@ -1,118 +1,297 @@
 {% load i18n %}
-{% block extra_css %}
+
 <style>
+/* ══════════════════════════════════════════════════
+   NAVBAR
+══════════════════════════════════════════════════ */
 .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 200;
     width: 100%;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    background: var(--navy);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    height: var(--nav-height);
 }
 
 .header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 16px 24px;
-
+    max-width: 1140px;
+    margin-inline: auto;
+    padding-inline: 24px;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    gap: 12px;
+    gap: 16px;
 }
 
+/* ── Logo ── */
 .site-name a {
-    font-size: 20px;
-    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     text-decoration: none;
-    color: #111827;
 }
 
-/* === NAVBAR BUTTON VARIANTS === */
+.site-name__mark {
+    width: 30px;
+    height: 30px;
+    background: var(--gold);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
 
+.site-name__mark svg {
+    width: 15px;
+    height: 15px;
+    fill: var(--navy);
+}
+
+.site-name__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.site-name__label {
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: .04em;
+}
+
+.site-name__sub {
+    color: var(--gold-light);
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+/* ── Nav droite ── */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+/* Liens nav */
+.nav-link {
+    color: rgba(255,255,255,.7);
+    font-size: 13px;
+    text-decoration: none;
+    letter-spacing: .02em;
+    padding: 6px 4px;
+    transition: color var(--transition);
+    white-space: nowrap;
+}
+
+.nav-link:hover { color: var(--white); }
+
+.nav-sep {
+    width: 1px;
+    height: 18px;
+    background: rgba(255,255,255,.12);
+    flex-shrink: 0;
+}
+
+/* Boutons auth */
 .auth-buttons {
     display: flex;
-    flex-wrap: nowrap;
-    gap: 8px;
     align-items: center;
+    gap: 8px;
 }
 
 .auth-buttons .btn {
-    background: #2f5bea;
-    padding: 10px 20px;
-    font-size: 14px;
+    padding: 8px 18px;
+    font-size: 13px;
 }
 
-.auth-buttons .btn,
-.auth-buttons .btn-outline {
-    flex: 0 1 auto;
-    min-width: auto;
-    padding: 10px 20px;
-    font-size: clamp(12px, 1.5vw, 16px);
-    text-align: center;
-    white-space: nowrap;
-    overflow: visible;
-}
-
-/* Bouton "Connexion / Profil" → sobre */
-/* Variante outline */
 .auth-buttons .btn-outline {
     background: transparent;
-    color: #111827;
-    border: 1px solid #d1d5db;
+    color: rgba(255,255,255,.8);
+    border: 0.5px solid rgba(255,255,255,.25);
 }
 
 .auth-buttons .btn-outline:hover {
-    background: #f3f4f6;
+    background: rgba(255,255,255,.08);
+    color: var(--white);
+    border-color: rgba(255,255,255,.4);
 }
 
+/* Bouton primaire dans navbar */
+.auth-buttons .btn-nav-primary {
+    background: var(--gold);
+    color: var(--navy);
+    border-color: var(--gold);
+    font-weight: 600;
+    letter-spacing: .05em;
+    font-size: 12px;
+    text-transform: uppercase;
+}
 
-/* === Sélecteur de langue === */
+.auth-buttons .btn-nav-primary:hover {
+    background: var(--gold-light);
+    border-color: var(--gold-light);
+    color: var(--navy);
+}
+
+/* ── Sélecteur de langue ── */
 .language-switcher {
-    flex: 0 0 auto;
-    margin-left: 8px;
+    flex-shrink: 0;
 }
 
 .language-switcher select {
-    padding: 8px 10px;
-    font-size: clamp(12px, 1.5vw, 16px);
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    background-color: #ffffff;
-    color: #111827;
+    height: 34px;
+    padding: 0 28px 0 10px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .04em;
+    border: 0.5px solid rgba(255,255,255,.2);
+    border-radius: var(--radius-md);
+    background-color: rgba(255,255,255,.06);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(255,255,255,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    color: rgba(255,255,255,.8);
     cursor: pointer;
+    outline: none;
+    appearance: none;
+    box-shadow: none;
 }
 
 .language-switcher select:focus {
-    outline: none;
-    border-color: #0077ff;
-    box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.3);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px var(--gold-pale);
+}
+
+/* ── Burger mobile ── */
+.nav-burger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    flex-shrink: 0;
+}
+
+.nav-burger span {
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background: var(--white);
+    transition: transform 200ms ease;
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════ */
+@media (max-width: 760px) {
+    .nav-right { display: none; }
+    .nav-burger { display: flex; }
+
+    .nav-right.is-open {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: fixed;
+        top: var(--nav-height);
+        left: 0; right: 0; bottom: 0;
+        background: var(--navy);
+        padding: 32px 24px;
+        gap: 16px;
+        z-index: 199;
+        overflow-y: auto;
+    }
+
+    .nav-right.is-open .nav-link { font-size: 17px; }
+    .nav-right.is-open .auth-buttons { flex-direction: column; width: 100%; }
+    .nav-right.is-open .auth-buttons .btn { width: 100%; justify-content: center; }
+    .nav-right.is-open .nav-sep { width: 100%; height: 0.5px; }
+    .nav-right.is-open .language-switcher select { width: 100%; }
 }
 </style>
-{% endblock %}
 
-{% block content %}
 <header class="site-header">
     <div class="header-container">
+
+        <!-- Logo -->
         <div class="site-name">
-            <a href="/">MonSiteVTC</a>
+            <a href="/">
+                <div class="site-name__mark" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 1L2 5v6l6 4 6-4V5L8 1zm0 2.2l4 2.7v4.2L8 12.6l-4-2.5V5.9l4-2.7z"/>
+                    </svg>
+                </div>
+                <div class="site-name__text">
+                    <span class="site-name__label">MonSiteVTC</span>
+                    <span class="site-name__sub">Transport professionnel</span>
+                </div>
+            </a>
         </div>
 
-        <nav class="auth-buttons">
-            {% if user.is_authenticated %}
-                <a href="{% url 'profile' %}" class="btn btn-outline">{% trans "Mon profil" %}</a>
-                <a href="{% url 'logout' %}" class="btn">{% trans "Déconnexion" %}</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="btn">{% trans "Connexion" %}</a>
-                <a href="{% url 'register' %}" class="btn">{% trans "Créer un compte" %}</a>
-            {% endif %}
-            <form action="{% url 'set_language' %}" method="post" class="language-switcher">
-                {% csrf_token %}
-                <input name="next" type="hidden" value="{{ request.get_full_path }}">
-                <select name="language" onchange="this.form.submit()">
-                    <option value="fr" {% if request.LANGUAGE_CODE == "fr" %}selected{% endif %}>FR</option>
-                    <option value="en" {% if request.LANGUAGE_CODE == "en" %}selected{% endif %}>EN</option>
-                </select>
-            </form>
+        <!-- Nav droite -->
+        <nav class="nav-right" id="nav-right" aria-label="Navigation principale">
+            <a href="{% url 'reservation_add' %}" class="nav-link">{% trans "Réserver" %}</a>
+            <div class="nav-sep" aria-hidden="true"></div>
+
+            <div class="auth-buttons">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="btn btn-outline">{% trans "Mon profil" %}</a>
+                    <a href="{% url 'logout' %}" class="btn btn-nav-primary">{% trans "Déconnexion" %}</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-outline">{% trans "Connexion" %}</a>
+                    <a href="{% url 'register' %}" class="btn btn-nav-primary">{% trans "Créer un compte" %}</a>
+                {% endif %}
+            </div>
+
+            <div class="nav-sep" aria-hidden="true"></div>
+
+            <!-- Sélecteur de langue -->
+            <div class="language-switcher">
+                <form action="{% url 'set_language' %}" method="post" id="lang-form">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                    <label for="lang-select" class="sr-only">{% trans "Langue" %}</label>
+                    <select name="language" id="lang-select" onchange="document.getElementById('lang-form').submit()">
+                        <option value="fr" {% if request.LANGUAGE_CODE == "fr" %}selected{% endif %}>FR</option>
+                        <option value="en" {% if request.LANGUAGE_CODE == "en" %}selected{% endif %}>EN</option>
+                    </select>
+                </form>
+            </div>
         </nav>
+
+        <!-- Burger mobile -->
+        <button class="nav-burger" id="nav-burger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="nav-right">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
     </div>
 </header>
-{% endblock %}
+
+<script>
+(function() {
+    var burger = document.getElementById('nav-burger');
+    var nav    = document.getElementById('nav-right');
+    if (!burger || !nav) return;
+    burger.addEventListener('click', function() {
+        var open = nav.classList.toggle('is-open');
+        burger.setAttribute('aria-expanded', open);
+        burger.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+    });
+    document.addEventListener('click', function(e) {
+        if (!burger.contains(e.target) && !nav.contains(e.target)) {
+            nav.classList.remove('is-open');
+            burger.setAttribute('aria-expanded', 'false');
+        }
+    });
+})();
+</script>

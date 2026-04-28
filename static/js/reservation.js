@@ -1,16 +1,53 @@
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-    const VEHICULE_PRICE_KM = JSON.parse(document.getElementById("vehicule-price-km").textContent);
+    const VEHICULE_PRICE_KM   = JSON.parse(document.getElementById("vehicule-price-km").textContent);
     const VEHICULE_PRICE_HOUR = JSON.parse(document.getElementById("vehicule-price-hour").textContent);
-    const VEHICULE_SEATS = JSON.parse(document.getElementById("vehicule-seats").textContent);
-    const VEHICULE_DATA = JSON.parse(document.getElementById("vehicule-data").textContent);
-    const TRIP_DATA = JSON.parse(document.getElementById("trip-data").textContent);
+    const VEHICULE_SEATS      = JSON.parse(document.getElementById("vehicule-seats").textContent);
+    const VEHICULE_DATA       = JSON.parse(document.getElementById("vehicule-data").textContent);
+    const TRIP_DATA           = JSON.parse(document.getElementById("trip-data").textContent);
+
+    // ── Source de vérité unique injectée par Django ──────────────────
+    // Toutes les constantes de tarification viennent du back.
+    // Ne jamais écrire de valeurs numériques de prix/coords ici.
+    const PRICING = JSON.parse(document.getElementById("pricing-config").textContent);
+    const PRICE_KM    = PRICING.price_km;    // { car, van }
+    const PRICE_HOUR  = PRICING.price_hour;  // { car, van }
+    const MINIMUMS    = PRICING.minimums;    // { cdg_orly, paris_cdg, ... }
+    const COORDS_CDG    = PRICING.coords.cdg;
+    const COORDS_ORLY   = PRICING.coords.orly;
+    const COORDS_DISNEY = PRICING.coords.disney;
+    const PARIS_BBOX    = PRICING.paris_bbox; // { lat_min, lat_max, lng_min, lng_max }
 
     /* ================= POIS CENTRALISÉS ================= */
     const POIS = {
         aeroport: {
-            charles_de_gaulle: { label: "Aéroport CDG", address: "Aéroport Charles de Gaulle, Roissy", coords: [2.5479,49.0097] },
-            orly: { label: "Aéroport Orly", address: "Aéroport d'Orly, Orly", coords: [2.3790,48.7262] },
+            charles_de_gaulle: {
+                label: "Aéroport CDG",
+                address: "Aéroport Charles de Gaulle, Roissy",
+                coords: [2.5479,49.0097],
+                terminals: [
+                    { value: "T1",   label: "Terminal 1" },
+                    { value: "T2A",  label: "Terminal 2A" },
+                    { value: "T2B",  label: "Terminal 2B" },
+                    { value: "T2C",  label: "Terminal 2C" },
+                    { value: "T2D",  label: "Terminal 2D" },
+                    { value: "T2E",  label: "Terminal 2E" },
+                    { value: "T2F",  label: "Terminal 2F" },
+                    { value: "T2G",  label: "Terminal 2G" },
+                    { value: "T3",   label: "Terminal 3" },
+                ]
+            },
+            orly: {
+                label: "Aéroport Orly",
+                address: "Aéroport d'Orly, Orly",
+                coords: [2.3790,48.7262],
+                terminals: [
+                    { value: "ORL1", label: "Orly 1" },
+                    { value: "ORL2", label: "Orly 2" },
+                    { value: "ORL3", label: "Orly 3" },
+                    { value: "ORL4", label: "Orly 4" },
+                ]
+            },
         },
         gare: {
             gare_de_lyon: { label: "Gare de Lyon", address: "Gare de Lyon, Paris", coords: [2.3730,48.8443] },
@@ -27,7 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
             asterix: { label: "Parc Astérix", address: "Parc Astérix, Plailly", coords: [2.5712,49.1343] },
             versailles: { label: "Château de Versailles", address: "Place d'Armes, 78000 Versailles, France", coords: [2.1204, 48.8049] },
             jardins_du_luxembourg: { label: "Jardins du Luxembourg", address: "Jardin du Luxembourg, Paris, France", coords: [2.3372, 48.8462] },
-            bois_de_boulogne: { label: "Bois de Boulogne", address: "Bois de Boulogne, Paris, France", coords: [2.2530, 48.8630] },
             parc_des_expositions: { label: "Parc des Expositions de Villepinte", address: "Parc des Expositions, Villepinte, France", coords: [2.52074, 48.97111] },
             louvre: { label: "Musée du Louvre", address: "Musée du Louvre, Paris, France", coords: [2.3375, 48.8609] },
             notre_dame: { label: "Cathédrale Notre-Dame de Paris", address: "Cathédrale Notre-Dame, Paris, France", coords: [2.3497, 48.8532] },
@@ -55,9 +91,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let startCoords = null, endCoords = null, currentDistanceKm = 0;
     let startMarker = null, endMarker = null;
 
-    // Initialisation distance et prix
-    document.getElementById("distance").value = 0;
-    document.getElementById("price").value = 0;
+    // Initialisation distance, prix et trip_type par défaut
+    document.getElementById("distance").value = "0";
+    document.getElementById("price").value    = "0";
+    document.getElementById("trip_type").value       = "simple";
+    document.getElementById("trip_type_id").value    = "";  // sera rempli par setTripType après init TRIP_DATA
+    document.getElementById("trip_type_label").value = "";
     let initialMiseDisDuration = null;
 
     //Initialisation route
@@ -81,6 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
         opt.dataset.priceHour = data.price_hour;
         opt.dataset.seats = data.max_seats;
     });
+
+    // Initialisation correcte de trip_type avec TRIP_DATA disponible
+    // (TRIP_DATA est chargé en début de DOMContentLoaded)
+    setTripType("simple");
 
     /* ================= MAP ================= */
     mapboxgl.accessToken = document.getElementById("map").dataset.mapboxToken;
@@ -161,6 +204,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if(type === "start") startCoords = f.geometry.coordinates;
                     else endCoords = f.geometry.coordinates;
+                    document.getElementById("start_coords").value = JSON.stringify(startCoords);
+                    document.getElementById("end_coords").value   = JSON.stringify(endCoords);
                     hasFittedBounds = false;
 
                     refreshMarkers();
@@ -206,6 +251,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 startCoords = startCoords || null;
                 endCoords = null;
                 hasFittedBounds = false;
+                document.getElementById("start_coords").value = JSON.stringify(startCoords);
+                document.getElementById("end_coords").value   = JSON.stringify(endCoords);
 
                 if (!addressInput.value) addressInput.value = poi.value;
 
@@ -239,9 +286,34 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 endCoords = poi.coords;
             }
+            document.getElementById("start_coords").value = JSON.stringify(startCoords);
+            document.getElementById("end_coords").value   = JSON.stringify(endCoords);
             hasFittedBounds = false;
 
             addressInput.value = poi.address;
+            const terminalSelect = document.getElementById(`${type}_terminal`);
+            if (cat === "aeroport" && poi.terminals?.length) {
+                // Reconstruire les options
+                const defaultText = terminalSelect.options[0].text; // récupère le texte déjà traduit par Django
+                terminalSelect.innerHTML = '';
+                const defaultOpt = document.createElement("option");
+                defaultOpt.value = "";
+                defaultOpt.textContent = defaultText;
+                terminalSelect.appendChild(defaultOpt);
+                poi.terminals.forEach(({ value, label }) => {
+                    const opt = document.createElement("option");
+                    opt.value = value;
+                    opt.textContent = label;
+                    terminalSelect.appendChild(opt);
+                });
+                terminalSelect.hidden = false;
+                terminalSelect.required = true;
+            } else {
+                // Masquer si on n'est pas sur un aéroport avec terminaux
+                terminalSelect.hidden = true;
+                terminalSelect.required = false;
+                terminalSelect.value = "";
+            }
             currentDistanceKm = 0;
             distanceInput.value = 0;
 
@@ -311,6 +383,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 const s = document.getElementById(`${target}_${c}`);
                 if(s) s.hidden = (mode!==c);
             });
+
+            // Masquer le terminal si on quitte le mode aéroport
+            if (mode !== "aeroport") {
+                const terminalSelect = document.getElementById(`${target}_terminal`);
+                if (terminalSelect) {
+                    terminalSelect.hidden = true;
+                    terminalSelect.required = false;
+                    terminalSelect.value = "";
+                }
+            }
         });
     });
 
@@ -424,6 +506,47 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${hours} h ${remaining} min`;
     }
 
+    /* ================= PRIX MINIMUM ================= */
+    function coordsMatch(a, b) {
+        return a && b && a[0] === b[0] && a[1] === b[1];
+    }
+
+    function isParis(coords, addressValue) {
+        if (addressValue && addressValue.includes("Paris")) return true;
+        for (const key in POIS.gare) {
+            if (coordsMatch(coords, POIS.gare[key].coords)) return true;
+        }
+        if (coords) {
+            const [lng, lat] = coords;
+            const b = PARIS_BBOX;
+            if (lat >= b.lat_min && lat <= b.lat_max && lng >= b.lng_min && lng <= b.lng_max) return true;
+        }
+        return false;
+    }
+
+    function getPriceMinimum(startCoords, endCoords, startAddress, endAddress, vehicleKey) {
+        const m = MINIMUMS;
+        const v = vehicleKey; // "car" ou "van"
+
+        const startCDG    = coordsMatch(startCoords, COORDS_CDG);
+        const endCDG      = coordsMatch(endCoords,   COORDS_CDG);
+        const startOrly   = coordsMatch(startCoords, COORDS_ORLY);
+        const endOrly     = coordsMatch(endCoords,   COORDS_ORLY);
+        const startDisney = coordsMatch(startCoords, COORDS_DISNEY);
+        const endDisney   = coordsMatch(endCoords,   COORDS_DISNEY);
+        const startParis  = isParis(startCoords, startAddress);
+        const endParis    = isParis(endCoords,   endAddress);
+
+        if ((startCDG && endOrly)    || (startOrly && endCDG))    return m.cdg_orly[v];
+        if ((startParis && endCDG)   || (startCDG && endParis))   return m.paris_cdg[v];
+        if ((startParis && endOrly)  || (startOrly && endParis))  return m.paris_orly[v];
+        if ((startParis && endDisney)|| (startDisney && endParis)) return m.paris_disney[v];
+        if (startParis && endParis)                                return m.intra_paris[v];
+
+        return 0;
+    }
+
+    /* ================= CALCUL PRIX COURSE ================= */
     function updatePrice(){
         const opt = carSelect.selectedOptions[0];
         if (!opt || !opt.dataset) return;
@@ -431,28 +554,36 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isMiseDis && (!startCoords || !endCoords || currentDistanceKm <= 0)) {
             return;
         }
-        vehiculeIdInput.value = opt.dataset.id;
+        vehiculeIdInput.value   = opt.dataset.id;
         vehiculeLabelInput.value = opt.dataset.label;
+
+        // Clé véhicule ("car" ou "van") pour accéder aux constantes PRICING
+        const vehicleKey = opt.value; // la valeur du select Django est "car" ou "van"
 
         let price = 0;
 
         if (isMiseDis) {
             const durationMinutes = initialMiseDisDuration || 60;
             const hours = durationMinutes / 60;
-            price = hours * parseFloat(opt.dataset.priceHour || 0);
+            price = hours * PRICE_HOUR[vehicleKey];
 
-            routeInfo.innerHTML =
-                `Mise à disposition à : ${price.toFixed(2)} €`;
+            routeInfo.innerHTML = `${window.TRANSLATIONS.available_calcul} : ${price.toFixed(2)} €`;
             routeInfo.dataset.visible = "true";
             document.getElementById("price").value = price.toFixed(2);
-
-            // Sortir immédiatement pour ne jamais toucher au trajet classique
             return;
         }
 
         // TRAJET CLASSIQUE
-        const duration = parseInt(durationInput.value || 0);
-        price = currentDistanceKm * parseFloat(opt.dataset.priceKm || 0);
+        const duration     = parseInt(durationInput.value || 0);
+        const startAddress = document.getElementById("id_address_start").value;
+        const endAddress   = document.getElementById("id_address_end").value;
+
+        price = currentDistanceKm * PRICE_KM[vehicleKey];
+
+        const minimum = getPriceMinimum(startCoords, endCoords, startAddress, endAddress, vehicleKey);
+        if (minimum > 0 && price < minimum) {
+            price = minimum;
+        }
 
         if (canShowRouteInfo()) {
             routeInfo.innerHTML =
@@ -498,49 +629,72 @@ document.addEventListener("DOMContentLoaded", () => {
         updatePrice();
     });
 
-    /* ================= VALIDATION DATE & HEURE ================= */
+    /* ================= VALIDATION ================= */
     const dateInput = document.getElementById("id_date_start");
     const timeInput = document.getElementById("id_time_start");
     const submitBtn = document.querySelector("form button[type='submit']");
-    const error = document.getElementById("datetime-error");
-    const form = document.querySelector("form");
+    const errorRow  = document.getElementById("datetime-error-row");
+    const form      = document.querySelector("form");
 
-    // Transforme date + heure en Date locale
     function getLocalDateTime(dateStr, timeStr) {
         if (!dateStr || !timeStr) return null;
         const [year, month, day] = dateStr.split("-").map(Number);
-        const [hours, minutes] = timeStr.split(":").map(Number);
+        const [hours, minutes]   = timeStr.split(":").map(Number);
         return new Date(year, month - 1, day, hours, minutes);
     }
 
-    // Validation live
+    // ── Date & heure (≥ 15 min dans le futur) ────────────────────────
     function validateDateTime() {
         if (!dateInput.value || !timeInput.value) {
-            error.style.display = "none";
+            errorRow.style.display = "none";
             submitBtn.disabled = false;
             return true;
         }
-
-        const selectedDateTime = getLocalDateTime(dateInput.value, timeInput.value);
+        const selected     = getLocalDateTime(dateInput.value, timeInput.value);
         const nowWithDelay = new Date(Date.now() + 15 * 60 * 1000);
+        const isValid      = selected && selected > nowWithDelay;
 
-        const isValid = selectedDateTime && selectedDateTime > nowWithDelay;
-
-        error.style.display = isValid ? "none" : "block";
-        submitBtn.disabled = !isValid;
-
+        errorRow.style.display = isValid ? "none" : "flex";
+        submitBtn.disabled     = !isValid;
         return isValid;
     }
 
     dateInput.addEventListener("change", validateDateTime);
     timeInput.addEventListener("change", validateDateTime);
 
-    // Validation au submit
+    // ── Passagers & bagages : vérification au submit ──────────────────
+    // validatePassengers() clamp déjà les valeurs à la saisie.
+    // On re-vérifie au submit pour couvrir les modifications manuelles
+    // du DOM. Le serveur re-valide indépendamment (défense en profondeur).
+    function passengersValid() {
+        const nb = parseInt(passengerInput.value || 0);
+        return nb >= 1 && nb <= 7;
+    }
+
+    function luggagesValid() {
+        const nb = parseInt(luggageInput.value || 0);
+        return nb >= 0 && nb <= 10;
+    }
+
+    // ── Submit ────────────────────────────────────────────────────────
     form.addEventListener("submit", (e) => {
+        // 1. Date & heure → affiche le bloc d'erreur inline, pas d'alert
         if (!validateDateTime()) {
             e.preventDefault();
-            alert("La date et l’heure doivent être au moins 15 minutes dans le futur.");
+            errorRow.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
+
+        // 2. Passagers & bagages hors borne (manipulation DOM)
+        if (!passengersValid() || !luggagesValid()) {
+            e.preventDefault();
+            errorRow.style.display = "flex";
+            errorRow.querySelector("span").textContent =
+                "Le nombre de passagers ou de bagages est invalide.";
+            errorRow.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
         }
     });
+
     validateDateTime();
 });
