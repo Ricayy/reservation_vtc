@@ -62,7 +62,20 @@ def recap_reservation(request):
         start_coords = json.loads(data.get("start_coords", "null"))
         end_coords   = json.loads(data.get("end_coords",   "null"))
 
-        # ── Validation métier supplémentaire ───────────────────────────
+        # ── Validation métier — défense côté serveur ────────────────────────
+        # Couvre : JS désactivé, manipulation du DOM, requête forgée.
+
+        # trip_type : valeur forcément connue
+        if trip_type not in ("simple", "hourly"):
+            context["error"] = "Type de trajet invalide."
+            return render(request, "reservations/reservation_form.html", context)
+
+        # vehicle_type : valeur forcément connue
+        if vehicle_type not in ("car", "van"):
+            context["error"] = "Type de véhicule invalide."
+            return render(request, "reservations/reservation_form.html", context)
+
+        # Trajet simple : distance obligatoire, positive et plausible
         if not is_hourly and distance_km <= 0:
             context["error"] = (
                 "Impossible de calculer l'itinéraire. "
@@ -70,11 +83,35 @@ def recap_reservation(request):
             )
             return render(request, "reservations/reservation_form.html", context)
 
-        if is_hourly and duration_min <= 0:
+        if not is_hourly and distance_km > 2000:
+            context["error"] = "La distance saisie semble incorrecte (maximum 2000 km)."
+            return render(request, "reservations/reservation_form.html", context)
+
+        # Mise à disposition : durée dans les bornes (1h–12h = 60–720 min)
+        if is_hourly and not (60 <= duration_min <= 720):
             context["error"] = (
-                "Veuillez sélectionner une durée de mise à disposition."
+                "La durée de mise à disposition doit être comprise entre 1h et 12h."
             )
             return render(request, "reservations/reservation_form.html", context)
+
+        # Passagers : 1–7 (borne absolue du parc)
+        try:
+            nb_passengers = int(data[FormField.nb_passengers])
+            if not (1 <= nb_passengers <= 7):
+                raise ValueError
+        except (ValueError, KeyError):
+            context["error"] = "Le nombre de passagers doit être compris entre 1 et 7."
+            return render(request, "reservations/reservation_form.html", context)
+
+        # Bagages : 0–10
+        try:
+            nb_luggages = int(data[FormField.nb_luggages])
+            if not (0 <= nb_luggages <= 10):
+                raise ValueError
+        except (ValueError, KeyError):
+            context["error"] = "Le nombre de bagages doit être compris entre 0 et 10."
+            return render(request, "reservations/reservation_form.html", context)
+
 
         # ── Calcul du prix vérifié côté serveur ────────────────────────
         verified_price = calculate_price(
@@ -88,12 +125,22 @@ def recap_reservation(request):
             end_address=address_end,
         )
 
+        # ── Garde-fou final sur le prix ───────────────────────────────
+        # Si calculate_price retourne 0 ou négatif (ne devrait pas arriver
+        # après les validations précédentes, mais défense en profondeur).
+        if verified_price <= 0:
+            context["error"] = (
+                "Le prix n'a pas pu être calculé. "
+                "Vérifiez les informations du trajet."
+            )
+            return render(request, "reservations/reservation_form.html", context)
+
         # ── Construction du récapitulatif ──────────────────────────────
         new_reservation = {
             FormField.address_start:  address_start,
             FormField.address_end:    address_end,
-            FormField.nb_passengers:  int(data[FormField.nb_passengers]),
-            FormField.nb_luggages:    int(data[FormField.nb_luggages]),
+            FormField.nb_passengers: nb_passengers,  # déjà validé et borné
+            FormField.nb_luggages:  nb_luggages,     # déjà validé et borné
             FormField.note:           data.get(FormField.note, ""),
             FormField.price:          verified_price,
             FormField.duration:       duration_min,

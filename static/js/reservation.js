@@ -91,9 +91,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let startCoords = null, endCoords = null, currentDistanceKm = 0;
     let startMarker = null, endMarker = null;
 
-    // Initialisation distance et prix
-    document.getElementById("distance").value = 0;
-    document.getElementById("price").value = 0;
+    // Initialisation distance, prix et trip_type par défaut
+    document.getElementById("distance").value = "0";
+    document.getElementById("price").value    = "0";
+    document.getElementById("trip_type").value       = "simple";
+    document.getElementById("trip_type_id").value    = "";  // sera rempli par setTripType après init TRIP_DATA
+    document.getElementById("trip_type_label").value = "";
     let initialMiseDisDuration = null;
 
     //Initialisation route
@@ -117,6 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
         opt.dataset.priceHour = data.price_hour;
         opt.dataset.seats = data.max_seats;
     });
+
+    // Initialisation correcte de trip_type avec TRIP_DATA disponible
+    // (TRIP_DATA est chargé en début de DOMContentLoaded)
+    setTripType("simple");
 
     /* ================= MAP ================= */
     mapboxgl.accessToken = document.getElementById("map").dataset.mapboxToken;
@@ -622,49 +629,72 @@ document.addEventListener("DOMContentLoaded", () => {
         updatePrice();
     });
 
-    /* ================= VALIDATION DATE & HEURE ================= */
+    /* ================= VALIDATION ================= */
     const dateInput = document.getElementById("id_date_start");
     const timeInput = document.getElementById("id_time_start");
     const submitBtn = document.querySelector("form button[type='submit']");
-    const error = document.getElementById("datetime-error-row");
-    const form = document.querySelector("form");
+    const errorRow  = document.getElementById("datetime-error-row");
+    const form      = document.querySelector("form");
 
-    // Transforme date + heure en Date locale
     function getLocalDateTime(dateStr, timeStr) {
         if (!dateStr || !timeStr) return null;
         const [year, month, day] = dateStr.split("-").map(Number);
-        const [hours, minutes] = timeStr.split(":").map(Number);
+        const [hours, minutes]   = timeStr.split(":").map(Number);
         return new Date(year, month - 1, day, hours, minutes);
     }
 
-    // Validation live
+    // ── Date & heure (≥ 15 min dans le futur) ────────────────────────
     function validateDateTime() {
         if (!dateInput.value || !timeInput.value) {
-            error.style.display = "none";
+            errorRow.style.display = "none";
             submitBtn.disabled = false;
             return true;
         }
-
-        const selectedDateTime = getLocalDateTime(dateInput.value, timeInput.value);
+        const selected     = getLocalDateTime(dateInput.value, timeInput.value);
         const nowWithDelay = new Date(Date.now() + 15 * 60 * 1000);
+        const isValid      = selected && selected > nowWithDelay;
 
-        const isValid = selectedDateTime && selectedDateTime > nowWithDelay;
-
-        error.style.display = isValid ? "none" : "flex";
-        submitBtn.disabled = !isValid;
-
+        errorRow.style.display = isValid ? "none" : "flex";
+        submitBtn.disabled     = !isValid;
         return isValid;
     }
 
     dateInput.addEventListener("change", validateDateTime);
     timeInput.addEventListener("change", validateDateTime);
 
-    // Validation au submit
+    // ── Passagers & bagages : vérification au submit ──────────────────
+    // validatePassengers() clamp déjà les valeurs à la saisie.
+    // On re-vérifie au submit pour couvrir les modifications manuelles
+    // du DOM. Le serveur re-valide indépendamment (défense en profondeur).
+    function passengersValid() {
+        const nb = parseInt(passengerInput.value || 0);
+        return nb >= 1 && nb <= 7;
+    }
+
+    function luggagesValid() {
+        const nb = parseInt(luggageInput.value || 0);
+        return nb >= 0 && nb <= 10;
+    }
+
+    // ── Submit ────────────────────────────────────────────────────────
     form.addEventListener("submit", (e) => {
+        // 1. Date & heure → affiche le bloc d'erreur inline, pas d'alert
         if (!validateDateTime()) {
             e.preventDefault();
-            alert("La date et l’heure doivent être au moins 15 minutes dans le futur.");
+            errorRow.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
+
+        // 2. Passagers & bagages hors borne (manipulation DOM)
+        if (!passengersValid() || !luggagesValid()) {
+            e.preventDefault();
+            errorRow.style.display = "flex";
+            errorRow.querySelector("span").textContent =
+                "Le nombre de passagers ou de bagages est invalide.";
+            errorRow.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
         }
     });
+
     validateDateTime();
 });
