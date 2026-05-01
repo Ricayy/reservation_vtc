@@ -204,6 +204,12 @@ PRICE_HOUR = {
     "car": 45.0,
     "van": 60.0,
 }
+# Prix minimum absolu pour tout trajet simple, quelle que soit la distance.
+# S'applique en dernier recours, après les minimums géographiques.
+PRICE_MINIMUM = {
+    "car": 25.0,
+    "van": 40.0,
+}
 MINIMUMS = {
     "cdg_orly":     {"car": 70,  "van": 100},
     "paris_cdg":    {"car": 50,  "van": 80},
@@ -215,9 +221,10 @@ MINIMUMS = {
 # Dictionnaire unique exposé au front via json_script.
 # reservation.js le lit depuis l'élément #pricing-config.
 PRICING_CONFIG = {
-    "price_km":   PRICE_KM,
-    "price_hour": PRICE_HOUR,
-    "minimums":   MINIMUMS,
+    "price_km":      PRICE_KM,
+    "price_hour":    PRICE_HOUR,
+    "price_minimum": PRICE_MINIMUM,
+    "minimums":      MINIMUMS,
     "coords": {
         "cdg":    COORDS_CDG,
         "orly":   COORDS_ORLY,
@@ -293,8 +300,14 @@ def calculate_price(trip_type, vehicle_type, distance_km, duration_minutes,
 
     # ── Trajet classique : tarif kilométrique + minimums ─────────────
     price   = distance_km * PRICE_KM[vtype]
-    minimum = get_minimum(start_coords, end_coords, start_address, end_address, vtype)
-    if minimum > 0 and price < minimum:
-        price = minimum
+
+    # Minimum géographique (CDG, Orly, Paris intra-muros…)
+    geo_minimum = get_minimum(start_coords, end_coords, start_address, end_address, vtype)
+    if geo_minimum > 0 and price < geo_minimum:
+        price = geo_minimum
+
+    # Minimum absolu — plancher tarifaire quelle que soit la distance
+    if price < PRICE_MINIMUM[vtype]:
+        price = PRICE_MINIMUM[vtype]
 
     return round(price, 2)

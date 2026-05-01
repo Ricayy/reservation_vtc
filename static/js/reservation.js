@@ -10,9 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Toutes les constantes de tarification viennent du back.
     // Ne jamais écrire de valeurs numériques de prix/coords ici.
     const PRICING = JSON.parse(document.getElementById("pricing-config").textContent);
-    const PRICE_KM    = PRICING.price_km;    // { car, van }
-    const PRICE_HOUR  = PRICING.price_hour;  // { car, van }
-    const MINIMUMS    = PRICING.minimums;    // { cdg_orly, paris_cdg, ... }
+    const PRICE_KM      = PRICING.price_km;      // { car, van }
+    const PRICE_HOUR    = PRICING.price_hour;    // { car, van }
+    const PRICE_MINIMUM = PRICING.price_minimum; // { car, van } — plancher absolu
+    const MINIMUMS      = PRICING.minimums;      // { cdg_orly, paris_cdg, ... }
     const COORDS_CDG    = PRICING.coords.cdg;
     const COORDS_ORLY   = PRICING.coords.orly;
     const COORDS_DISNEY = PRICING.coords.disney;
@@ -580,9 +581,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         price = currentDistanceKm * PRICE_KM[vehicleKey];
 
-        const minimum = getPriceMinimum(startCoords, endCoords, startAddress, endAddress, vehicleKey);
-        if (minimum > 0 && price < minimum) {
-            price = minimum;
+        // Minimum géographique (CDG, Orly, Paris intra-muros…)
+        const geoMinimum = getPriceMinimum(startCoords, endCoords, startAddress, endAddress, vehicleKey);
+        if (geoMinimum > 0 && price < geoMinimum) {
+            price = geoMinimum;
+        }
+
+        // Minimum absolu — plancher tarifaire quelle que soit la distance
+        if (price < PRICE_MINIMUM[vehicleKey]) {
+            price = PRICE_MINIMUM[vehicleKey];
         }
 
         if (canShowRouteInfo()) {

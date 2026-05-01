@@ -262,14 +262,19 @@ main {
     background-repeat: no-repeat;
     background-position: right 12px center;
     padding-right: 32px;
-    color-scheme: dark;
+    color-scheme: light; /* force le menu déroulant en mode clair */
 }
 
-/* Options du select lisibles */
+/* Options : fond blanc, texte navy, survol bleu */
 .form-panel select option {
-    background: #1A3560;
-    color: #fff;
+    background: #ffffff;
+    color: #0D1F3C;
 }
+
+/* .form-panel select option:checked {
+    background: #ffffff;
+    color: #ffffff;
+}*/
 
 /* Boutons de mode adresse */
 .form-panel .address-toggle button {
@@ -887,7 +892,6 @@ main {
         <div class="guarantee-item__icon" aria-hidden="true">💳</div>
         <div class="guarantee-item__text">
             <strong>{% trans "Paiement sécurisé" %}</strong>
-            <span>{% trans "Directement avec le chauffeur" %}</span>
         </div>
     </div>
     <div class="guarantee-item">
