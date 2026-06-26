@@ -1,5 +1,4 @@
 import ast
-import io
 from datetime import datetime
 
 from django.core.mail import EmailMessage
