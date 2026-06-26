@@ -10,12 +10,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Toutes les constantes de tarification viennent du back.
     // Ne jamais écrire de valeurs numériques de prix/coords ici.
     const PRICING = JSON.parse(document.getElementById("pricing-config").textContent);
-    const PRICE_KM    = PRICING.price_km;    // { car, van }
-    const PRICE_HOUR  = PRICING.price_hour;  // { car, van }
-    const MINIMUMS    = PRICING.minimums;    // { cdg_orly, paris_cdg, ... }
-    const COORDS_CDG    = PRICING.coords.cdg;
-    const COORDS_ORLY   = PRICING.coords.orly;
-    const COORDS_DISNEY = PRICING.coords.disney;
+    const PRICE_KM      = PRICING.price_km;      // { car, van }
+    const PRICE_HOUR    = PRICING.price_hour;    // { car, van }
+    const PRICE_MINIMUM = PRICING.price_minimum; // { car, van } — plancher absolu
+    const MINIMUMS      = PRICING.minimums;      // { cdg_orly, paris_cdg, ... }
+    const COORDS_CDG     = PRICING.coords.cdg;
+    const COORDS_ORLY    = PRICING.coords.orly;
+    const COORDS_DISNEY  = PRICING.coords.disney;
+    const COORDS_BEAUVAIS = PRICING.coords.beauvais;
     const PARIS_BBOX    = PRICING.paris_bbox; // { lat_min, lat_max, lng_min, lng_max }
 
     /* ================= POIS CENTRALISÉS ================= */
@@ -46,6 +48,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     { value: "ORL2", label: "Orly 2" },
                     { value: "ORL3", label: "Orly 3" },
                     { value: "ORL4", label: "Orly 4" },
+                ]
+            },
+            beauvais: {
+                label: "Aéroport Beauvais-Tillé",
+                address: "Aéroport de Beauvais-Tillé, Tillé",
+                coords: [2.1128, 49.4544],
+                terminals: [
+                    { value: "BVA_T1", label: "Terminal principal" },
                 ]
             },
         },
@@ -528,20 +538,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const m = MINIMUMS;
         const v = vehicleKey; // "car" ou "van"
 
-        const startCDG    = coordsMatch(startCoords, COORDS_CDG);
-        const endCDG      = coordsMatch(endCoords,   COORDS_CDG);
-        const startOrly   = coordsMatch(startCoords, COORDS_ORLY);
-        const endOrly     = coordsMatch(endCoords,   COORDS_ORLY);
-        const startDisney = coordsMatch(startCoords, COORDS_DISNEY);
-        const endDisney   = coordsMatch(endCoords,   COORDS_DISNEY);
-        const startParis  = isParis(startCoords, startAddress);
-        const endParis    = isParis(endCoords,   endAddress);
+        const startCDG      = coordsMatch(startCoords, COORDS_CDG);
+        const endCDG        = coordsMatch(endCoords,   COORDS_CDG);
+        const startOrly     = coordsMatch(startCoords, COORDS_ORLY);
+        const endOrly       = coordsMatch(endCoords,   COORDS_ORLY);
+        const startDisney   = coordsMatch(startCoords, COORDS_DISNEY);
+        const endDisney     = coordsMatch(endCoords,   COORDS_DISNEY);
+        const startBeauvais = coordsMatch(startCoords, COORDS_BEAUVAIS);
+        const endBeauvais   = coordsMatch(endCoords,   COORDS_BEAUVAIS);
+        const startParis    = isParis(startCoords, startAddress);
+        const endParis      = isParis(endCoords,   endAddress);
 
-        if ((startCDG && endOrly)    || (startOrly && endCDG))    return m.cdg_orly[v];
-        if ((startParis && endCDG)   || (startCDG && endParis))   return m.paris_cdg[v];
-        if ((startParis && endOrly)  || (startOrly && endParis))  return m.paris_orly[v];
-        if ((startParis && endDisney)|| (startDisney && endParis)) return m.paris_disney[v];
-        if (startParis && endParis)                                return m.intra_paris[v];
+        if ((startCDG && endOrly)        || (startOrly && endCDG))        return m.cdg_orly[v];
+        if ((startCDG && endBeauvais)    || (startBeauvais && endCDG))    return m.cdg_beauvais[v];
+        if ((startOrly && endBeauvais)   || (startBeauvais && endOrly))   return m.orly_beauvais[v];
+        if ((startParis && endCDG)       || (startCDG && endParis))       return m.paris_cdg[v];
+        if ((startParis && endOrly)      || (startOrly && endParis))      return m.paris_orly[v];
+        if ((startParis && endDisney)    || (startDisney && endParis))    return m.paris_disney[v];
+        if ((startParis && endBeauvais)  || (startBeauvais && endParis))  return m.paris_beauvais[v];
+        if (startParis && endParis)                                        return m.intra_paris[v];
 
         return 0;
     }
@@ -580,9 +595,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         price = currentDistanceKm * PRICE_KM[vehicleKey];
 
-        const minimum = getPriceMinimum(startCoords, endCoords, startAddress, endAddress, vehicleKey);
-        if (minimum > 0 && price < minimum) {
-            price = minimum;
+        // Minimum géographique (CDG, Orly, Paris intra-muros…)
+        const geoMinimum = getPriceMinimum(startCoords, endCoords, startAddress, endAddress, vehicleKey);
+        if (geoMinimum > 0 && price < geoMinimum) {
+            price = geoMinimum;
+        }
+
+        // Minimum absolu — plancher tarifaire quelle que soit la distance
+        if (price < PRICE_MINIMUM[vehicleKey]) {
+            price = PRICE_MINIMUM[vehicleKey];
         }
 
         if (canShowRouteInfo()) {

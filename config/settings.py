@@ -120,18 +120,17 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
-
-TIME_ZONE = "UTC"
-USE_TZ = True
-USE_I18N = True
-USE_L10N = True
-
 LANGUAGE_CODE = "fr"
 
 LANGUAGES = [
     ("fr", "Français"),
     ("en", "English"),
 ]
+
+TIME_ZONE = "UTC"
+USE_TZ = True
+USE_I18N = True
+USE_L10N = True
 
 LOCALE_PATHS = [
     BASE_DIR / "locale",
